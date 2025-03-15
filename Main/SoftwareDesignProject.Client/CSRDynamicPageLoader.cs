@@ -2,22 +2,24 @@
 
 namespace SoftwareDesignProject.Client;
 
-public class DynamicDLLLoader
+public class CSRDynamicPageLoader: IDynamicPageLoader
 {
 
     private HttpClient _httpClient;
     
-    public DynamicDLLLoader(HttpClient httpClient)
+    public CSRDynamicPageLoader(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }
 
-    public async Task<DynamicPage> LoadDynamicAssembly(string dllUrl)
+    public async Task<DynamicPage?> LoadDynamicAssembly(string dllUrl)
     {
+        Console.WriteLine($"Downloading DLL in Server: " + dllUrl);
         var dllBytes = await _httpClient.GetByteArrayAsync(dllUrl);
         return new DynamicPage()
         {
             PluginAssembly = Assembly.Load(dllBytes)
         };
+        return null;
     }
 }

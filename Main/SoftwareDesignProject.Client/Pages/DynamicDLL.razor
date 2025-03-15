@@ -1,31 +1,38 @@
-﻿@page "/dynamicDLL"
-@rendermode InteractiveWebAssembly
-
-@inject DynamicDLLLoader? DllLoader
-@inject IJSRuntime JsRuntime
-
-@Content
+﻿@page "/dynamicDLL/{name}"
+@inject IDynamicPageLoader PageLoader
+@inject NavigationManager NavigationManager
+@_content
+@if (_errorContent.Length > 0)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Filled"> @_errorContent </MudAlert>
+}
 
 @code {
-    Type componentType;
-    private RenderFragment Content;
-
+    [Parameter]
+    public string name { get; set; }
+    private RenderFragment? _content;
+    private string _errorContent = "";
+    
     protected override async Task OnInitializedAsync()
     {
-        if (DllLoader != null)
+        try
         {
-            var dll = await DllLoader.LoadDynamicAssembly("/plugins/RazorClassLibrary_test.dll");
-            componentType = dll.GetComponentType("RazorClassLibrary_test.Component1");
+            var dll = await PageLoader.LoadDynamicAssembly($"/api/plugins/{name}.dll");
+            var componentType = dll?.GetComponentType("RazorClassLibrary_test.Component1");
+            if (componentType != null)
+                ShowComponent(componentType);
         }
+        catch (HttpRequestException e)
+        {
+            // Console.WriteLine(e.Message);
+            ShowError("Error: " + e.Message);
+            NavigationManager.NavigateTo("/404");
+        } 
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private void ShowError(string error)
     {
-        if (firstRender)
-        {
-            await JsRuntime.InvokeVoidAsync("loadCss", "/plugins/RazorClassLibrary_test.styles.css");
-            ShowComponent();
-        }
+        _errorContent = error;
     }
 
     private Dictionary<string, object> parameters = new()
@@ -33,13 +40,13 @@
         { "endpoint", "/api/test" }
     };
     
-    private void ShowComponent()
+    private void ShowComponent(Type componentType)
     {
-        Content = builder =>
+        _content = builder =>
         {
             builder.OpenComponent<DynamicComponent>(0);
             builder.AddAttribute(0, "Type", componentType);
-            builder.AddAttribute(0, "Parameters", parameters);
+            builder.AddAttribute(1, "Parameters", parameters);
             builder.CloseComponent();
         };
     }

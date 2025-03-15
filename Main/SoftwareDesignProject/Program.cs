@@ -1,5 +1,7 @@
 using MudBlazor.Services;
+using SoftwareDesignProject.Client;
 using SoftwareDesignProject.Components;
+using SoftwareDesignProject.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,9 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
+// Add empty service to prevent exception when force refresh page as SSR  
+builder.Services.AddSingleton<IDynamicPageLoader, SSRDynamicPageLoader>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -18,7 +23,9 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
+builder.Services.AddDistributedMemoryCache();
 builder.Services.AddControllers();
+builder.Services.AddSession();
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddScoped(sp => 
@@ -40,11 +47,7 @@ else
 
 app.UseHttpsRedirection();
 app.UseRouting();
-app.UseStaticFiles(new StaticFileOptions
-{
-    ServeUnknownFileTypes = true, // 🔹 Allow serving non-standard file types
-    DefaultContentType = "application/octet-stream" // 🔹 Treat unknown files as binary data
-});
+app.UseSession();
 app.UseAntiforgery();
 
 app.MapStaticAssets();

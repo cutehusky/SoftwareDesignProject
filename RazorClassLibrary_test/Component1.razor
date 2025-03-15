@@ -1,7 +1,13 @@
 ﻿@page "/dynamicpage"
 @inject HttpClient Http
 @using MudBlazor
-
+<style>
+    .my-component {
+        border: 2px dashed red;
+        padding: 1em;
+        margin: 1em 0;
+    }
+</style>
 <h3 class="my-component">Dynamically Loaded Page</h3>
 <p>This page is loaded from an external DLL.</p>
 
