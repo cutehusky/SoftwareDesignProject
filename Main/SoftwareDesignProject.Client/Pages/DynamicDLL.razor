@@ -1,0 +1,46 @@
+﻿@page "/dynamicDLL"
+@rendermode InteractiveWebAssembly
+
+@inject DynamicDLLLoader? DllLoader
+@inject IJSRuntime JsRuntime
+
+@Content
+
+@code {
+    Type componentType;
+    private RenderFragment Content;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (DllLoader != null)
+        {
+            var dll = await DllLoader.LoadDynamicAssembly("/plugins/RazorClassLibrary_test.dll");
+            componentType = dll.GetComponentType("RazorClassLibrary_test.Component1");
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JsRuntime.InvokeVoidAsync("loadCss", "/plugins/RazorClassLibrary_test.styles.css");
+            ShowComponent();
+        }
+    }
+
+    private Dictionary<string, object> parameters = new()
+    {
+        { "endpoint", "/api/test" }
+    };
+    
+    private void ShowComponent()
+    {
+        Content = builder =>
+        {
+            builder.OpenComponent<DynamicComponent>(0);
+            builder.AddAttribute(0, "Type", componentType);
+            builder.AddAttribute(0, "Parameters", parameters);
+            builder.CloseComponent();
+        };
+    }
+}

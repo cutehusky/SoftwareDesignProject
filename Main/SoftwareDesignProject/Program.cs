@@ -1,5 +1,4 @@
 using MudBlazor.Services;
-using SoftwareDesignProject.Client.Pages;
 using SoftwareDesignProject.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +10,19 @@ builder.Services.AddMudServices();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy => policy.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+});
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddScoped(sp => 
+    new HttpClient { BaseAddress = new Uri("http://localhost:5037/") });
 
 var app = builder.Build();
 
@@ -27,11 +39,16 @@ else
 }
 
 app.UseHttpsRedirection();
-
-
+app.UseRouting();
+app.UseStaticFiles(new StaticFileOptions
+{
+    ServeUnknownFileTypes = true, // 🔹 Allow serving non-standard file types
+    DefaultContentType = "application/octet-stream" // 🔹 Treat unknown files as binary data
+});
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+app.MapControllers(); 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
