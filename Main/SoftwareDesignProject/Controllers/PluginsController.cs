@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Mvc;
+using MudBlazor;
 
 namespace SoftwareDesignProject.Controller;
 
@@ -12,6 +13,25 @@ public class PluginsController : ControllerBase
     public PluginsController(IHostEnvironment env)
     {
         _env = env;
+    }
+
+    [HttpGet("GetList")]
+    public IActionResult GetList()
+    {
+        return Ok(new List<NavItem>()
+        {
+            new() { Text = "Home", Href = "home", Icon = Icons.Material.Filled.Home },
+            new() { Text = "Counter", Href = "counter", Icon = Icons.Material.Filled.Add },
+            new() { Text = "Weather", Href = "weather", Icon = Icons.Material.Filled.List },
+            new() { Text = "Dynamic DLL", Href = "dynamicDLL/RazorClassLibrary_test", Icon = Icons.Material.Filled.List }
+        });
+    }
+    
+    private class NavItem
+    {
+        public string Text { get; set; }
+        public string Href { get; set; }
+        public string Icon { get; set; }
     }
     
     [HttpGet("{fileName}")]

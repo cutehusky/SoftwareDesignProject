@@ -1,4 +1,6 @@
-﻿namespace SoftwareDesignProject.Client;
+﻿using SoftwareDesignProject.Client.Models;
+
+namespace SoftwareDesignProject.Client;
 
 public interface IDynamicPageLoader
 {

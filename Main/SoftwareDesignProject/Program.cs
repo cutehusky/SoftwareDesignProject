@@ -15,6 +15,7 @@ builder.Services.AddRazorComponents()
 
 // Add empty service to prevent exception when force refresh page as SSR  
 builder.Services.AddSingleton<IDynamicPageLoader, SSRDynamicPageLoader>();
+builder.Services.AddSingleton<INavMenuLoader, SSRNavMenuLoader>();
 
 builder.Services.AddCors(options =>
 {

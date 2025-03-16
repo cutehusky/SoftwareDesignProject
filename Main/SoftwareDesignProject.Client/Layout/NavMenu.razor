@@ -1,11 +1,22 @@
-﻿
+﻿@using SoftwareDesignProject.Client.Models
+@inject HttpClient Http
+@inject INavMenuLoader NavMenuLoader
+
 <MudNavMenu>
-    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
-    <MudNavLink Href="counter" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">Counter</MudNavLink>
-
-    <MudNavLink Href="weather" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Weather</MudNavLink>
-    <MudNavLink Href="dynamicDLL/RazorClassLibrary_test" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Dynamic DLL</MudNavLink>
-
+    @foreach (var item in _navItems)
+    {
+    <MudNavLink Href="@item.Href" Match="NavLinkMatch.Prefix" Icon="@item.Icon">
+        @item.Text
+    </MudNavLink>
+    }
 </MudNavMenu>
 
-
+@code {
+    private List<NavItem> _navItems = new();
+    protected async override Task OnInitializedAsync()
+    {
+        var items = await NavMenuLoader.GetNavItem();
+        if (items != null)
+            _navItems = items;
+    }
+}

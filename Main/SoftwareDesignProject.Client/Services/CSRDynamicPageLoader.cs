@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
+using SoftwareDesignProject.Client.Models;
 
-namespace SoftwareDesignProject.Client;
+namespace SoftwareDesignProject.Client.Services;
 
 public class CSRDynamicPageLoader: IDynamicPageLoader
 {
@@ -20,6 +21,5 @@ public class CSRDynamicPageLoader: IDynamicPageLoader
         {
             PluginAssembly = Assembly.Load(dllBytes)
         };
-        return null;
     }
 }

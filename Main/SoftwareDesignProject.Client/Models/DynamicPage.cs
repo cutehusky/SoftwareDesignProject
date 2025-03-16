@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace SoftwareDesignProject.Client;
+namespace SoftwareDesignProject.Client.Models;
 
 public class DynamicPage
 {

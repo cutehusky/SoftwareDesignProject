@@ -1,4 +1,5 @@
 ﻿using SoftwareDesignProject.Client;
+using SoftwareDesignProject.Client.Models;
 
 namespace SoftwareDesignProject.Services;
 
