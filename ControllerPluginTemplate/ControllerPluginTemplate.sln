@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControllerPluginTemplate", "ControllerPluginTemplate.csproj", "{EBFC8611-A5C4-45DE-B431-D325E6B678CE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EBFC8611-A5C4-45DE-B431-D325E6B678CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBFC8611-A5C4-45DE-B431-D325E6B678CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBFC8611-A5C4-45DE-B431-D325E6B678CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBFC8611-A5C4-45DE-B431-D325E6B678CE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

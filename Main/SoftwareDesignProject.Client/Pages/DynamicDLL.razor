@@ -34,11 +34,6 @@
     {
         _errorContent = error;
     }
-
-    private Dictionary<string, object> parameters = new()
-    {
-        { "endpoint", "/api/test" }
-    };
     
     private void ShowComponent(Type componentType)
     {
@@ -46,7 +41,6 @@
         {
             builder.OpenComponent<DynamicComponent>(0);
             builder.AddAttribute(0, "Type", componentType);
-            builder.AddAttribute(1, "Parameters", parameters);
             builder.CloseComponent();
         };
     }

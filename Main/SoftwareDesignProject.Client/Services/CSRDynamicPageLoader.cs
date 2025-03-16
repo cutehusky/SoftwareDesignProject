@@ -14,6 +14,11 @@ public class CSRDynamicPageLoader: IDynamicPageLoader
         _httpClient = httpClient;
     }
 
+    private static string GetAPIEndPoint(string id)
+    {
+        return $"/api/{id}";
+    }
+
     public async Task<DynamicPage?> LoadDynamicAssembly(string dllUrl)
     {
         Console.WriteLine($"Downloading DLL in Server: " + dllUrl);
@@ -23,10 +28,11 @@ public class CSRDynamicPageLoader: IDynamicPageLoader
         foreach (var type in assembly.GetExportedTypes())
         {
             Console.WriteLine(type.FullName);
-            if ((typeof(Config)).IsAssignableFrom(type))
+            if ((typeof(IConfig)).IsAssignableFrom(type))
             {
-                Config config = (Config) Activator.CreateInstance(type)!;
+                IConfig config = (IConfig) Activator.CreateInstance(type)!;
                 entryPoint = config.EntryPoint;
+                config.APIEndPoint = GetAPIEndPoint(config.ID);
             }
         }
         if (entryPoint != null)

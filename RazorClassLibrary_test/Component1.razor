@@ -22,12 +22,9 @@
 @code
 {
     private string responseMessage;
-    [Parameter] 
-    public String endpoint { get; set; }
-
     public async void Get()
     {
-        responseMessage = await Http.GetStringAsync(endpoint);
+        responseMessage = await Http.GetStringAsync(Config.apiEndPoint);
         StateHasChanged();
     }
 }
