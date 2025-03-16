@@ -29,4 +29,11 @@
     <_ContentIncludedByDefault Remove="wwwroot\plugins\RazorClassLibrary_test.dll" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <Reference Include="PluginTemplate">
+      <HintPath>..\..\PluginTemplate\bin\Debug\net8.0\PluginTemplate.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

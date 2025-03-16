@@ -1,8 +1,7 @@
-﻿using System.Collections.Concurrent;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MudBlazor;
 
-namespace SoftwareDesignProject.Controller;
+namespace SoftwareDesignProject.Controllers;
 
 [ApiController]
 [Route("api/plugins")]
@@ -34,8 +33,8 @@ public class PluginsController : ControllerBase
         public string Icon { get; set; }
     }
     
+    //[ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Client)]
     [HttpGet("{fileName}")]
-    [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Client)]
     public async Task<IActionResult> Get(string fileName)
     {
         var filePath = Path.Combine(_env.ContentRootPath, "Root/plugins", fileName);

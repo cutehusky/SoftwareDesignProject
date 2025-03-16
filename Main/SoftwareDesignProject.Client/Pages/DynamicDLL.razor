@@ -18,7 +18,7 @@
         try
         {
             var dll = await PageLoader.LoadDynamicAssembly($"/api/plugins/{DLLName}.dll");
-            var componentType = dll?.GetComponentType("RazorClassLibrary_test.Component1");
+            var componentType = dll?.EntryPoint;
             if (componentType != null)
                 ShowComponent(componentType);
         }

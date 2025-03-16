@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using PluginTemplate;
 using SoftwareDesignProject.Client.Models;
 
 namespace SoftwareDesignProject.Client.Services;
@@ -17,9 +18,23 @@ public class CSRDynamicPageLoader: IDynamicPageLoader
     {
         Console.WriteLine($"Downloading DLL in Server: " + dllUrl);
         var dllBytes = await _httpClient.GetByteArrayAsync(dllUrl);
-        return new DynamicPage()
+        var assembly = Assembly.Load(dllBytes);
+        Type? entryPoint = null;
+        foreach (var type in assembly.GetExportedTypes())
         {
-            PluginAssembly = Assembly.Load(dllBytes)
-        };
+            Console.WriteLine(type.FullName);
+            if ((typeof(Config)).IsAssignableFrom(type))
+            {
+                Config config = (Config) Activator.CreateInstance(type)!;
+                entryPoint = config.EntryPoint;
+            }
+        }
+        if (entryPoint != null)
+            return new DynamicPage()
+            {
+                PluginAssembly = Assembly.Load(dllBytes),
+                EntryPoint = entryPoint
+            };
+        return null;
     }
 }
