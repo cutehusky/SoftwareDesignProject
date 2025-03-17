@@ -8,16 +8,16 @@ namespace SoftwareDesignProject.Controllers;
 [Route("api/load")]
 public class ControllerTest: ControllerBase
 {
-    private DynamicControllerLoader _loader;
-    public ControllerTest(DynamicControllerLoader loader)
+    private DynamicPluginManager _manager;
+    public ControllerTest(DynamicPluginManager manager)
     {
-        _loader = loader;
+        _manager = manager;
     }
     
     [HttpGet]
     public IActionResult test()
     {
-        _loader.LoadAllAssemblies();
+        _manager.LoadAllAssemblies();
         return Ok(new { message = "Hello, World!" });
     }
 }

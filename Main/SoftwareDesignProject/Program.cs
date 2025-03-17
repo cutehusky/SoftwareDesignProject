@@ -1,3 +1,4 @@
+using BackendPluginTemplate;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using MudBlazor.Services;
@@ -19,7 +20,9 @@ builder.Services.AddRazorComponents()
 // Add empty service to prevent exception when force refresh page as SSR  
 builder.Services.AddSingleton<IDynamicPageLoader, SSRDynamicPageLoader>();
 builder.Services.AddSingleton<INavMenuLoader, SSRNavMenuLoader>();
-builder.Services.AddSingleton<DynamicControllerLoader>();
+
+builder.Services.AddSingleton<DynamicPluginManager>();
+builder.Services.AddSingleton<IDynamicServiceProvider, DynamicServiceProvider>();
 
 builder.Services.AddCors(options =>
 {

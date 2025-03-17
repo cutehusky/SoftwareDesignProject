@@ -3,7 +3,7 @@
 namespace TestController2;
 
 [ApiController]
-[Route("/hello/[controller]")] // !!! MUST [controller] here, other template NOT WORK
+[Route("[controller]")] // !!! MUST [controller] here, other template NOT WORK
 public class TestController: ControllerBase
 {
     [HttpGet("[action]")] // !!! MUST [action] here, other template NOT WORK 

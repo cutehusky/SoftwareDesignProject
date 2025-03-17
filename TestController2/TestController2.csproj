@@ -4,6 +4,7 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <RootNamespace>TestController2</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -11,8 +12,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="ControllerPluginTemplate">
-        <HintPath>..\ControllerPluginTemplate\bin\Debug\net9.0\ControllerPluginTemplate.dll</HintPath>
+      <Reference Include="BackendPluginTemplate">
+        <HintPath>..\BackendPluginTemplate\bin\Debug\net9.0\BackendPluginTemplate.dll</HintPath>
       </Reference>
     </ItemGroup>
 

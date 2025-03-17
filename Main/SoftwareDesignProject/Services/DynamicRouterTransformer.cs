@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace SoftwareDesignProject.Services;
@@ -11,11 +12,11 @@ using Microsoft.AspNetCore.Routing;
 
 public class DynamicRouteTransformer : DynamicRouteValueTransformer
 {
-    private readonly DynamicControllerLoader _controllerLoader;
+    private readonly DynamicPluginManager _pluginPluginManager;
 
-    public DynamicRouteTransformer(DynamicControllerLoader controllerLoader)
+    public DynamicRouteTransformer(DynamicPluginManager pluginPluginManager)
     {
-        _controllerLoader = controllerLoader;
+        _pluginPluginManager = pluginPluginManager;
     }
 
     public override ValueTask<RouteValueDictionary> TransformAsync(HttpContext httpContext, RouteValueDictionary values)
@@ -34,13 +35,14 @@ public class DynamicRouteTransformer : DynamicRouteValueTransformer
             return new ValueTask<RouteValueDictionary>(); 
 
         // Check if the controller exists in the loaded assemblies
-        var controller = _controllerLoader.GetControllers(id)
-            .Where(t => typeof(Microsoft.AspNetCore.Mvc.ControllerBase).IsAssignableFrom(t) && 
-                      t.Name.Equals(controllerName + "Controller", StringComparison.OrdinalIgnoreCase))
-            .ToList();
+        var controller = _pluginPluginManager.GetValidControllers(id, controllerName);
+        
+        if (controller.Count == 0)
+            return new ValueTask<RouteValueDictionary>();
         
         if (controller.Count != 1)
-            return new ValueTask<RouteValueDictionary>();
+            throw new AmbiguousActionException("More than 1 controller matched");
+        
         values["namespace"] = controller[0].Namespace;
         Console.WriteLine("Using controller: " + controller[0].FullName);
         return new ValueTask<RouteValueDictionary>(values);

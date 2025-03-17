@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BackendPluginTemplate;
+using Microsoft.AspNetCore.Mvc;
 
 namespace TestController;
 
@@ -6,9 +7,16 @@ namespace TestController;
 [Route("[controller]")] // !!! MUST [controller] here, other template NOT WORK
 public class TestController: ControllerBase
 {
+    private IDynamicServiceProvider _dynamicServiceProvider;
+    public TestController(IDynamicServiceProvider service)
+    {
+        _dynamicServiceProvider = service;
+    }
+
     [HttpGet("[action]")] // !!! MUST [action] here, other template NOT WORK 
     public IActionResult Get()
     {
+        _dynamicServiceProvider.GetService<TestService>()?.Hello();
         return Ok(new { message = "Hello, World 123!" });
     }
 
