@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using MudBlazor.Services;
 using SoftwareDesignProject.Client;
@@ -14,10 +15,10 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
+
 // Add empty service to prevent exception when force refresh page as SSR  
 builder.Services.AddSingleton<IDynamicPageLoader, SSRDynamicPageLoader>();
 builder.Services.AddSingleton<INavMenuLoader, SSRNavMenuLoader>();
-builder.Services.AddSingleton<ActionDescriptorChangeProvider>();
 builder.Services.AddSingleton<DynamicControllerLoader>();
 
 builder.Services.AddCors(options =>
@@ -31,6 +32,8 @@ builder.Services.AddDistributedMemoryCache();
 builder.Services.AddControllers();
 builder.Services.AddSession();
 builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSingleton<IActionDescriptorChangeProvider, ActionDescriptorChangeProvider>();
 
 builder.Services.AddScoped(sp => 
     new HttpClient { BaseAddress = new Uri("http://localhost:5037/") });
@@ -63,6 +66,6 @@ app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(SoftwareDesignProject.Client._Imports).Assembly);
 
-app.MapDynamicControllerRoute<DynamicRouteTransformer>("api/{controller}/{action}/{id?}");
+app.MapDynamicControllerRoute<DynamicRouteTransformer>("api/plugin/{id}/{controller}/{action}");
 
 app.Run();

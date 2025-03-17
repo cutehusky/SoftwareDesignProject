@@ -24,7 +24,7 @@
     private string responseMessage;
     public async void Get()
     {
-        responseMessage = await Http.GetStringAsync(Config.apiEndPoint);
+        responseMessage = await Http.GetStringAsync(Config.apiEndPoint + "/test/get");
         StateHasChanged();
     }
 }

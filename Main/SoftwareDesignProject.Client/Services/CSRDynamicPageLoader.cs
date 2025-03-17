@@ -16,7 +16,7 @@ public class CSRDynamicPageLoader: IDynamicPageLoader
 
     private static string GetAPIEndPoint(string id)
     {
-        return $"/api/{id}";
+        return $"/api/plugin/{id}";
     }
 
     public async Task<DynamicPage?> LoadDynamicAssembly(string dllUrl)
@@ -28,11 +28,12 @@ public class CSRDynamicPageLoader: IDynamicPageLoader
         foreach (var type in assembly.GetExportedTypes())
         {
             Console.WriteLine(type.FullName);
-            if ((typeof(IConfig)).IsAssignableFrom(type))
+            if ((typeof(IConfig)).IsAssignableFrom(type) && type.IsClass)
             {
                 IConfig config = (IConfig) Activator.CreateInstance(type)!;
                 entryPoint = config.EntryPoint;
                 config.APIEndPoint = GetAPIEndPoint(config.ID);
+                break;
             }
         }
         if (entryPoint != null)

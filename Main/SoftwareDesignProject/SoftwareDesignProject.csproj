@@ -18,10 +18,6 @@
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Root\plugins\RazorClassLibrary_test.dll">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
   </ItemGroup>
 
 
@@ -31,6 +27,9 @@
 
 
   <ItemGroup>
+    <Reference Include="ControllerPluginTemplate">
+      <HintPath>..\..\ControllerPluginTemplate\bin\Debug\net9.0\ControllerPluginTemplate.dll</HintPath>
+    </Reference>
     <Reference Include="PluginTemplate">
       <HintPath>..\..\PluginTemplate\bin\Debug\net8.0\PluginTemplate.dll</HintPath>
     </Reference>
