@@ -21,4 +21,10 @@
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="ClientPluginTemplate">
+      <HintPath>..\..\ClientPluginTemplate\bin\Debug\net8.0\ClientPluginTemplate.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

@@ -10,4 +10,10 @@
       <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="BackendPluginTemplate">
+        <HintPath>..\..\BackendPluginTemplate\bin\Debug\net9.0\BackendPluginTemplate.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>
