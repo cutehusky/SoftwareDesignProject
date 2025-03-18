@@ -1,0 +1,38 @@
+﻿@using System.Net.Http.Json
+@using MudBlazor
+@inject HttpClient HttpClient
+<h1>Hashing String to MD5</h1>
+<div class="d-flex flex-grow-1 gap-4 justify-center align-center">
+    <MudTextField @bind-Value="_inputHash" Label="Raw" Variant="Variant.Outlined" Width="50%" Lines="10"></MudTextField>
+    <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="Hash" Height="50px">To >></MudButton>
+    <MudTextField @bind-Value="_outputHash" Label="Hashed" Variant="Variant.Outlined" Width="50%" Lines="10" ReadOnly="true" ></MudTextField>
+</div>
+@code
+{
+    private string _inputHash;
+    private string _outputHash;
+
+    private async void Hash()
+    {
+        Console.WriteLine(_inputHash);
+        Console.WriteLine(Config.apiEndPoint);
+
+        var response = await HttpClient.PostAsJsonAsync(
+            Config.apiEndPoint + "/HashMD5/hash", new HashMD5Request()
+            {
+                value = _inputHash
+            });
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseData = await response.Content.ReadFromJsonAsync<HashMD5Response>();
+            // Console.WriteLine("Response: " + responseData);
+            _outputHash = responseData.value;
+            StateHasChanged();
+        }
+        else
+        {
+            Console.WriteLine("Error: " + response.StatusCode);
+        }
+    }
+}

@@ -14,8 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="PluginTemplate">
-      <HintPath>..\..\PluginTemplate\bin\Debug\net8.0\PluginTemplate.dll</HintPath>
+    <Reference Include="ClientPluginTemplate">
+      <HintPath>..\..\ClientPluginTemplate\bin\Debug\net8.0\ClientPluginTemplate.dll</HintPath>
     </Reference>
   </ItemGroup>
 

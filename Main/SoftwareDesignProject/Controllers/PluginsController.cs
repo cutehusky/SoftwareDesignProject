@@ -17,13 +17,25 @@ public class PluginsController : ControllerBase
     [HttpGet("GetList")]
     public IActionResult GetList()
     {
-        return Ok(new List<NavItem>()
+        // TODO: Load plugin list in db
+        var folderPath = Path.Combine(_env.ContentRootPath, "Root/ClientPlugins");
+        var dlls = Directory.GetFiles(folderPath)
+            .Select(Path.GetFileName)
+            .ToList();
+        for (int i = 0; i < dlls.Count; i++)
+        {
+            dlls[i] = dlls[i].Replace(".dll", "");
+        }
+
+        var list = new List<NavItem>()
         {
             new() { Text = "Home", Href = "home", Icon = Icons.Material.Filled.Home },
-            new() { Text = "Counter", Href = "counter", Icon = Icons.Material.Filled.Add },
-            new() { Text = "Weather", Href = "weather", Icon = Icons.Material.Filled.List },
-            new() { Text = "Dynamic DLL", Href = "dynamicDLL/RazorClassLibrary_test", Icon = Icons.Material.Filled.List }
-        });
+        };
+        list.AddRange(dlls.Select(dll => new NavItem()
+        {
+            Text = dll, Href = $"dynamicDLL/{dll}", Icon = Icons.Material.Filled.List
+        }));
+        return Ok(list);
     }
     
     private class NavItem
@@ -37,7 +49,7 @@ public class PluginsController : ControllerBase
     [HttpGet("{fileName}")]
     public async Task<IActionResult> Get(string fileName)
     {
-        var filePath = Path.Combine(_env.ContentRootPath, "Root/plugins", fileName);
+        var filePath = Path.Combine(_env.ContentRootPath, "Root/ClientPlugins", fileName);
         Console.WriteLine("Getting file: " + fileName);
         if (!System.IO.File.Exists(filePath))
         {

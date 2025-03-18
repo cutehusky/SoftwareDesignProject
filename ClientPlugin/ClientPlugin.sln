@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35828.75
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HASH_MD5", "HASH_MD5\HASH_MD5.csproj", "{8410E2B6-6EDA-45FC-B7F6-523A3B75958F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HASH_SHA", "HASH_SHA\HASH_SHA.csproj", "{E89FAFF9-EDC3-4292-9197-E01B732EC883}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8410E2B6-6EDA-45FC-B7F6-523A3B75958F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8410E2B6-6EDA-45FC-B7F6-523A3B75958F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8410E2B6-6EDA-45FC-B7F6-523A3B75958F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8410E2B6-6EDA-45FC-B7F6-523A3B75958F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E89FAFF9-EDC3-4292-9197-E01B732EC883}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E89FAFF9-EDC3-4292-9197-E01B732EC883}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E89FAFF9-EDC3-4292-9197-E01B732EC883}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E89FAFF9-EDC3-4292-9197-E01B732EC883}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {56F3C6C9-AE31-40EE-9158-EEFEA2112361}
+	EndGlobalSection
+EndGlobal

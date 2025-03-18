@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HASH_MD5", "HASH_MD5\HASH_MD5.csproj", "{739E9F2B-03BD-4943-9907-BA659C42D24F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HASH_SHA", "HASH_SHA\HASH_SHA.csproj", "{394B7C5E-4F79-40D7-A48C-6488E7AF346F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{739E9F2B-03BD-4943-9907-BA659C42D24F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{739E9F2B-03BD-4943-9907-BA659C42D24F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{739E9F2B-03BD-4943-9907-BA659C42D24F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{739E9F2B-03BD-4943-9907-BA659C42D24F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{394B7C5E-4F79-40D7-A48C-6488E7AF346F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{394B7C5E-4F79-40D7-A48C-6488E7AF346F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{394B7C5E-4F79-40D7-A48C-6488E7AF346F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{394B7C5E-4F79-40D7-A48C-6488E7AF346F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

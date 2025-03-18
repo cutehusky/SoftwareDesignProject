@@ -22,7 +22,7 @@ public class DynamicPluginManager
     {
         _partManager = partManager;
         _changeProvider = (changeProvider as ActionDescriptorChangeProvider)!;
-        _pluginPath = Path.Combine(env.ContentRootPath, "Root/controllerPlugins");
+        _pluginPath = Path.Combine(env.ContentRootPath, "Root/BackendPlugins");
         if (!Directory.Exists(_pluginPath))
             Directory.CreateDirectory(_pluginPath);
         LoadAllAssemblies();

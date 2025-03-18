@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using PluginTemplate;
+using ClientPluginTemplate;
 using SoftwareDesignProject.Client.Models;
 
 namespace SoftwareDesignProject.Client.Services;
