@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.13" />
+		<PackageReference Include="MudBlazor" Version="8.4.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="ClientPluginTemplate">
+			<HintPath>..\..\ClientPluginTemplate\bin\Debug\net8.0\ClientPluginTemplate.dll</HintPath>
+		</Reference>
+		<Reference Include="PluginTemplate">
+			<HintPath>..\..\PluginTemplate\bin\Debug\net8.0\PluginTemplate.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+</Project>

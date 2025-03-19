@@ -1,0 +1,38 @@
+﻿@using System.Net.Http.Json
+@using MudBlazor
+@inject HttpClient HttpClient
+<h1>Generate Lorem Ispum</h1>
+<div class="d-flex flex-grow-1 gap-4 justify-center align-center">
+    <MudNumericField @bind-Value="_inputLength"></MudNumericField>
+    <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="Hash" Height="50px">Generate</MudButton>
+    <MudTextField @bind-Value="_outputLorem" Label="Hashed" Variant="Variant.Outlined" Width="50%" Lines="10" ReadOnly="true" ></MudTextField>
+</div>
+@code
+{
+    private int _inputLength;
+    private string _outputLorem = String.Empty;
+
+    private async void Hash()
+    {
+        Console.WriteLine(_inputLength);
+        Console.WriteLine(Config.apiEndPoint);
+
+        var response = await HttpClient.PostAsJsonAsync(
+            Config.apiEndPoint + "/String/Lorem", new StringLoremRequest()
+            {
+                value = _inputLength
+            });
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseData = await response.Content.ReadFromJsonAsync<StringLoremResponse>();
+            Console.WriteLine("Response: " + responseData);
+            _outputLorem = responseData.value;
+            StateHasChanged();
+        }
+        else
+        {
+            Console.WriteLine("Error: " + response.StatusCode);
+        }
+    }
+}
