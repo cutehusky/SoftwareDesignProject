@@ -2,5 +2,7 @@ namespace STRING_LOREM;
 
 public class StringLoremRequest
 {
-    public int value { get; set; }
+    public string value { get; set; }
+    public string type { get; set; }
+
 }

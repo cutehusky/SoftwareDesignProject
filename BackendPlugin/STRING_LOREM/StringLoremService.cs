@@ -20,10 +20,9 @@ namespace STRING_LOREM
             var random = new Random();
             var sb = new StringBuilder();
 
-            while (sb.Length < length)
+            for (int i = 0; i < length; i++)
             {
                 string word = LoremWords[random.Next(LoremWords.Length)];
-                if (sb.Length + word.Length + 1 > length) break;
 
                 if (sb.Length > 0)
                     sb.Append(" ");

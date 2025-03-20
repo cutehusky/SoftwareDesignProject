@@ -18,6 +18,7 @@ public class StringLoremController : ControllerBase
     [HttpPost]
     public IActionResult Lorem([FromBody] StringLoremRequest request)
     {
+        Console.WriteLine(request.value);
         string lorem = _sp.GetService<StringLoremService>().GenerateLoremIpsum(Convert.ToInt16(request.value));
         Console.WriteLine(lorem);
         return Ok(new StringLoremResponse() { value = lorem });
