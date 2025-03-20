@@ -1,0 +1,32 @@
+﻿@page "/signup"
+
+<PageTitle>Sign Up</PageTitle>
+
+<MudContainer Class="pa-4">
+    <MudText Typo="Typo.h3" GutterBottom="true">Sign Up</MudText>
+
+    <MudTextField Label="Username" @bind-Value="Username" Variant="Variant.Outlined" Adornment="Adornment.Start">
+    </MudTextField>
+
+    <MudTextField Label="Password" @bind-Value="Password" Variant="Variant.Outlined" Adornment="Adornment.Start" Type="password">
+    </MudTextField>
+
+    <MudTextField Label="Confirm Password" @bind-Value="ConfirmPassword" Variant="Variant.Outlined" Adornment="Adornment.Start" Type="password">
+	</MudTextField>
+
+    <MudStack Spacing="2">
+        <MudButton OnClick="HandleSignUp" Variant="Variant.Outlined" FullWidth="true">Sign Up</MudButton>
+    </MudStack>
+</MudContainer>
+
+@code {
+    private string Username { get; set; } = string.Empty;
+    private string Password { get; set; } = string.Empty;
+	private string ConfirmPassword { get; set; } = string.Empty;
+
+
+    private void HandleSignUp()
+    {
+        // Handle sign-up logic here
+    }
+}

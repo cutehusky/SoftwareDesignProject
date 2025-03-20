@@ -1,35 +1,35 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
-
-
-  <ItemGroup>
-    <ProjectReference Include="..\SoftwareDesignProject.Client\SoftwareDesignProject.Client.csproj" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.*" />
-  </ItemGroup>
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
 
 
-  <ItemGroup>
-    <Content Update="Root\plugins\RazorClassLibrary_test.dll">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\SoftwareDesignProject.Client\SoftwareDesignProject.Client.csproj" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.*" />
+	</ItemGroup>
 
 
-  <ItemGroup>
-    <_ContentIncludedByDefault Remove="wwwroot\plugins\RazorClassLibrary_test.dll" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Update="Root\plugins\RazorClassLibrary_test.dll">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
 
 
-  <ItemGroup>
-    <Reference Include="BackendPluginTemplate">
-      <HintPath>..\..\BackendPluginTemplate\bin\Debug\net9.0\BackendPluginTemplate.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+	<ItemGroup>
+		<_ContentIncludedByDefault Remove="wwwroot\plugins\RazorClassLibrary_test.dll" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<Reference Include="BackendPluginTemplate">
+			<HintPath>..\..\BackendPluginTemplate\bin\Debug\net9.0\BackendPluginTemplate.dll</HintPath>
+		</Reference>
+	</ItemGroup>
 
 </Project>
