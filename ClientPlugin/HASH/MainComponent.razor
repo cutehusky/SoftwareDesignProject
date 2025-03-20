@@ -1,4 +1,5 @@
-﻿@using System.Net.Http.Json
+﻿@using System.Collections
+@using System.Net.Http.Json
 @using Microsoft.JSInterop
 @using MudBlazor
 @inject HttpClient HttpClient
@@ -11,7 +12,13 @@
 <MudTextField Class="my-6" @bind-Value="_inputHash" Label="Input" Variant="Variant.Outlined" Lines="10"></MudTextField>
 
 <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
-    <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="Hash">Get</MudButton>
+    <MudSelect T="string" Variant="Variant.Outlined" Label="Select Type" @bind-SelectedValues="_selectedType">
+        @foreach (var type in types)
+        {
+        <MudSelectItem Value="type">@type</MudSelectItem>
+        }
+    </MudSelect>
+    <MudButton Color="Color.Inherit" Variant="Variant.Outlined" Size="Size.Large" OnClick="Hash">Get</MudButton>
 </div>
 
 <MudDivider id="target" DividerType="DividerType.Middle" Class="my-6"/>
@@ -82,6 +89,9 @@
 
 @code
 {
+    private static List<string> types = new List<string>() { "Bin", "Hex", "Base64", "Base64url" };
+    private IEnumerable<string> _selectedType = new List<string>() {types[1] };
+    
     private string _inputHash = "";
     private string _outputMD5Hash = "";
     private string _outputSHA1Hash = "";
@@ -122,6 +132,13 @@
     {
         Console.WriteLine(_inputHash);
         Console.WriteLine(Config.apiEndPoint);
+        Console.WriteLine(_selectedType);
+        var selectedType = "";
+        foreach (var type in _selectedType)
+        {
+            selectedType = type; 
+            break; // only 1 selection
+        }
 
         if (_inputHash.Length == 0)
         {
@@ -135,7 +152,8 @@
         var response = await HttpClient.PostAsJsonAsync(
             Config.apiEndPoint + "/Hash/hash", new HashRequest()
             {
-                value = _inputHash
+                value = _inputHash,
+                type = selectedType
             });
 
         if (response.IsSuccessStatusCode)

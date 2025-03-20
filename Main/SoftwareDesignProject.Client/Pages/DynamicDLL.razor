@@ -7,7 +7,6 @@
     [Parameter]
     public string DLLName { get; set; }
     private RenderFragment? _content;
-    private string _errorContent = "";
     private string _currentDllName = "";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
