@@ -2,37 +2,33 @@
 @inject IDynamicPageLoader PageLoader
 @inject NavigationManager NavigationManager
 @_content
-@if (_errorContent.Length > 0)
-{
-    <MudAlert Severity="Severity.Error" Variant="Variant.Filled"> @_errorContent </MudAlert>
-}
 
 @code {
     [Parameter]
     public string DLLName { get; set; }
     private RenderFragment? _content;
     private string _errorContent = "";
-    
-    protected override async Task OnInitializedAsync()
+    private string _currentDllName = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_currentDllName == DLLName)
+            return;
         try
         {
             var dll = await PageLoader.LoadDynamicAssembly($"/api/plugins/{DLLName}.dll");
             var componentType = dll?.EntryPoint;
             if (componentType != null)
+            {
+                _currentDllName = DLLName;
                 ShowComponent(componentType);
+            }
         }
         catch (HttpRequestException e)
         {
             // Console.WriteLine(e.Message);
-            ShowError("Error: " + e.Message);
             NavigationManager.NavigateTo("/404");
-        } 
-    }
-
-    private void ShowError(string error)
-    {
-        _errorContent = error;
+        }
     }
     
     private void ShowComponent(Type componentType)
@@ -43,5 +39,6 @@
             builder.AddAttribute(0, "Type", componentType);
             builder.CloseComponent();
         };
+        StateHasChanged();
     }
 }
