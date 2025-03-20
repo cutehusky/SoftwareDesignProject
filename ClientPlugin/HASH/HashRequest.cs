@@ -1,6 +1,6 @@
 ﻿namespace HASH_MD5;
 
-public class HashMD5Response
+public class HashRequest
 {
     public string value { get; set; }
 }
