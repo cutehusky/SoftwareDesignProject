@@ -1,0 +1,46 @@
+﻿@using System.Net.Http.Json
+@using MudBlazor
+@inject HttpClient HttpClient
+<h1>Obsufcate string</h1>
+<MudStack>
+    <MudTextField @bind-Value="_inputValue" Label="Input string here..." Variant="Variant.Outlined" Lines="1"></MudTextField>
+    <MudStack Row="true">
+        <MudNumericField Min="0" @bind-Value="_start"></MudNumericField>
+        <MudNumericField Min="0" @bind-Value="_end"></MudNumericField>
+    </MudStack>
+    <MudButton Variant="Variant.Filled" OnClick="Generate" Height="50px">Generate</MudButton>
+    <MudTextField @bind-Value="_outputValue" Label="**xample***" Variant="Variant.Outlined" Width="50%" Lines="1" ReadOnly="true"></MudTextField>
+</MudStack>
+@code
+{
+	private int _start; 
+	private int _end;
+    private string _inputValue = String.Empty;
+	private string _outputValue = String.Empty;
+
+    private async void Generate()
+    {
+        Console.WriteLine(Config.apiEndPoint);
+
+        var response = await HttpClient.PostAsJsonAsync(
+            Config.apiEndPoint + "/StringObsfucate/obsfucate", new Request()
+            {
+                start = _start.ToString(),
+                end = _end.ToString(),
+                value = _inputValue,
+                type = "obsfucate"
+            });
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseData = await response.Content.ReadFromJsonAsync<Response>();
+            Console.WriteLine("Response: " + responseData);
+            _outputValue = responseData.value;
+            StateHasChanged();
+        }
+        else
+        {
+            Console.WriteLine("Error: " + response.StatusCode);
+        }
+    }
+}

@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35818.85 d17.13
+VisualStudioVersion = 17.13.35818.85
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HASH", "HASH\HASH.csproj", "{739E9F2B-03BD-4943-9907-BA659C42D24F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "STRING_LOREM", "STRING_LOREM\STRING_LOREM.csproj", "{39961483-E086-441C-A501-32C58D293869}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "STRING_OBSFUCATE", "STRING_OBSFUCATE\STRING_OBSFUCATE.csproj", "{B0EDA1AA-1097-49AE-8AEF-9627580CEC77}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{39961483-E086-441C-A501-32C58D293869}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39961483-E086-441C-A501-32C58D293869}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39961483-E086-441C-A501-32C58D293869}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0EDA1AA-1097-49AE-8AEF-9627580CEC77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0EDA1AA-1097-49AE-8AEF-9627580CEC77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0EDA1AA-1097-49AE-8AEF-9627580CEC77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0EDA1AA-1097-49AE-8AEF-9627580CEC77}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
