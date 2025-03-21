@@ -1,0 +1,79 @@
+﻿@using System.Net.Http.Json
+@using MudBlazor
+@inject HttpClient HttpClient
+<h1>Temperature Converter</h1>
+<MudStack>
+    <MudStack Row="true" AlignItems="AlignItems.Center">
+        <MudField Label="Kelvin" Variant="Variant.Filled"></MudField>
+        <MudNumericField Value="_valueK" ValueChanged="(double newValue) => ConvertTemp(newValue, 'k')" Immediate="true"></MudNumericField>
+        <MudField Label="°K" Variant="Variant.Filled"></MudField>
+    </MudStack>
+
+    <MudStack Row="true" AlignItems="AlignItems.Center">
+        <MudField Label="Celsius" Variant="Variant.Filled"></MudField>
+        <MudNumericField Value="_valueC" ValueChanged="(double newValue) => ConvertTemp(newValue, 'c')" Immediate="true"></MudNumericField>
+        <MudField Label="°C" Variant="Variant.Filled"></MudField>
+    </MudStack>
+
+    <MudStack Row="true" AlignItems="AlignItems.Center">
+        <MudField Label="Farenheit" Variant="Variant.Filled"></MudField>
+        <MudNumericField Value="_valueF" ValueChanged="(double newValue) => ConvertTemp(newValue, 'f')" Immediate="true"></MudNumericField>
+        <MudField Label="°F" Variant="Variant.Filled"></MudField>
+    </MudStack>
+
+    <MudStack Row="true" AlignItems="AlignItems.Center">
+        <MudField Label="Rankine" Variant="Variant.Filled"></MudField>
+        <MudNumericField Value="_valueR" ValueChanged="(double newValue) => ConvertTemp(newValue, 'r')" Immediate="true"></MudNumericField>
+        <MudField Label="°R" Variant="Variant.Filled"></MudField>
+    </MudStack>
+
+    <MudStack Row="true" AlignItems="AlignItems.Center">
+        <MudField Label="Delisle" Variant="Variant.Filled"></MudField>
+        <MudNumericField Value="_valueD" ValueChanged="(double newValue) => ConvertTemp(newValue, 'd')" Immediate="true"></MudNumericField>
+        <MudField Label="°De" Variant="Variant.Filled"></MudField>
+    </MudStack>
+
+    <MudStack Row="true" AlignItems="AlignItems.Center">
+        <MudField Label="Newton" Variant="Variant.Filled"></MudField>
+        <MudNumericField Value="_valueN" ValueChanged="(double newValue) => ConvertTemp(newValue, 'n')" Immediate="true"></MudNumericField>
+        <MudField Label="°N" Variant="Variant.Filled"></MudField>
+    </MudStack>
+
+</MudStack>
+@code
+{
+    private double _valueK;
+    private double _valueC;
+    private double _valueF;
+    private double _valueR;
+    private double _valueD;
+    private double _valueN;
+
+    private async void ConvertTemp(double newValue, char type)
+    {
+        Console.WriteLine(Config.apiEndPoint);
+        var response = await HttpClient.PostAsJsonAsync(
+            Config.apiEndPoint + "/ConvertTemperature/converttemp", new Request()
+            {
+                value = newValue.ToString(),
+                type = type.ToString()
+            });
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseData = await response.Content.ReadFromJsonAsync<Response>();
+            Console.WriteLine("Response: " + responseData);
+            _valueK = Math.Round(Convert.ToDouble(responseData.valueK), 2);
+            _valueC = Math.Round(Convert.ToDouble(responseData.valueC), 2);
+            _valueF = Math.Round(Convert.ToDouble(responseData.valueF), 2);
+            _valueR = Math.Round(Convert.ToDouble(responseData.valueR), 2);
+            _valueD = Math.Round(Convert.ToDouble(responseData.valueD), 2);
+            _valueN = Math.Round(Convert.ToDouble(responseData.valueN), 2);
+            StateHasChanged();
+        }
+        else
+        {
+            Console.WriteLine("Error: " + response.StatusCode);
+        }
+    }
+}
