@@ -3,8 +3,11 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using MudBlazor.Services;
 using SoftwareDesignProject.Client;
+using SoftwareDesignProject.Client.Services;
 using SoftwareDesignProject.Components;
 using SoftwareDesignProject.Services;
+using PluginListLoader = SoftwareDesignProject.Services.PluginListLoader;
+using PublishPlugin = SoftwareDesignProject.Services.PublishPlugin;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +23,8 @@ builder.Services.AddRazorComponents()
 // Add empty service to prevent exception when force refresh page as SSR  
 builder.Services.AddSingleton<IDynamicPageLoader, SSRDynamicPageLoader>();
 builder.Services.AddSingleton<INavMenuLoader, SSRNavMenuLoader>();
+builder.Services.AddSingleton<IPluginListLoader, PluginListLoader>();
+builder.Services.AddSingleton<IPublishPlugin, PublishPlugin>();
 
 builder.Services.AddSingleton<DynamicPluginManager>();
 builder.Services.AddSingleton<IDynamicServiceProvider, DynamicServiceProvider>();

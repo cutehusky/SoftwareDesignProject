@@ -1,0 +1,61 @@
+﻿@page "/PluginManagement"
+@inject IDialogService Dialog
+@using SoftwareDesignProject.Client.Components
+@using SoftwareDesignProject.Client.Models
+@using SoftwareDesignProject.Client.Services
+@inject IPluginListLoader PluginListLoader
+
+<div class="d-flex align-center justify-lg-space-between mb-6">
+    <h1>Plugins Management</h1>
+    <MudButton Variant="Variant.Outlined" Color="Color.Inherit"
+               OnClick="@(() => OpenDialogAsync(_maxWidth))"> Add </MudButton>
+</div>
+
+<MudTable Items="plugins" Hover="true" SortLabel="Sort By" Elevation="0" AllowUnsorted="false">
+    <HeaderContent>
+        <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<PluginItem, object>(x=>x.Name)">Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<PluginItem, object>(x=>x.Date)">Date</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<PluginItem, object>(x=>x.Description)">Description</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<PluginItem, object>(x=>x.Enabled)">Enabled</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<PluginItem, object>(x=>x.Premium)">Is Premium</MudTableSortLabel></MudTh>
+        <MudTh>Action</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="Date">@context.Date</MudTd>
+        <MudTd DataLabel="Description">@context.Description</MudTd>
+        <MudTd DataLabel="Enabled">
+            <MudCheckBox @bind-Value="@context.Enabled"></MudCheckBox>
+        </MudTd>
+        <MudTd DataLabel="Is Premium">
+            <MudCheckBox @bind-Value="@context.Premium"></MudCheckBox>
+        </MudTd>
+        <MudTd DataLabel="Action">
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => Delete(context.Name)" aria-label="delete" />
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new int[]{50, 100}" />
+    </PagerContent>
+</MudTable>
+@code {
+    private List<PluginItem> plugins = new();
+    protected async override Task OnInitializedAsync()
+    {
+        var items = await PluginListLoader.GetItem();
+        if (items != null)
+            plugins = items;
+    }
+
+    private void Delete(string id)
+    {
+        Console.WriteLine($"deleting : {id}");
+    }
+    
+    private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+    private Task OpenDialogAsync(DialogOptions options)
+    {
+        return Dialog.ShowAsync<AddPluginDialog>("Add Plugin", options);
+    }
+}

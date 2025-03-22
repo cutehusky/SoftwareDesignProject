@@ -13,6 +13,11 @@ builder.Services.AddScoped<IDynamicPageLoader>(sp =>
     new CSRDynamicPageLoader(sp.GetService<HttpClient>()!));
 builder.Services.AddScoped<INavMenuLoader>(sp =>
     new CSRNavMenuLoader(sp.GetService<HttpClient>()!, "api/plugins/GetList"));
+builder.Services.AddScoped<IPluginListLoader>(sp =>
+    new PluginListLoader(sp.GetService<HttpClient>()!, "api/plugins/GetListAdmin"));
+builder.Services.AddScoped<IPublishPlugin>(sp =>
+    new PublishPlugin(sp.GetService<HttpClient>()!, "api/plugins/Add"));
+
 builder.Services.AddMudServices();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
