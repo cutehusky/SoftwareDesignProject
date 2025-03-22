@@ -3,7 +3,7 @@
 public class HashRequest
 {
     public string value { get; set; }
-    public int salt { get; set; }
+    public int costFactor { get; set; }
 }
 
 public class VerifyRequest

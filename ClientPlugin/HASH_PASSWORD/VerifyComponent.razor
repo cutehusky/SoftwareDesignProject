@@ -1,0 +1,73 @@
+﻿@using MudBlazor
+@using System.Net.Http.Json
+@inject HttpClient HttpClient
+
+<h1>Verifying Password</h1>
+
+<MudTextField Class="my-6" @bind-Value="_inputVerify" Label="Raw" Variant="Variant.Outlined"></MudTextField>
+
+<MudTextField Class="my-6" @bind-Value="_inputHashed" Label="Hashed" Variant="Variant.Outlined"></MudTextField>
+
+<MudAlert Severity="@_alertSeverity" Class="mb-3">
+    @_alertText
+</MudAlert>
+
+<MudButton Color="Color.Inherit" Variant="Variant.Outlined" Size="Size.Large" OnClick="Verify">Verify</MudButton>
+
+@code
+{
+    private string _inputVerify = "";
+    private string _inputHashed = "";
+    
+    private Severity _alertSeverity = Severity.Info;
+    private string _alertText = "Do They Match?";
+    
+    
+
+    private async void Verify()
+    {
+        if (_inputHashed.Length == 0 || _inputVerify.Length == 0)
+        {
+            _alertText = "Empty input";
+            _alertSeverity = Severity.Error;
+            StateHasChanged();
+            return;
+        }
+
+        var response = await HttpClient.PostAsJsonAsync(
+            Config.apiEndPoint + "/Hash/verify", new VerifyRequest()
+            {
+                value = _inputVerify,
+                hashed = _inputHashed
+            });
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseData = await response.Content.ReadFromJsonAsync<VerifyResponse>();
+            if (responseData != null)
+            {
+                if (responseData.ok)
+                {
+                    _alertText = "Do They Match? Yes";
+                    _alertSeverity = Severity.Success;
+                }
+                else
+                {
+                    _alertText = "Do They Match? No";
+                    _alertSeverity = Severity.Warning;
+                }
+            }
+            else
+            {
+                _alertText = "Error: Unknown error";
+                _alertSeverity = Severity.Error;
+            }
+        }
+        else
+        {
+            _alertText = "Error: " + response.StatusCode;
+            _alertSeverity = Severity.Error;
+        }
+        StateHasChanged();
+    }
+}

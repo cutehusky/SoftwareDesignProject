@@ -1,4 +1,6 @@
 ﻿@page "/signup"
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
 
 <PageTitle>Sign Up</PageTitle>
 
@@ -21,8 +23,6 @@
 </MudContainer>
 
 @code {
-    @inject HttpClient HttpClient
-    @inject NavigationManager NavigationManager
     [Inject] private IDialogService DialogService { get; set; }
 
     private string _username { get; set; } = string.Empty;
