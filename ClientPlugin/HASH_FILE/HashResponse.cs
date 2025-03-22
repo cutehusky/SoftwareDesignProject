@@ -1,4 +1,4 @@
-﻿namespace HASH;
+﻿namespace HASH_FILE;
 
 public class HashResponse
 {

@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace HASH_MD5;
+namespace HASH;
 
 public class HashService
 {

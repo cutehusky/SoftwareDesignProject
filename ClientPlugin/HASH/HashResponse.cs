@@ -1,4 +1,4 @@
-﻿namespace HASH_MD5;
+﻿namespace HASH;
 
 public class HashResponse
 {

@@ -1,7 +1,7 @@
 ﻿using BackendPluginTemplate;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HASH_MD5;
+namespace HASH;
 
 [ApiController]
 [Route("[controller]")]

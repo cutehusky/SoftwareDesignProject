@@ -13,17 +13,17 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.14" />
-    <PackageReference Include="MudBlazor" Version="8.4.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
+    <PackageReference Include="MudBlazor" Version="8.3.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="ClientPluginTemplate">
       <HintPath>..\..\ClientPluginTemplate\bin\Debug\net8.0\ClientPluginTemplate.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>
