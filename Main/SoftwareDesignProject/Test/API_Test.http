@@ -1,0 +1,26 @@
+POST http://localhost:5037/api/plugin/b33c175c-94a9-4d92-b6f8-b56c6ad450b3/hash/Verify
+Content-Type: application/json
+
+{
+  "value": "hello",
+  "hashed": "$2a$10$a5Pr3EUAU8LKqPY6vNHQROLa/v9meSfS3rCd4lFOh8umfbvAKk9Pi"
+}
+
+###
+
+
+###
+GET http://localhost:5037/api/load
+Accept: application/json
+
+###
+POST http://localhost:5037/api/plugin/b33c175c-94a9-4d92-b6f8-b56c6ad450b3/hash/hash
+Content-Type: application/json
+
+{
+  "value": "hello",
+  "salt": 10
+}
+
+###
+

@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CONVERT_TEMPERATURE", "CONV
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HASH_FILE", "HASH_FILE\HASH_FILE.csproj", "{13309FDE-EBDC-445B-BC2D-616B1966F888}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HASH_PASSWORD", "HASH_PASSWORD\HASH_PASSWORD.csproj", "{6DA3E616-14B8-424C-B7E1-0575687DC339}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{13309FDE-EBDC-445B-BC2D-616B1966F888}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13309FDE-EBDC-445B-BC2D-616B1966F888}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13309FDE-EBDC-445B-BC2D-616B1966F888}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DA3E616-14B8-424C-B7E1-0575687DC339}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DA3E616-14B8-424C-B7E1-0575687DC339}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DA3E616-14B8-424C-B7E1-0575687DC339}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DA3E616-14B8-424C-B7E1-0575687DC339}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,185 @@
+﻿@using System.Net.Http.Json
+@using Microsoft.JSInterop
+@using MudBlazor
+@inject HttpClient HttpClient
+@inject IJSRuntime JS
+
+<MudStack Row="true">
+    <MudPaper Class="pa-3" Width="50%">
+
+        <h1>Hashing Password</h1>
+
+        <h2 class="my-6">Input</h2>
+
+        <MudTextField Class="my-6" @bind-Value="_inputHash" Label="Input" Variant="Variant.Outlined"></MudTextField>
+        <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
+            <MudNumericField @bind-Value="_salt" Label="Salt" Variant="Variant.Outlined" Min="4" Max="31" />
+            <MudButton Color="Color.Inherit" Variant="Variant.Outlined" Size="Size.Large" OnClick="Hash">Get</MudButton>
+        </div>
+
+        <MudDivider DividerType="DividerType.Middle" Class="my-6"/>
+
+        <h2 class="my-6">Result</h2>
+
+        <MudAlert Severity="Severity.Error" Class="mb-3" Style="@_alertStyle">
+            @_alertText
+        </MudAlert>
+
+        <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
+            <MudTextField class="my-6" @bind-Value="_outputBcryptHash" Label="Hashed" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
+            <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
+                <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputBcryptHash)" />
+            </MudTooltip>
+        </div>
+    </MudPaper>
+    <MudPaper Class="pa-3" Width="50%">
+        <h1>Verifying Password</h1>
+        <h2 class="my-6">Input</h2>
+
+        <MudTextField Class="my-6" @bind-Value="_inputVerify" Label="Raw" Variant="Variant.Outlined"></MudTextField>
+
+        <MudTextField Class="my-6" @bind-Value="_inputHashed" Label="Hashed" Variant="Variant.Outlined"></MudTextField>
+
+        <MudButton Color="Color.Inherit" Variant="Variant.Outlined" Size="Size.Large" OnClick="Verify">Verify</MudButton>
+
+        <MudDivider DividerType="DividerType.Middle" Class="my-6"/>
+
+        <h2 class="my-6">Result</h2>
+
+        <MudAlert Severity="@_alert2Severity" Class="mb-3">
+            @_alertText2
+        </MudAlert>
+    </MudPaper>
+</MudStack>
+
+@code
+{
+    
+    private string _inputHash = "";
+    private int _salt = 10;
+    private string _outputBcryptHash = "";
+    
+    private string _inputVerify = "";
+    private string _inputHashed = "";
+    
+    private bool _showCopyToolTip = false;
+    
+    private bool _showAlert = false;
+    private string _alertStyle => _showAlert ? "display: block;" : "display: none;";
+    private string _alertText = "";
+    
+    private Severity _alert2Severity = Severity.Info;
+    private string _alertText2 = "Input raw and hashed string to verify";
+
+    private async Task CopyToClipboard(string textToCopy)
+    {
+        if (textToCopy.Length > 0)
+            await JS.InvokeVoidAsync("copyToClipboard", textToCopy);
+    }
+
+    private async void Verify()
+    {
+        if (_inputHashed.Length == 0 || _inputVerify.Length == 0)
+        {
+            _alertText2 = "Empty input";
+            _alert2Severity = Severity.Error;
+            StateHasChanged();
+            return;
+        }
+
+        var response = await HttpClient.PostAsJsonAsync(
+            Config.apiEndPoint + "/Hash/verify", new VerifyRequest()
+            {
+                value = _inputVerify,
+                hashed = _inputHashed
+            });
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseData = await response.Content.ReadFromJsonAsync<VerifyResponse>();
+            if (responseData != null)
+            {
+                if (responseData.ok)
+                {
+                    _alertText2 = "Do They Match? Yes";
+                    _alert2Severity = Severity.Success;
+                }
+                else
+                {
+                    _alertText2 = "Do They Match? No";
+                    _alert2Severity = Severity.Warning;
+                }
+            }
+            else
+            {
+                _alertText2 = "Error: Unknown error";
+                _alert2Severity = Severity.Error;
+            }
+        }
+        else
+        {
+            _alertText2 = "Error: " + response.StatusCode;
+            _alert2Severity = Severity.Error;
+        }
+
+        StateHasChanged();
+    }
+    
+    private async void Hash()
+    {
+        Console.WriteLine(_inputHash);
+        Console.WriteLine(_salt);
+        Console.WriteLine(Config.apiEndPoint);
+        
+        if (_inputHash.Length == 0)
+        {
+            _alertText = "Empty input";
+            ResetHash();
+            StateHasChanged();
+            return;
+        }
+
+        var response = await HttpClient.PostAsJsonAsync(
+            Config.apiEndPoint + "/Hash/hash", new HashRequest()
+            {
+                value = _inputHash,
+                salt = _salt
+            });
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseData = await response.Content.ReadFromJsonAsync<HashResponse>();
+            if (responseData != null)
+            {
+                _alertText = "";
+                SetData(responseData);
+            }
+            else
+            {
+                _alertText = "Error: Unknown error";
+                ResetHash();
+            }
+        }
+        else
+        {
+            _alertText = "Error: " + response.StatusCode;
+            ResetHash();
+        }
+        
+        StateHasChanged();
+    }
+    
+    private void SetData(HashResponse responseData)
+    {
+        _outputBcryptHash = responseData.hashed;
+        _showAlert = false;
+        _showCopyToolTip = true;
+    }
+
+    private void ResetHash()
+    {
+        _showAlert = true;
+        _showCopyToolTip = false;
+        _outputBcryptHash = "";
+    }
+}
