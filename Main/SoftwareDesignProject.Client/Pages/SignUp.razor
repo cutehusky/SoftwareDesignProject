@@ -5,28 +5,55 @@
 <MudContainer Class="pa-4">
     <MudText Typo="Typo.h3" GutterBottom="true">Sign Up</MudText>
 
-    <MudTextField Label="Username" @bind-Value="Username" Variant="Variant.Outlined" Adornment="Adornment.Start">
+    <MudTextField Label="Username" @bind-Value="_username" Variant="Variant.Outlined" Adornment="Adornment.Start">
     </MudTextField>
 
-    <MudTextField Label="Password" @bind-Value="Password" Variant="Variant.Outlined" Adornment="Adornment.Start" Type="password">
+    <MudTextField Label="Password" @bind-Value="_password" Variant="Variant.Outlined" Adornment="Adornment.Start" Type="password">
     </MudTextField>
 
-    <MudTextField Label="Confirm Password" @bind-Value="ConfirmPassword" Variant="Variant.Outlined" Adornment="Adornment.Start" Type="password">
-	</MudTextField>
+    <MudTextField Label="Confirm Password" @bind-Value="_confirmpassword" Variant="Variant.Outlined" Adornment="Adornment.Start" Type="password">
+    </MudTextField>
 
-    <MudStack Spacing="2">
+    <MudStack Spacing="2" AlignItems="AlignItems.Center">
         <MudButton OnClick="HandleSignUp" Variant="Variant.Outlined" FullWidth="true">Sign Up</MudButton>
+        <MudLink href="/signin">Already have an account? Sign in</MudLink>
     </MudStack>
 </MudContainer>
 
 @code {
-    private string Username { get; set; } = string.Empty;
-    private string Password { get; set; } = string.Empty;
-	private string ConfirmPassword { get; set; } = string.Empty;
+    @inject HttpClient HttpClient
+    @inject NavigationManager NavigationManager
+    [Inject] private IDialogService DialogService { get; set; }
+
+    private string _username { get; set; } = string.Empty;
+    private string _password { get; set; } = string.Empty;
+    private string _confirmpassword { get; set; } = string.Empty;
 
 
-    private void HandleSignUp()
+    private async Task HandleSignUp()
     {
-        // Handle sign-up logic here
+        if (_password != _confirmpassword)
+        {
+            await DialogService.ShowMessageBox("Error", "Passwords do not match");
+            StateHasChanged();
+            return;
+		}
+
+        var response = await HttpClient.PostAsJsonAsync("api/auth/signup", new
+        {
+            username = _username,
+            password = _password
+        });
+
+        if (response.IsSuccessStatusCode)
+        {
+            await DialogService.ShowMessageBox("Success", "Account created successfully");
+            StateHasChanged();
+            NavigationManager.NavigateTo("/signin");
+        }
+        else
+        {
+            Console.WriteLine("Failed to login", response);
+        }
     }
 }
