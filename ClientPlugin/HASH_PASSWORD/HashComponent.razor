@@ -1,0 +1,101 @@
+﻿@using System.Net.Http.Json
+@using Microsoft.JSInterop
+@using MudBlazor
+@inject HttpClient HttpClient
+@inject IJSRuntime JS
+
+<h1>Hashing Password</h1>
+
+
+<MudTextField Class="my-6" @bind-Value="_inputHash" Label="Input" Variant="Variant.Outlined"></MudTextField>
+<div class="d-flex flex-grow-1 gap-4 justify-center align-center">
+    <MudNumericField @bind-Value="_costFactor" Label="Cost Factor" Variant="Variant.Outlined" Min="4" Max="31" />
+    <MudButton Color="Color.Inherit" Variant="Variant.Outlined" Size="Size.Large" OnClick="Hash">Get</MudButton>
+</div>
+
+<MudDivider DividerType="DividerType.Middle" Class="my-6"/>
+
+<MudAlert Severity="Severity.Error" Class="mb-3" Style="@AlertStyle">
+    @_alertText
+</MudAlert>
+
+<div class="d-flex flex-grow-1 gap-4 justify-center align-center">
+    <MudTextField class="my-6" @bind-Value="_outputBcryptHash" Label="Hashed" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
+    <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
+        <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputBcryptHash)" />
+    </MudTooltip>
+</div>
+
+@code {
+    
+    private string _inputHash = "";
+    private int _costFactor = 10;
+    private string _outputBcryptHash = "";
+    private bool _showCopyToolTip = false;
+    
+    private bool _showAlert = false;
+    private string AlertStyle => _showAlert ? "display: block;" : "display: none;";
+    private string _alertText = "";
+    
+    private async Task CopyToClipboard(string textToCopy)
+    {
+        if (textToCopy.Length > 0)
+            await JS.InvokeVoidAsync("copyToClipboard", textToCopy);
+    }
+    
+    private async void Hash()
+    {
+        Console.WriteLine(_inputHash);
+        Console.WriteLine(_costFactor);
+        Console.WriteLine(Config.apiEndPoint);
+        
+        if (_inputHash.Length == 0)
+        {
+            SetError("Empty input");
+            StateHasChanged();
+            return;
+        }
+
+        var response = await HttpClient.PostAsJsonAsync(
+            Config.apiEndPoint + "/Hash/hash", new HashRequest()
+            {
+                value = _inputHash,
+                costFactor = _costFactor
+            });
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseData = await response.Content.ReadFromJsonAsync<HashResponse>();
+            if (responseData != null)
+            {
+                SetData(responseData);
+            }
+            else
+            {
+                SetError("Error: Unknown error");
+            }
+        }
+        else
+        {
+            SetError("Error: " + response.StatusCode);
+        }
+        
+        StateHasChanged();
+    }
+    
+    private void SetData(HashResponse responseData)
+    {
+        _outputBcryptHash = responseData.hashed;
+        _showCopyToolTip = true;
+        _showAlert = false;
+        _alertText = "";
+    }
+
+    private void SetError(string error)
+    {
+        _alertText = error;
+        _showAlert = true;
+        _showCopyToolTip = false;
+        _outputBcryptHash = "";
+    }
+}

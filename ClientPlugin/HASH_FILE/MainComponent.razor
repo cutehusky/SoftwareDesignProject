@@ -7,11 +7,9 @@
 
 <h1>Hashing File</h1>
 
-<h2 class="my-6">Input</h2>
-
-<div class="d-flex flex-grow-1 gap-4 justify-center align-center">
+<div id="target" class="my-6 d-flex flex-grow-1 gap-4 justify-center align-center">
     <MudSelect T="string" Variant="Variant.Outlined" Label="Select Type" @bind-SelectedValues="_selectedType">
-        @foreach (var type in types)
+        @foreach (var type in Types)
         {
             <MudSelectItem Value="type">@type</MudSelectItem>
         }
@@ -28,65 +26,63 @@
     </MudFileUpload>
 </div>
 
-<MudDivider id="target" DividerType="DividerType.Middle" Class="my-6"/>
+<MudDivider DividerType="DividerType.Middle" Class="my-6"/>
 
-<h2 class="my-6">Result</h2>
-
-<MudAlert Severity="Severity.Error" Class="mb-3" Style="@_alertStyle">
+<MudAlert Severity="Severity.Error" Class="mb-3" Style="@AlertStyle">
     @_alertText
 </MudAlert>
 
 <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
-    <MudTextField class="my-6" @bind-Value="_outputMD5Hash" Label="MD5" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
+    <MudTextField class="my-3" @bind-Value="_outputMD5Hash" Label="MD5" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
     <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
         <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputMD5Hash)" />
     </MudTooltip>
 </div>
 
 <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
-    <MudTextField class="my-6" @bind-Value="_outputSHA1Hash" Label="SHA1" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
+    <MudTextField class="my-3" @bind-Value="_outputSHA1Hash" Label="SHA1" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
     <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
         <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA1Hash)"/>
     </MudTooltip>
 </div>
 
 <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
-    <MudTextField class="my-6" @bind-Value="_outputSHA256Hash" Label="SHA256" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
+    <MudTextField class="my-3" @bind-Value="_outputSHA256Hash" Label="SHA256" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
     <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
         <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA256Hash)"/>
     </MudTooltip>
 </div>
 
 <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
-    <MudTextField class="my-6" @bind-Value="_outputSHA384Hash" Label="SHA384" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
+    <MudTextField class="my-3" @bind-Value="_outputSHA384Hash" Label="SHA384" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
     <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
         <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA384Hash)"/>
     </MudTooltip>
 </div>
 
 <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
-    <MudTextField class="my-6" @bind-Value="_outputSHA512Hash" Label="SHA512" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
+    <MudTextField class="my-3" @bind-Value="_outputSHA512Hash" Label="SHA512" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
     <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
         <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA512Hash)"/>
     </MudTooltip>
 </div>
 
 <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
-    <MudTextField class="my-6" @bind-Value="_outputSHA3_256Hash" Label="SHA3-256" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
+    <MudTextField class="my-3" @bind-Value="_outputSHA3_256Hash" Label="SHA3-256" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
     <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
         <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA3_256Hash)"/>
     </MudTooltip>
 </div>
 
 <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
-    <MudTextField class="my-6" @bind-Value="_outputSHA3_384Hash" Label="SHA3-384" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
+    <MudTextField class="my-3" @bind-Value="_outputSHA3_384Hash" Label="SHA3-384" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
     <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
         <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA3_384Hash)"/>
     </MudTooltip>
 </div>
 
 <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
-    <MudTextField class="my-6" @bind-Value="_outputSHA3_512Hash" Label="SHA3-512" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
+    <MudTextField class="my-3" @bind-Value="_outputSHA3_512Hash" Label="SHA3-512" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
     <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
         <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA3_512Hash)"/>
     </MudTooltip>
@@ -94,8 +90,8 @@
 
 @code
 {
-    private static List<string> types = new List<string>() { "Bin", "Hex", "Base64", "Base64url" };
-    private IEnumerable<string> _selectedType = new List<string>() {types[1] };
+    private static readonly List<string> Types = new() { "Bin", "Hex", "Base64", "Base64url" };
+    private IEnumerable<string> _selectedType = new List<string>() {Types[1] };
     
     private string _inputHash = "";
     private string _outputMD5Hash = "";
@@ -108,9 +104,9 @@
     private string _outputSHA3_512Hash = "";
     private bool _showAlert = false;
     private bool _showCopyToolTip = false;
-    private string _alertStyle => _showAlert ? "display: block;" : "display: none;";
+    private string AlertStyle => _showAlert ? "display: block;" : "display: none;";
     private string _alertText = "";
-    private bool scrollTo = false;
+    private bool _scrollTo = false;
 
     private async void OnFilesChanged(IBrowserFile? file)
     {
@@ -126,7 +122,8 @@
         
         var fileStream = file.OpenReadStream(file.Size + 1);
         var content = new StreamContent(fileStream);
-        content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+        string contentType = string.IsNullOrWhiteSpace(file.ContentType) ? "application/octet-stream" : file.ContentType;
+        content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
 
         var multipartContent = new MultipartFormDataContent();
         multipartContent.Add(content, "file", file.Name);
@@ -139,22 +136,19 @@
             var responseData = await response.Content.ReadFromJsonAsync<HashResponse>();
             if (responseData != null)
             {
-                _alertText = "";
                 SetData(responseData);
             }
             else
             {
-                _alertText = "Error: Unknown error";
-                Reset();
+                SetError("Error: Unknown error");
             }
         }
         else
         {
-            _alertText = "Error: " + response.StatusCode;
-            Reset();
+            SetError("Error: " + response.StatusCode);
         }
         
-        scrollTo = true;
+        _scrollTo = true;
         StateHasChanged();
     }
 
@@ -171,9 +165,9 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (scrollTo)
+        if (_scrollTo)
         {
-            scrollTo = false;
+            _scrollTo = false;
             await ScrollToTarget();
         }
     }
@@ -190,10 +184,12 @@
         _outputSHA3_512Hash = responseData.hashSHA3_512;
         _showAlert = false;
         _showCopyToolTip = true;
+        _alertText = "";
     }
 
-    private void Reset()
+    private void SetError(string error)
     {
+        _alertText = error;
         _showAlert = true;
         _showCopyToolTip = false;
         _outputMD5Hash = "";

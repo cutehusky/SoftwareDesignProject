@@ -1,0 +1,93 @@
+﻿@using SoftwareDesignProject.Client.Models
+@using SoftwareDesignProject.Client.Services
+@inject IPublishPlugin PublishPlugin
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="_name" Label="Name" Variant="Variant.Outlined" Lines="1" ></MudTextField>
+       
+        <MudTextField class="my-6" @bind-Value="_description" Label="Description" Variant="Variant.Outlined" Lines="5" ></MudTextField>
+        
+        <MudCheckBox Label="Is Premium" @bind-Value="_isPremium"/>
+
+        <MudDivider DividerType="DividerType.Middle" Class="my-3"/>
+        
+        <div class="my-6 d-flex align-center">
+            <MudFileUpload T="IBrowserFile" FilesChanged="OnClientDLLFileChanged">
+                <ActivatorContent>
+                    <MudButton Color="Color.Inherit" Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.CloudUpload">
+                        Upload Client DLL
+                    </MudButton>
+                </ActivatorContent>
+            </MudFileUpload>
+            <div class="mx-6">
+                <MudText>@_clientDLLName</MudText>
+            </div>
+        </div>
+        
+        <div class="my-6 d-flex align-center">
+            <MudFileUpload T="IBrowserFile" FilesChanged="OnServerDLLFileChanged">
+                <ActivatorContent>
+                    <MudButton Color="Color.Inherit" Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.CloudUpload">
+                        Upload Server DLL
+                    </MudButton>
+                </ActivatorContent>
+            </MudFileUpload>
+            <div class="mx-6">
+                <MudText>@_serverDLLName</MudText>
+            </div>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    private string _name;
+    private string _description;
+    private bool _isPremium = false;
+    private IBrowserFile _clientDLL;
+    private IBrowserFile _serverDLL;
+    private string _clientDLLName;
+    private string _serverDLLName;
+
+    private async void Submit()
+    {
+        await PublishPlugin.Submit(new PluginUploadData()
+        {
+            Name = _name,
+            Description = _description,
+            IsPremium = _isPremium,
+            ClientDLL = _clientDLL,
+            ServerDLL = _serverDLL
+        });
+        MudDialog.Close(DialogResult.Ok(true));
+    } 
+
+    private void Cancel() => MudDialog.Cancel();
+
+    public void OnClientDLLFileChanged(IBrowserFile? file)
+    {
+        if (file != null)
+        {
+            _clientDLL = file;
+            _clientDLLName = file.Name;
+        }
+    }
+    
+    public void OnServerDLLFileChanged(IBrowserFile? file)
+    {
+        if (file != null)
+        {
+            _serverDLL = file;
+            _serverDLLName = file.Name;
+        }
+    }
+}

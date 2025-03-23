@@ -22,7 +22,7 @@ public class HashController: ControllerBase
         // Console.WriteLine(request.value);
         return Ok(new HashResponse()
         {
-            hashed = hashService.HashPassword(request.value, request.salt),
+            hashed = hashService.HashPassword(request.value, request.costFactor),
         }); 
     }
 

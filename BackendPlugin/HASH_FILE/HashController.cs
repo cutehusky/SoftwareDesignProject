@@ -23,6 +23,7 @@ public class HashController: ControllerBase
             return BadRequest("No file uploaded");
 
         var fileStream = file.OpenReadStream();
+        Console.WriteLine(fileStream.Length);
         
         var hashService = _sp.GetService<HashService>()!;
 
