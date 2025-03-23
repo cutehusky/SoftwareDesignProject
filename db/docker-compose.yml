@@ -1,19 +1,13 @@
 version: '3.8'
 services:
-  db:
-    image: postgres:16
-    container_name: db
+  DevToolsDB:
+    image: postgres:latest
+    container_name: postgres_db
     restart: always
     environment:
-      POSTGRES_HOST=db_1
-      POSTGRES_PORT=5432
-      POSTGRES_DB=devutils
-      POSTGRES_USER=postgres
-      POSTGRES_PASSWORD=1234
-    volumes:
-      - pg_data:/var/lib/postgresql/data
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: devutils
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "1234"
     ports:
       - "5432:5432"
-
-volumes:
-  pg_data:
