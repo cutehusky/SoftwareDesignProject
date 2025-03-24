@@ -1,0 +1,100 @@
+﻿@using System.Net.Http.Json
+@using MudBlazor
+@inject HttpClient HttpClient
+<h1>Parse Url</h1>
+<MudStack>
+    <MudTextField Value="_value" Label="Your URL..." Variant="Variant.Outlined" Lines="1" ValueChanged="(string newVal) => ParseStr(newVal)" Immediate="true" />
+    <MudStack Row="true">
+        <label for="protocol">Protocol</label>
+        <MudTextField Lines="1" ReadOnly="true" @bind-Value="_protocol"></MudTextField>
+    </MudStack>
+
+    <MudStack Row="true">
+        <label for="username">Username</label>
+        <MudTextField id="username" Lines="1" ReadOnly="true" @bind-Value="_username"></MudTextField>
+    </MudStack>
+
+    <MudStack Row="true">
+        <label for="password">Password</label>
+        <MudTextField id="password" Lines="1" ReadOnly="true" @bind-Value="_password"></MudTextField>
+    </MudStack>
+
+    <MudStack Row="true">
+        <label for="hostname">Hostname</label>
+        <MudTextField id="hostname" Lines="1" ReadOnly="true" @bind-Value="_hostname"></MudTextField>
+    </MudStack>
+
+    <MudStack Row="true">
+        <label for="port">Port</label>
+        <MudTextField id="port" Lines="1" ReadOnly="true" @bind-Value="_port"></MudTextField>
+    </MudStack>
+
+    <MudStack Row="true">
+        <label for="path">Path</label>
+        <MudTextField id="path" Lines="1" ReadOnly="true" @bind-Value="_path"></MudTextField>
+    </MudStack>
+
+    <MudStack Row="true">
+        <label for="params">Params</label>
+        <MudTextField id="params" Lines="1" ReadOnly="true" @bind-Value="_params"></MudTextField>
+    </MudStack>
+</MudStack>
+@code
+{
+    private string _value { get; set; } = String.Empty;
+    private string _protocol { get; set; } = String.Empty;
+    private string _username { get; set; } = String.Empty;
+    private string _password { get; set; } = String.Empty;
+    private string _hostname { get; set; } = String.Empty;
+    private string _port { get; set; } = String.Empty;
+    private string _path { get; set; } = String.Empty;
+    private string _params { get; set; } = String.Empty;
+
+
+    private void ParseStr(string newVal)
+    {
+        // Example Url: https://me:pwd@it-tools.tech:3000/url-parser?key1=value&key2=value2#the-hash
+
+        // Protocol -> https:
+
+        // Username -> me
+
+        // Password -> pwd
+
+        // Hostname -> it-tools.tech
+
+        // Port -> 3000
+
+        // Path -> /url-parser
+
+        // Params -> key1=value&key2=value2
+
+        try
+        {
+            var url = new Uri(newVal);
+
+            _protocol = url.Scheme + ":";
+            _username = url.UserInfo.Split(":")[0];
+            _password = url.UserInfo.Split(":")[1];
+            _hostname = url.Host;
+            _port = url.Port.ToString();
+            _path = url.AbsolutePath;
+            _params = url.Query;
+
+            StateHasChanged();
+        }
+		catch (Exception e)
+		{
+            _protocol = "";
+            _username = "";
+            _password = "";
+            _hostname = "";
+            _port = "";
+            _path = "";
+            _params = "";
+			StateHasChanged();
+		}
+    
+    }
+
+}
