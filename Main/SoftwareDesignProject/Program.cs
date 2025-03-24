@@ -1,11 +1,14 @@
 using BackendPluginTemplate;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.IdentityModel.Tokens;
 using MudBlazor.Services;
 using SoftwareDesignProject.Client;
 using SoftwareDesignProject.Client.Services;
 using SoftwareDesignProject.Components;
 using SoftwareDesignProject.Services;
+using System.Text;
 using PluginListLoader = SoftwareDesignProject.Services.PluginListLoader;
 using PublishPlugin = SoftwareDesignProject.Services.PublishPlugin;
 
@@ -43,10 +46,36 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSingleton<IActionDescriptorChangeProvider, ActionDescriptorChangeProvider>();
 
-builder.Services.AddScoped(sp => 
+builder.Services.AddScoped(sp =>
     new HttpClient { BaseAddress = new Uri("http://localhost:5037/") });
 
 builder.Services.AddSingleton<DynamicRouteTransformer>();
+
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
+});
+
+builder.Services.AddAuthorization();
+
 
 var app = builder.Build();
 
@@ -68,7 +97,7 @@ app.UseSession();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
-app.MapControllers(); 
+app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()

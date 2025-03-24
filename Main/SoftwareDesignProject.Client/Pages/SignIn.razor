@@ -32,24 +32,22 @@
 
     private async Task Login()
     {
-        // var response = await HttpClient.PostAsJsonAsync("api/auth/signin", new { 
-        //     username = _username, 
-        //     password = _password 
-        // });
+        var response = await HttpClient.PostAsJsonAsync("api/auth/signin", new { 
+            Username = _username, 
+            Password = _password 
+        });
 
-        if (true)
+        if (response.IsSuccessStatusCode)
         {
-            var result = new JwtResponse { Token = "eyJhbGciOiJIUzI1NiIsInR..." };
-            // var result = await response.Content.ReadFromJsonAsync<JwtResponse>();
+            var result = await response.Content.ReadFromJsonAsync<JwtResponse>();
             var authStateProvider = (CustomAuthStateProvider)AuthStateProvider;
-			await authStateProvider.Login(result.Token);
+            await authStateProvider.Login(result.Token);
             NavigationManager.NavigateTo("/dashboard");
-		}
-		else
-		{
-			Console.WriteLine("Failed to login");
-		}
-        
+        }
+        else
+        {
+            Console.WriteLine("Failed to login", response.StatusCode);
+        };        
     }
 
     private void SignUp()
