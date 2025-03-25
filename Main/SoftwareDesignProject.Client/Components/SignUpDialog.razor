@@ -56,6 +56,8 @@
         else
         {
             Console.WriteLine("Failed to sign up", response);
+            await DialogService.ShowMessageBox("Error", "Failed to create account");
+            StateHasChanged();
         }
     }
 }

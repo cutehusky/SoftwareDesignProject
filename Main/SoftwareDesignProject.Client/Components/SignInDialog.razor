@@ -15,15 +15,12 @@
         </MudTextField>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Login" Variant="Variant.Filled" FullWidth="true">Login</MudButton>
-        <MudButton OnClick="SignUp" Variant="Variant.Outlined" FullWidth="true">Sign Up</MudButton>
+        <MudButton OnClick="Login" Variant="Variant.Filled" FullWidth="true">Sign In</MudButton>
     </DialogActions>
 </MudDialog>
 
 @code {
-    [CascadingParameter]
-    private IMudDialogInstance MudDialog { get; set; }
-
+    [Inject] private IDialogService DialogService { get; set; }
     private string _username { get; set; } = string.Empty;
     private string _password { get; set; } = string.Empty;
 
@@ -40,13 +37,15 @@
             var result = await response.Content.ReadFromJsonAsync<JwtResponse>();
             var authStateProvider = (CustomAuthStateProvider)AuthStateProvider;
             await authStateProvider.Login(result.Token);
-            NavigationManager.NavigateTo("/dashboard");
+            await DialogService.ShowMessageBox("Success", "Logged in successfully");
+            StateHasChanged();
         }
         else
         {
             Console.WriteLine("Failed to login", response.StatusCode);
-        }
-        ;
+            await DialogService.ShowMessageBox("Error", "Failed to login");
+            StateHasChanged();
+        };
     }
 
     private void SignUp()
