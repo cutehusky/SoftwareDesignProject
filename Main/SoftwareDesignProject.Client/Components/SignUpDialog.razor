@@ -1,26 +1,28 @@
-﻿@page "/signup"
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using SoftwareDesignProject.Client.Models
+
 @inject HttpClient HttpClient
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthStateProvider
 
-<PageTitle>Sign Up</PageTitle>
+<MudDialog>
+    <DialogContent>
+        <MudTextField Label="Username" @bind-Value="_username" Variant="Variant.Outlined" Adornment="Adornment.Start">
+        </MudTextField>
 
-<MudContainer Class="pa-4">
-    <MudText Typo="Typo.h3" GutterBottom="true">Sign Up</MudText>
+        <MudTextField Label="Password" @bind-Value="_password" Variant="Variant.Outlined" Adornment="Adornment.Start" Type="password" InputType="InputType.Password">
+        </MudTextField>
 
-    <MudTextField Label="Username" @bind-Value="_username" Variant="Variant.Outlined" Adornment="Adornment.Start">
-    </MudTextField>
+        <MudTextField Label="Confirm Password" @bind-Value="_confirmpassword" Variant="Variant.Outlined" Adornment="Adornment.Start" Type="password" InputType="InputType.Password" >
+        </MudTextField>
+    </DialogContent>
+    <DialogActions>
+            <MudButton OnClick="HandleSignUp" Variant="Variant.Outlined" FullWidth="true">Sign Up</MudButton>
+    </DialogActions>
+</MudDialog>
 
-    <MudTextField Label="Password" @bind-Value="_password" Variant="Variant.Outlined" Adornment="Adornment.Start" Type="password">
-    </MudTextField>
 
-    <MudTextField Label="Confirm Password" @bind-Value="_confirmpassword" Variant="Variant.Outlined" Adornment="Adornment.Start" Type="password">
-    </MudTextField>
-
-    <MudStack Spacing="2" AlignItems="AlignItems.Center">
-        <MudButton OnClick="HandleSignUp" Variant="Variant.Outlined" FullWidth="true">Sign Up</MudButton>
-        <MudLink href="/signin">Already have an account? Sign in</MudLink>
-    </MudStack>
-</MudContainer>
 
 @code {
     [Inject] private IDialogService DialogService { get; set; }
@@ -37,7 +39,7 @@
             await DialogService.ShowMessageBox("Error", "Passwords do not match");
             StateHasChanged();
             return;
-		}
+        }
 
         var response = await HttpClient.PostAsJsonAsync("api/auth/signup", new
         {

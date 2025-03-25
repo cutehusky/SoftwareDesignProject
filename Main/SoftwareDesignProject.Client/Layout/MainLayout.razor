@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+﻿@using SoftwareDesignProject.Client.Components
+@inherits LayoutComponentBase
+@inject IDialogService DialogService
 
 <MudThemeProvider Theme="@_theme"  IsDarkMode="_isDarkMode"/>
 <MudPopoverProvider />
@@ -10,7 +12,9 @@
         <MudText Typo="Typo.h5" Class="ml-3">Application</MudText>
         <MudSpacer />
         <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
-        <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+        @* <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" /> *@
+        <MudButton @onclick="OpenSignInDialogAsync">Sign In</MudButton>
+        <MudButton @onclick="OpenSignUpDialogAsync">Sign Up</MudButton>
     </MudAppBar>
     <MudDrawer id="nav-drawer" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
         <NavMenu />
@@ -52,6 +56,18 @@
     private void DarkModeToggle()
     {
         _isDarkMode = !_isDarkMode;
+    }
+
+	private Task OpenSignInDialogAsync()
+	{
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        return DialogService.ShowAsync<SignInDialog>("Sign In", options);
+	}
+
+    private Task OpenSignUpDialogAsync()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        return DialogService.ShowAsync<SignUpDialog>("Sign Up", options);
     }
 
     private readonly PaletteLight _lightPalette = new()
