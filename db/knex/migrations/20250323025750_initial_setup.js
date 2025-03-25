@@ -1,7 +1,8 @@
 exports.up = async function (knex) {
     await knex.raw(`
+        CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
         CREATE TABLE users(  
-            user_id text NOT NULL PRIMARY KEY,
+            user_id text NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
             username text NOT NULL UNIQUE,
             password_hash text NOT NULL,
             status text DEFAULT 'anonymous' CHECK (status IN ('admin', 'premium', 'anonymous')),

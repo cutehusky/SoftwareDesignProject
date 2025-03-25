@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using SoftwareDesignProject.Models;
+using SoftwareDesignProject.Repositories;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -9,22 +11,40 @@ using System.Threading.Tasks;
 public class AuthService : IAuthService
 {
     private readonly IConfiguration _config;
+    private readonly UserRepository _userRepository;
 
-    public AuthService(IConfiguration config)
+    public AuthService(IConfiguration config, UserRepository userRepository)
     {
         _config = config;
+        _userRepository = userRepository;
     }
 
     public async Task<string?> AuthenticateAsync(string username, string password)
     {
-        // Replace this with actual user validation (e.g., database check)
-        if (username == "admin" && password == "password")
+        var user = await _userRepository.GetUserByUsernameAsync(username);
+        Console.WriteLine("User: " + user.password_hash);
+        if (user != null && BCrypt.Net.BCrypt.Verify(password, user.password_hash))
         {
-            return GenerateJwtToken(username);
+            return GenerateJwtToken(user.username);
         }
 
         return null;
     }
+
+
+    public async Task<bool> RegisterAsync(string username, string password)
+    {
+        var existingUser = await _userRepository.GetUserByUsernameAsync(username);
+        if (existingUser != null)
+        {
+            return false;
+        }
+
+        string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
+        var newUser = new User { username = username, password_hash = hashedPassword };
+        return await _userRepository.InsertUserAsync(newUser);
+    }
+
 
     private string GenerateJwtToken(string username)
     {

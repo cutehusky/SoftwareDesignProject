@@ -12,7 +12,22 @@ using System.Text;
 using PluginListLoader = SoftwareDesignProject.Services.PluginListLoader;
 using PublishPlugin = SoftwareDesignProject.Services.PublishPlugin;
 
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using System;
+using System.Data;
+using SoftwareDesignProject.Repositories;
+
+
 var builder = WebApplication.CreateBuilder(args);
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddScoped<IDbConnection>(sp =>
+    new NpgsqlConnection(connectionString)
+);
+
+builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<AuthService>();
 
 // Add MudBlazor services
 builder.Services.AddMudServices();
@@ -75,7 +90,6 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
-
 
 var app = builder.Build();
 
