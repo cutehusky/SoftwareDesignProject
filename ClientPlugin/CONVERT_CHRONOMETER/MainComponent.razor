@@ -1,0 +1,73 @@
+﻿@using System.Diagnostics
+@using Microsoft.JSInterop
+@using MudBlazor
+
+<MudPaper Elevation="4" Class="pa-4 d-flex flex-column align-center">
+    <MudText Typo="Typo.h1">@FormatTime()</MudText>
+    <MudButtonGroup>
+        <MudButton OnClick="StartTimer" Disabled="@_isRunning">Start</MudButton>
+        <MudButton OnClick="PauseTimer" Disabled="@(!_isRunning)">Pause</MudButton>
+        <MudButton OnClick="ResetTimer">Reset</MudButton>
+    </MudButtonGroup>
+</MudPaper>
+
+@code {
+    private Stopwatch _stopwatch = new();
+    private TimeSpan _elapsedTime = TimeSpan.Zero;
+    private bool _isRunning = false;
+    private bool _isCountdown = false;
+    private TimeSpan _countdownTime = TimeSpan.Zero;
+
+    [Parameter] public bool IsCountdown { get; set; } = false;
+    [Parameter] public TimeSpan CountdownTime { get; set; } = TimeSpan.Zero;
+
+    protected override void OnInitialized()
+    {
+        _isCountdown = IsCountdown;
+        _countdownTime = CountdownTime;
+    }
+
+    private async Task StartTimer()
+    {
+        if (_isRunning) return;
+        _isRunning = true;
+
+        if (!_stopwatch.IsRunning)
+        {
+            _stopwatch.Start();
+        }
+
+        while (_isRunning)
+        {
+            _elapsedTime = _isCountdown 
+                ? _countdownTime - _stopwatch.Elapsed 
+                : _stopwatch.Elapsed;
+
+            if (_isCountdown && _elapsedTime.TotalMilliseconds <= 0)
+            {
+                PauseTimer();
+                _elapsedTime = TimeSpan.Zero;
+                break;
+            }
+
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(10); 
+        }
+    }
+
+    private void PauseTimer()
+    {
+        _isRunning = false;
+        _stopwatch.Stop();
+    }
+
+    private void ResetTimer()
+    {
+        _isRunning = false;
+        _stopwatch.Reset();
+        _elapsedTime = _isCountdown ? _countdownTime : TimeSpan.Zero;
+    }
+
+    private string FormatTime() =>
+        $"{_elapsedTime.Minutes:D2}:{_elapsedTime.Seconds:D2}.{_elapsedTime.Milliseconds:D3}";
+}
