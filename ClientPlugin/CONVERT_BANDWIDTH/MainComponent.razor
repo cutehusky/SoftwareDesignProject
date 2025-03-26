@@ -1,0 +1,140 @@
+﻿@using MudBlazor
+@using System.Globalization
+
+<MudPaper Elevation="4" Class="pa-4 ma-4">
+    <MudStack Spacing="3">
+
+        <!-- Unit Converter Section -->
+        <MudText Typo="Typo.h3">Unit Converter</MudText>
+        <MudGrid>
+            <MudItem xs="6">
+                <MudNumericField Label="Value" @bind-Value="_inputValue" Immediate="true" 
+                                         Variant="Variant.Filled" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudSelect Label="Unit" @bind-Value="_selectedUnit" Variant="Variant.Filled" 
+                                   Immediate="true" Dense="true">
+                    @foreach (var unit in _dataUnits.Keys)
+                    {
+                        <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+
+     
+        @foreach (var unit in _dataUnits.Keys)
+        {
+            if (unit != _selectedUnit)
+            {
+                <MudTr>
+                    <MudTd>@unit</MudTd>
+                    <MudTd>@ConvertValue(_inputValue, _selectedUnit, unit).ToString("N3", CultureInfo.InvariantCulture)</MudTd>
+                </MudTr>
+            }
+        }
+       
+  
+
+        <!-- Download Time Calculator Section -->
+        <MudDivider />
+         <MudText Typo="Typo.h3">Download Time Calculator</MudText>
+        <MudGrid>
+            <!-- File Size -->
+            <MudItem xs="6">
+                <MudNumericField Label="File Size" @bind-Value="_fileSize" Immediate="true" 
+                                         Variant="Variant.Filled" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudSelect Label="Unit" @bind-Value="_fileSizeUnit" Variant="Variant.Filled" 
+                                   Immediate="true" Dense="true">
+                    @foreach (var unit in _dataUnits.Keys)
+                    {
+                        <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Download Speed -->
+        <MudGrid>
+            <MudItem xs="6">
+                <MudNumericField Label="Download Speed" @bind-Value="_downloadSpeed" Immediate="true" 
+                                         Variant="Variant.Filled" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudSelect Label="Speed Unit" @bind-Value="_downloadSpeedUnit" Variant="Variant.Filled" 
+                                   Immediate="true" Dense="true">
+                    @foreach (var unit in _speedUnits.Keys)
+                    {
+                        <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Calculate Button -->
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CalculateDownloadTime">
+            Calculate
+        </MudButton>
+
+        <!-- Result -->
+        @if (_downloadTime != null)
+        {
+            <MudTypography Variant="H6">Estimated Time: @_downloadTime</MudTypography>
+        }
+
+    </MudStack>
+</MudPaper>
+
+@code {
+    private double _inputValue = 1;
+    private string _selectedUnit = "MB";
+
+    private double _fileSize = 100;
+    private string _fileSizeUnit = "MB";
+
+    private double _downloadSpeed = 10;
+    private string _downloadSpeedUnit = "Mbps";
+
+    private string? _downloadTime;
+
+    // Data Units in Bytes
+    private readonly Dictionary<string, double> _dataUnits = new()
+    {
+        { "B", 1 },
+        { "KB", 1024 },
+        { "MB", 1024 * 1024 },
+        { "GB", 1024 * 1024 * 1024 },
+        { "TB", 1024L * 1024 * 1024 * 1024 }
+    };
+
+    // Speed Units in bits per second (bps)
+    private readonly Dictionary<string, double> _speedUnits = new()
+    {
+        { "bps", 1 },
+        { "Kbps", 1_000 },
+        { "Mbps", 1_000_000 },
+        { "Gbps", 1_000_000_000 }
+    };
+
+    private double ConvertValue(double value, string fromUnit, string toUnit)
+    {
+        return value * (_dataUnits[fromUnit] / _dataUnits[toUnit]);
+    }
+
+    private void CalculateDownloadTime()
+    {
+        double fileSizeInBits = ConvertValue(_fileSize, _fileSizeUnit, "B") * 8; 
+        double speedInBps = _downloadSpeed * _speedUnits[_downloadSpeedUnit];
+
+        if (speedInBps <= 0)
+        {
+            _downloadTime = "Invalid Speed";
+            return;
+        }
+
+        double seconds = fileSizeInBits / speedInBps;
+        _downloadTime = TimeSpan.FromSeconds(seconds).ToString(@"hh\:mm\:ss");
+    }
+}
