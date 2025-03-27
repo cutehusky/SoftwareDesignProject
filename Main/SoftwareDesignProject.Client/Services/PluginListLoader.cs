@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Json;
+using CommonDTO;
 using SoftwareDesignProject.Client.Models;
 
 namespace SoftwareDesignProject.Client.Services;
@@ -14,9 +15,9 @@ public class PluginListLoader: IPluginListLoader
         _endpoint = endpoint;
     }
     
-    public async Task<List<PluginItem>?> GetItem()
+    public async Task<List<PluginDTO>?> GetItem()
     {
-        var res = await _httpClient.GetFromJsonAsync<List<PluginItem>>(_endpoint);
+        var res = await _httpClient.GetFromJsonAsync<List<PluginDTO>>(_endpoint);
         return res;
     }
 }

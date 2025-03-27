@@ -1,7 +1,7 @@
 ﻿@page "/PluginManagement"
 @inject IDialogService Dialog
+@using CommonDTO
 @using SoftwareDesignProject.Client.Components
-@using SoftwareDesignProject.Client.Models
 @using SoftwareDesignProject.Client.Services
 @inject IPluginListLoader PluginListLoader
 
@@ -13,11 +13,11 @@
 
 <MudTable Items="plugins" Hover="true" SortLabel="Sort By" Elevation="0" AllowUnsorted="false">
     <HeaderContent>
-        <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<PluginItem, object>(x=>x.Name)">Name</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<PluginItem, object>(x=>x.Date)">Date</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<PluginItem, object>(x=>x.Description)">Description</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<PluginItem, object>(x=>x.Enabled)">Enabled</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<PluginItem, object>(x=>x.Premium)">Is Premium</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<PluginDTO, object>(x=>x.Name)">Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.Date)">Date</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.Description)">Description</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.Enabled)">Enabled</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.Premium)">Is Premium</MudTableSortLabel></MudTh>
         <MudTh>Action</MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -39,7 +39,7 @@
     </PagerContent>
 </MudTable>
 @code {
-    private List<PluginItem> plugins = new();
+    private List<PluginDTO> plugins = new();
     protected async override Task OnInitializedAsync()
     {
         var items = await PluginListLoader.GetItem();

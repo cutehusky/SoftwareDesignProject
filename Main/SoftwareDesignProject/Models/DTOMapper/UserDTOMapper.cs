@@ -1,4 +1,4 @@
-﻿using DTO;
+﻿using CommonDTO;
 using SoftwareDesignProject.Models.Entities;
 using UserType = SoftwareDesignProject.Models.Entities.UserType;
 
@@ -7,24 +7,24 @@ namespace SoftwareDesignProject.Models.DTOMapper;
 public class UserDTOMapper: IDTOMapper<User, UserDTO>
 {
 
-    private DTO.UserType ConvertTo(UserType userType)
+    private CommonDTO.UserType ConvertTo(UserType userType)
     {
         return userType switch
         {
-            UserType.Normal => DTO.UserType.Normal,
-            UserType.Premium => DTO.UserType.Premium,
-            UserType.Admin => DTO.UserType.Admin,
-            _ => DTO.UserType.Normal
+            UserType.Normal => CommonDTO.UserType.Normal,
+            UserType.Premium => CommonDTO.UserType.Premium,
+            UserType.Admin => CommonDTO.UserType.Admin,
+            _ => CommonDTO.UserType.Normal
         };
     }
 
-    private UserType ConvertFrom(DTO.UserType userType)
+    private UserType ConvertFrom(CommonDTO.UserType userType)
     {
         return userType switch
         {
-            DTO.UserType.Normal => UserType.Normal,
-            DTO.UserType.Premium => UserType.Premium,
-            DTO.UserType.Admin => UserType.Admin,
+            CommonDTO.UserType.Normal => UserType.Normal,
+            CommonDTO.UserType.Premium => UserType.Premium,
+            CommonDTO.UserType.Admin => UserType.Admin,
             _ => UserType.Normal
         };
     }

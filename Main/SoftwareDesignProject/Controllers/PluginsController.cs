@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CommonDTO;
+using Microsoft.AspNetCore.Mvc;
 using MudBlazor;
+using SoftwareDesignProject.Models.DTO;
 using SoftwareDesignProject.Services;
 
 namespace SoftwareDesignProject.Controllers;
@@ -64,8 +66,8 @@ public class PluginsController : ControllerBase
             dlls[i] = dlls[i].Replace(".dll", "");
         }
 
-        var list = new List<PluginItem>();
-        list.AddRange(dlls.Select(dll => new PluginItem()
+        var list = new List<PluginDTO>();
+        list.AddRange(dlls.Select(dll => new PluginDTO()
         {
             Name = dll, Description = $"Plugin with name: {dll}",
             Enabled = true,
@@ -76,7 +78,7 @@ public class PluginsController : ControllerBase
     }
     
     [HttpPost("add")]
-    public async Task<IActionResult> UploadFiles([FromForm] UploadRequest request)
+    public async Task<IActionResult> UploadFiles([FromForm] UploadPluginRequest request)
     {
         if (request.ClientDLL == null)
         {
@@ -112,7 +114,7 @@ public class PluginsController : ControllerBase
             _manager.LoadAllAssemblies();
         }
 
-        return Ok(new UploadResponse() {ok = true});
+        return Ok(new ActionResponse<bool>() {Result = true});
     }
     
     private async Task SaveFileAsync(IFormFile file, string uploadPath)
@@ -120,38 +122,6 @@ public class PluginsController : ControllerBase
         var filePath = Path.Combine(uploadPath, file.FileName);
         await using var stream = new FileStream(filePath, FileMode.Create);
         await file.CopyToAsync(stream);
-    }
-    
-    public class UploadResponse
-    {
-        public bool ok { get; set; }
-    }
-    
-    public class UploadRequest
-    {
-        public IFormFile? ClientDLL { get; set; }
-        public IFormFile? ServerDLL { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public bool IsPremium { get; set; }
-    }
-    
-    private class PluginItem
-    {
-        public DateTime Date { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-    
-        public bool Enabled { get; set; }
-    
-        public bool Premium { get; set; }
-    }
-    
-    private class NavItem
-    {
-        public string Text { get; set; }
-        public string Href { get; set; }
-        public string Icon { get; set; }
     }
     
     //[ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Client)]

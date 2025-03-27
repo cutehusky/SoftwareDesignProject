@@ -1,4 +1,4 @@
-﻿namespace SoftwareDesignProject.Client.Models;
+﻿namespace CommonDTO;
 
 public class JwtResponse
 {

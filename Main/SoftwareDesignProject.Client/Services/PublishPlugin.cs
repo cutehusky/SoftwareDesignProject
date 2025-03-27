@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Json;
+using CommonDTO;
 using Microsoft.AspNetCore.Components.Forms;
 using SoftwareDesignProject.Client.Models;
 
@@ -28,10 +29,10 @@ public class PublishPlugin: IPublishPlugin
         var response = await _httpClient.PostAsync(_endpoint, multipartContent);
         if (response.IsSuccessStatusCode)
         {
-            var responseData = await response.Content.ReadFromJsonAsync<PluginUploadResponse>();
+            var responseData = await response.Content.ReadFromJsonAsync<ActionResponse<bool>>();
             if (responseData != null)
             {
-                if (responseData.ok) 
+                if (responseData.Result) 
                     Console.WriteLine("Add Plugin OK");   
                 else
                     Console.WriteLine("Add Plugin Fail");

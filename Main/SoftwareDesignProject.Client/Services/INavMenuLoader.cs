@@ -1,4 +1,5 @@
-﻿using SoftwareDesignProject.Client.Models;
+﻿using CommonDTO;
+using SoftwareDesignProject.Client.Models;
 
 namespace SoftwareDesignProject.Client;
 

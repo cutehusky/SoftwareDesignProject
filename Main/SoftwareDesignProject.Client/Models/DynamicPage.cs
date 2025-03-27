@@ -6,9 +6,4 @@ public class DynamicPage
 {
     public Assembly? PluginAssembly { get; set; }
     public Type? EntryPoint { get; set; }
-
-    public Type? GetComponentType(string typeName)
-    {
-        return PluginAssembly?.GetType(typeName);
-    }
 }

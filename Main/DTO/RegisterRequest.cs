@@ -1,4 +1,4 @@
-﻿namespace DTO
+﻿namespace CommonDTO
 {
     public class RegisterRequest
     {

@@ -1,12 +1,12 @@
-﻿using SoftwareDesignProject.Client.Models;
+﻿using CommonDTO;
 using SoftwareDesignProject.Client.Services;
 
 namespace SoftwareDesignProject.Services;
 
 public class PluginListLoader: IPluginListLoader
 {
-    public Task<List<PluginItem>?> GetItem()
+    public Task<List<PluginDTO>?> GetItem()
     {
-        return Task.FromResult((List<PluginItem>?) null);
+        return Task.FromResult((List<PluginDTO>?) null);
     }
 }
