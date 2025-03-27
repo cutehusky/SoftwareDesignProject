@@ -20,7 +20,8 @@ public class PublishPlugin: IPublishPlugin
     {
         var multipartContent = new MultipartFormDataContent();
         multipartContent.Add(GetStreamContent(data.ClientDLL), "ClientDLL", data.ClientDLL.Name);
-        multipartContent.Add(GetStreamContent(data.ServerDLL), "ServerDLL", data.ServerDLL.Name);
+        if (data.ServerDLL != null)
+            multipartContent.Add(GetStreamContent(data.ServerDLL), "ServerDLL", data.ServerDLL.Name);
         multipartContent.Add(new StringContent(data.Name), "Name");
         multipartContent.Add(new StringContent(data.Description), "Description");
         multipartContent.Add(new StringContent(data.IsPremium.ToString()), "IsPremium");
@@ -48,7 +49,7 @@ public class PublishPlugin: IPublishPlugin
         return false;
     }
 
-    private static StreamContent GetStreamContent(IBrowserFile file)
+    private static StreamContent GetStreamContent(IBrowserFile? file)
     {
         var fileStream = file.OpenReadStream(file.Size + 1);
         var content = new StreamContent(fileStream);

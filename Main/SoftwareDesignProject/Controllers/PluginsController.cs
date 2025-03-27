@@ -45,9 +45,9 @@ public class PluginsController : ControllerBase
             },
             new()
             {
-                Text = "Plugin Management", 
-                Href = "PluginManagement", 
-                Icon = Icons.Material.Filled.Home
+                Text = "Dashboard", 
+                Href = "/", 
+                Icon = Icons.Material.Filled.Dashboard
             },
         };
         list.AddRange(plugins.Select(plugin => new NavItem()
@@ -62,27 +62,10 @@ public class PluginsController : ControllerBase
     
     
     [HttpGet("GetListAdmin")]
-    public IActionResult GetListAdmin()
+    public async Task<IActionResult> GetListAdmin()
     {
-        // TODO: Load plugin list in db
-        var folderPath = Path.Combine(_env.ContentRootPath, "Root/ClientPlugins");
-        var dlls = Directory.GetFiles(folderPath)
-            .Select(Path.GetFileName)
-            .ToList();
-        for (int i = 0; i < dlls.Count; i++)
-        {
-            dlls[i] = dlls[i].Replace(".dll", "");
-        }
-
-        var list = new List<PluginDTO>();
-        list.AddRange(dlls.Select(dll => new PluginDTO()
-        {
-            Name = dll, Description = $"Plugin with name: {dll}",
-            IsEnabled = true,
-            IsPremium = true,
-            CreateAt = DateTime.Today
-        }));
-        return Ok(list);
+        var plugins = await _pluginService.GetList();
+        return Ok(plugins);
     }
     
     [HttpPost("add")]
@@ -91,21 +74,25 @@ public class PluginsController : ControllerBase
         Console.WriteLine(request.Name);
         Console.WriteLine(request.Description);
         Console.WriteLine(request.IsPremium);
-        if (request.ClientDLL == null)
-        {
-            return BadRequest("Fail to upload file");
-        }
-       
+
         var clientUid = await _pluginService.SaveClientDLL(request.ClientDLL);
         if (clientUid == null)
-            return BadRequest("Fail to load Server DLL");
+        {
+            Console.WriteLine("Fail to load Client DLL");
+            return BadRequest("Fail to load Client DLL");
+        }
 
         Guid? serverUid = null;
         if (request.ServerDLL != null)
         {
             serverUid = await _pluginService.SaveServerDLL(request.ServerDLL);
             if (serverUid == null)
+            {
+                await _pluginService.Rollback();
+                Console.WriteLine("Fail to load Server DLL");
                 return BadRequest("Fail to load Server DLL");
+            }
+
             if (serverUid != clientUid)
             {
                 await _pluginService.Rollback();

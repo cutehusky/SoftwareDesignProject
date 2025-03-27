@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.JSInterop;
 using MudBlazor.Services;
 using SoftwareDesignProject.Client;
 using SoftwareDesignProject.Client.Services;
-using System.Net.Http.Headers;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddScoped(sp =>

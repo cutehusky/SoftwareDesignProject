@@ -13,8 +13,6 @@ public class PluginDTOMapper: IDTOMapper<Plugin, PluginDTO>
             Name = from.Name,
             Description = from.Description,
             Category = from.Category,
-            CreateAt = from.CreateAt,
-            UpdateAt = from.UpdateAt,
             IsEnabled = from.IsEnabled,
             IsPremium = from.IsPremium
         };

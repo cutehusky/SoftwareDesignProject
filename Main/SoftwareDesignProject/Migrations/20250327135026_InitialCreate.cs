@@ -20,9 +20,7 @@ namespace SoftwareDesignProject.Migrations
                     Description = table.Column<string>(type: "text", nullable: false),
                     Category = table.Column<string>(type: "text", nullable: false),
                     IsEnabled = table.Column<bool>(type: "boolean", nullable: false),
-                    IsPremium = table.Column<bool>(type: "boolean", nullable: false),
-                    CreateAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdateAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    IsPremium = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -36,8 +34,7 @@ namespace SoftwareDesignProject.Migrations
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     Username = table.Column<string>(type: "text", nullable: false),
                     HashedPassword = table.Column<string>(type: "text", nullable: false),
-                    UserType = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    UserRole = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {

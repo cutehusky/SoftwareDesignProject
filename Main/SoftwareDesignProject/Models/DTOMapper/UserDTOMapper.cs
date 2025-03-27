@@ -1,31 +1,31 @@
 ﻿using CommonDTO;
 using SoftwareDesignProject.Models.Entities;
-using UserType = SoftwareDesignProject.Models.Entities.UserType;
+using UserRoles = SoftwareDesignProject.Models.Entities.UserRoles;
 
 namespace SoftwareDesignProject.Models.DTOMapper;
 
 public class UserDTOMapper: IDTOMapper<User, UserDTO>
 {
 
-    private CommonDTO.UserType ConvertTo(UserType userType)
+    private CommonDTO.UserRoles ConvertTo(UserRoles userRoles)
     {
-        return userType switch
+        return userRoles switch
         {
-            UserType.Normal => CommonDTO.UserType.Normal,
-            UserType.Premium => CommonDTO.UserType.Premium,
-            UserType.Admin => CommonDTO.UserType.Admin,
-            _ => CommonDTO.UserType.Normal
+            UserRoles.Normal => CommonDTO.UserRoles.Normal,
+            UserRoles.Premium => CommonDTO.UserRoles.Premium,
+            UserRoles.Admin => CommonDTO.UserRoles.Admin,
+            _ => CommonDTO.UserRoles.Normal
         };
     }
 
-    private UserType ConvertFrom(CommonDTO.UserType userType)
+    private UserRoles ConvertFrom(CommonDTO.UserRoles? userRoles)
     {
-        return userType switch
+        return userRoles switch
         {
-            CommonDTO.UserType.Normal => UserType.Normal,
-            CommonDTO.UserType.Premium => UserType.Premium,
-            CommonDTO.UserType.Admin => UserType.Admin,
-            _ => UserType.Normal
+            CommonDTO.UserRoles.Normal => UserRoles.Normal,
+            CommonDTO.UserRoles.Premium => UserRoles.Premium,
+            CommonDTO.UserRoles.Admin => UserRoles.Admin,
+            _ => UserRoles.Normal
         };
     }
 
@@ -36,8 +36,7 @@ public class UserDTOMapper: IDTOMapper<User, UserDTO>
             UserId = from.UserId,
             Username = from.Username,
             HashedPassword = from.HashedPassword,
-            UserType = ConvertTo(from.UserType),
-            CreatedAt = from.CreatedAt
+            UserRole = ConvertTo(from.UserRole)
         };
     }
 
@@ -48,8 +47,7 @@ public class UserDTOMapper: IDTOMapper<User, UserDTO>
             UserId = from.UserId,
             Username = from.Username,
             HashedPassword = from.HashedPassword,
-            UserType = ConvertFrom(from.UserType),
-            CreatedAt = from.CreatedAt
+            UserRole = ConvertFrom(from.UserRole)
         };
     }
 }

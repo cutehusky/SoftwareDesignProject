@@ -1,6 +1,7 @@
 ﻿@using SoftwareDesignProject.Client.Models
 @using SoftwareDesignProject.Client.Services
 @inject IPublishPlugin PublishPlugin
+@inject NavigationManager Navigation
 
 <MudDialog>
     <DialogContent>
@@ -14,7 +15,11 @@
         <MudTextField class="my-6 mx-3"  @bind-Value="_description" Label="Description" Variant="Variant.Outlined" Lines="5"></MudTextField>
 
         <MudCheckBox Label="Is Premium" @bind-Value="_isPremium"/>
-
+        
+        <MudAlert Severity="_alertSeverity" Class="mb-3" Style="@AlertStyle">
+            @_alertText
+        </MudAlert>
+        
         <MudDivider DividerType="DividerType.Middle" Class="my-3"/>
 
         <div class="my-6 mx-3 d-flex align-center">
@@ -45,29 +50,57 @@
             </div>
         </div>
     </DialogContent>
+    
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
         <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
     </DialogActions>
+
 </MudDialog>
 
 @code {
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; }
 
+    private Severity _alertSeverity = Severity.Info;
+    private bool _showAlert = false;
+    private string AlertStyle => _showAlert ? "display: block;" : "display: none;";
+    private string _alertText = "";
     private string _name = "";
     private string _description = "";
     private bool _isPremium = false;
-    private IBrowserFile _clientDLL;
-    private IBrowserFile _serverDLL;
+    private IBrowserFile? _clientDLL;
+    private IBrowserFile? _serverDLL;
     private string _clientDLLName;
     private string _serverDLLName;
     private string _category = "";
 
+    private void ShowAlert(Severity severity, string text)
+    {
+        _alertSeverity = severity;
+        _alertText = text;
+        _showAlert = true;
+    }
+
     private async void Submit()
     {
-        // TODO: add name, description, category empty check
-        await PublishPlugin.Submit(new PluginUploadData()
+        if (_name.Trim().Length == 0 || 
+            _description.Trim().Length == 0 ||
+            _category.Trim().Length == 0)
+        {
+            ShowAlert(Severity.Error, "Must fill name, description, category.");
+            return;
+        }
+
+        if (_clientDLL == null)
+        {
+            ShowAlert(Severity.Error, "Must upload client DLL.");
+            return;
+        }
+        
+        ShowAlert(Severity.Info, "Loading...");
+        
+        var res = await PublishPlugin.Submit(new PluginUploadData()
         {
             Name = _name,
             Description = _description,
@@ -76,7 +109,17 @@
             ServerDLL = _serverDLL,
             Category = _category
         });
-        MudDialog.Close(DialogResult.Ok(true));
+
+        if (res)
+        {
+            MudDialog.Close(DialogResult.Ok(true));
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+        }
+        else
+        {
+            ShowAlert(Severity.Error, "Fail to install plugin.");
+            StateHasChanged();
+        }
     } 
 
     private void Cancel() => MudDialog.Cancel();

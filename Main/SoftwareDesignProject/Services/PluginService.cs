@@ -37,6 +37,10 @@ public class PluginService
     {
         if (string.IsNullOrEmpty(pluginDto.Category))
             pluginDto.Category = Plugin.DefaultCategory;
+        if (string.IsNullOrEmpty(pluginDto.Name))
+            pluginDto.Name = pluginDto.PluginId + " Plugin";
+        if (string.IsNullOrEmpty(pluginDto.Description))
+            pluginDto.Description = "This is plugin with name: " + pluginDto.Name;
         var res = await _pluginRepository.Add(pluginDto);
         if (res)
             return true;

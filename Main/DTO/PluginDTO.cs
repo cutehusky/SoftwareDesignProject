@@ -5,8 +5,6 @@
 public class PluginDTO
 {
     public Guid PluginId { get; set; }
-    public DateTime? CreateAt { get; set; }
-    public DateTime? UpdateAt { get; set; }
     public string? Name { get; set; }
     public string? Description { get; set; }
     

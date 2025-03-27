@@ -29,6 +29,8 @@
 
 @code {
     private List<(string, List<NavItem>)> _navItems = new();
+    
+
     protected override async Task OnInitializedAsync()
     {
         var items = await NavMenuLoader.GetNavItem();

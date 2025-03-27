@@ -14,6 +14,4 @@ public class Plugin
     public string Category { get; set; } = DefaultCategory;
     public bool IsEnabled { get; set; } = true;
     public bool IsPremium { get; set; }
-    public DateTime CreateAt { get; set; } = DateTime.UtcNow;
-    public DateTime UpdateAt { get; set; } = DateTime.UtcNow;
 }
