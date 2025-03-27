@@ -1,0 +1,42 @@
+﻿@using Microsoft.JSInterop
+@using MudBlazor
+
+<MudPaper Elevation="4" Class="pa-4 d-flex flex-column align-center">
+    <MudText Typo="Typo.h3">Generate Password</MudText>
+
+    <MudStack Row="true" Gap="2" Class="mt-3">
+        <MudTextField ReadOnly="true" Variant="Variant.Filled" @bind-Value="_password" />
+        <MudButton OnClick="CopyToClipboard" Variant="Variant.Outlined" Color="Color.Secondary">
+            Copy
+        </MudButton>
+    </MudStack>
+
+    <MudButton OnClick="GeneratePassword" Variant="Variant.Filled" Color="Color.Primary" Class="mt-3">
+        Generate
+    </MudButton>
+</MudPaper>
+
+@code {
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+    private string _password = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        GeneratePassword();
+    }
+
+    private void GeneratePassword()
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+        Random random = new();
+        _password = new string(Enumerable.Range(0, 18).Select(_ => chars[random.Next(chars.Length)]).ToArray());
+    }
+
+    private async Task CopyToClipboard()
+    {
+        if (!string.IsNullOrEmpty(_password))
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", _password);
+        }
+    }
+}
