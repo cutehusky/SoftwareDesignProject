@@ -26,6 +26,8 @@ builder.Services.AddDbContext<AppDbContext>();
 
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<PluginRepository>();
+builder.Services.AddScoped<PluginService>();
 
 // Add MudBlazor services
 builder.Services.AddMudServices();

@@ -4,15 +4,20 @@
 
 <MudDialog>
     <DialogContent>
-        <MudTextField @bind-Value="_name" Label="Name" Variant="Variant.Outlined" Lines="1" ></MudTextField>
-       
-        <MudTextField class="my-6" @bind-Value="_description" Label="Description" Variant="Variant.Outlined" Lines="5" ></MudTextField>
-        
+
+        <div class="d-flex align-center justify-lg-space-between">
+            <MudTextField width="50%-20px" @bind-Value="_category" Class="mx-3"
+                          Label="Category" Variant="Variant.Outlined" Lines="1" ></MudTextField>
+            <MudTextField @bind-Value="_name" Class="mx-3" Label="Name" Variant="Variant.Outlined" Lines="1"></MudTextField>
+        </div>
+
+        <MudTextField class="my-6 mx-3"  @bind-Value="_description" Label="Description" Variant="Variant.Outlined" Lines="5"></MudTextField>
+
         <MudCheckBox Label="Is Premium" @bind-Value="_isPremium"/>
 
         <MudDivider DividerType="DividerType.Middle" Class="my-3"/>
-        
-        <div class="my-6 d-flex align-center">
+
+        <div class="my-6 mx-3 d-flex align-center">
             <MudFileUpload T="IBrowserFile" FilesChanged="OnClientDLLFileChanged">
                 <ActivatorContent>
                     <MudButton Color="Color.Inherit" Variant="Variant.Outlined"
@@ -25,8 +30,8 @@
                 <MudText>@_clientDLLName</MudText>
             </div>
         </div>
-        
-        <div class="my-6 d-flex align-center">
+
+        <div class="my-6 mx-3 d-flex align-center">
             <MudFileUpload T="IBrowserFile" FilesChanged="OnServerDLLFileChanged">
                 <ActivatorContent>
                     <MudButton Color="Color.Inherit" Variant="Variant.Outlined"
@@ -50,23 +55,26 @@
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; }
 
-    private string _name;
-    private string _description;
+    private string _name = "";
+    private string _description = "";
     private bool _isPremium = false;
     private IBrowserFile _clientDLL;
     private IBrowserFile _serverDLL;
     private string _clientDLLName;
     private string _serverDLLName;
+    private string _category = "";
 
     private async void Submit()
     {
+        // TODO: add name, description, category empty check
         await PublishPlugin.Submit(new PluginUploadData()
         {
             Name = _name,
             Description = _description,
             IsPremium = _isPremium,
             ClientDLL = _clientDLL,
-            ServerDLL = _serverDLL
+            ServerDLL = _serverDLL,
+            Category = _category
         });
         MudDialog.Close(DialogResult.Ok(true));
     } 

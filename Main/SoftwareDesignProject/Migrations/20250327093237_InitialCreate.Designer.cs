@@ -12,7 +12,7 @@ using SoftwareDesignProject.Services;
 namespace SoftwareDesignProject.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250327012812_InitialCreate")]
+    [Migration("20250327093237_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -75,7 +75,7 @@ namespace SoftwareDesignProject.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Plugin");
+                    b.ToTable("Plugins");
                 });
 
             modelBuilder.Entity("SoftwareDesignProject.Models.Entities.User", b =>

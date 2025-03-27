@@ -72,7 +72,7 @@ namespace SoftwareDesignProject.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Plugin");
+                    b.ToTable("Plugins");
                 });
 
             modelBuilder.Entity("SoftwareDesignProject.Models.Entities.User", b =>

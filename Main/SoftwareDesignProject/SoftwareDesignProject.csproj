@@ -46,6 +46,15 @@
 		<Reference Include="BackendPluginTemplate">
 			<HintPath>..\..\BackendPluginTemplate\bin\Debug\net9.0\BackendPluginTemplate.dll</HintPath>
 		</Reference>
+		<Reference Include="ClientPluginTemplate">
+		  <HintPath>..\..\ClientPluginTemplate\bin\Debug\net8.0\ClientPluginTemplate.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Folder Include="Root\BackendPlugins\" />
+	  <Folder Include="Root\ClientPlugins\" />
 	</ItemGroup>
 
 </Project>

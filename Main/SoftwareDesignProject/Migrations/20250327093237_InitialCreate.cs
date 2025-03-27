@@ -12,7 +12,7 @@ namespace SoftwareDesignProject.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Plugin",
+                name: "Plugins",
                 columns: table => new
                 {
                     PluginId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -26,7 +26,7 @@ namespace SoftwareDesignProject.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Plugin", x => x.PluginId);
+                    table.PrimaryKey("PK_Plugins", x => x.PluginId);
                 });
 
             migrationBuilder.CreateTable(
@@ -55,9 +55,9 @@ namespace SoftwareDesignProject.Migrations
                 {
                     table.PrimaryKey("PK_user_starred_plugins", x => new { x.StarredPluginId, x.UserId });
                     table.ForeignKey(
-                        name: "FK_user_starred_plugins_Plugin_StarredPluginId",
+                        name: "FK_user_starred_plugins_Plugins_StarredPluginId",
                         column: x => x.StarredPluginId,
-                        principalTable: "Plugin",
+                        principalTable: "Plugins",
                         principalColumn: "PluginId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -69,8 +69,8 @@ namespace SoftwareDesignProject.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Plugin_Name",
-                table: "Plugin",
+                name: "IX_Plugins_Name",
+                table: "Plugins",
                 column: "Name",
                 unique: true);
 
@@ -93,7 +93,7 @@ namespace SoftwareDesignProject.Migrations
                 name: "user_starred_plugins");
 
             migrationBuilder.DropTable(
-                name: "Plugin");
+                name: "Plugins");
 
             migrationBuilder.DropTable(
                 name: "Users");

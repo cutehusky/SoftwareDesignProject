@@ -1,22 +1,52 @@
 ﻿@using CommonDTO
-@using SoftwareDesignProject.Client.Models
 @inject INavMenuLoader NavMenuLoader
 
 <MudNavMenu>
-    @foreach (var item in _navItems)
+    @foreach (var category in _navItems)
     {
-    <MudNavLink Href="@item.Href" Match="NavLinkMatch.Prefix" Icon="@item.Icon">
-        @item.Text
-    </MudNavLink>
+        @if (category.Item1 != "")
+        {
+            <MudNavGroup Title="@category.Item1" Expanded="true">
+                @foreach (var item in category.Item2)
+                {
+                    <MudNavLink Href="@item.Href" Match="NavLinkMatch.Prefix" Icon="@item.Icon">
+                        @item.Text
+                    </MudNavLink>
+                }
+            </MudNavGroup>
+        }
+        else
+        {
+            @foreach (var item in category.Item2)
+            {
+                <MudNavLink Href="@item.Href" Match="NavLinkMatch.Prefix" Icon="@item.Icon">
+                    @item.Text
+                </MudNavLink>
+            }
+        }
     }
 </MudNavMenu>
 
 @code {
-    private List<NavItem> _navItems = new();
-    protected async override Task OnInitializedAsync()
+    private List<(string, List<NavItem>)> _navItems = new();
+    protected override async Task OnInitializedAsync()
     {
         var items = await NavMenuLoader.GetNavItem();
+        var dictionary = new Dictionary<string, List<NavItem>>();
         if (items != null)
-            _navItems = items;
+        {
+            foreach (var item in items)
+            {
+                if (dictionary.TryGetValue(item.Category, out var list))
+                {
+                    list.Add(item);
+                }
+                else
+                {
+                    dictionary.Add(item.Category, [item]);
+                }
+            }
+            _navItems = dictionary.Select(kv=> (kv.Key, kv.Value)).ToList();
+        }
     }
 }

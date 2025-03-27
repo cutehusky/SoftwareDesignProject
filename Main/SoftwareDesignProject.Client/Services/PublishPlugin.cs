@@ -18,13 +18,13 @@ public class PublishPlugin: IPublishPlugin
 
     public async Task<bool> Submit(PluginUploadData data)
     {
-
         var multipartContent = new MultipartFormDataContent();
-        multipartContent.Add(GetStreamContent(data.ClientDLL), "clientDLL", data.ClientDLL.Name);
-        multipartContent.Add(GetStreamContent(data.ServerDLL), "serverDLL", data.ServerDLL.Name);
+        multipartContent.Add(GetStreamContent(data.ClientDLL), "ClientDLL", data.ClientDLL.Name);
+        multipartContent.Add(GetStreamContent(data.ServerDLL), "ServerDLL", data.ServerDLL.Name);
         multipartContent.Add(new StringContent(data.Name), "Name");
         multipartContent.Add(new StringContent(data.Description), "Description");
         multipartContent.Add(new StringContent(data.IsPremium.ToString()), "IsPremium");
+        multipartContent.Add(new StringContent(data.Category), "Category");
         
         var response = await _httpClient.PostAsync(_endpoint, multipartContent);
         if (response.IsSuccessStatusCode)
@@ -42,7 +42,7 @@ public class PublishPlugin: IPublishPlugin
         }
         else
         {
-            Console.WriteLine($"Error: {response.StatusCode}");   
+            Console.WriteLine($"Error: {response.StatusCode} {response.ReasonPhrase}");   
         }
 
         return false;

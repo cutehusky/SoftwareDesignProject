@@ -14,21 +14,21 @@
 <MudTable Items="plugins" Hover="true" SortLabel="Sort By" Elevation="0" AllowUnsorted="false">
     <HeaderContent>
         <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<PluginDTO, object>(x=>x.Name)">Name</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.Date)">Date</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.CreateAt)">Date</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.Description)">Description</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.Enabled)">Enabled</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.Premium)">Is Premium</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.IsEnabled)">Enabled</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.IsPremium)">Is Premium</MudTableSortLabel></MudTh>
         <MudTh>Action</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Name">@context.Name</MudTd>
-        <MudTd DataLabel="Date">@context.Date</MudTd>
+        <MudTd DataLabel="Date">@context.CreateAt</MudTd>
         <MudTd DataLabel="Description">@context.Description</MudTd>
         <MudTd DataLabel="Enabled">
-            <MudCheckBox @bind-Value="@context.Enabled"></MudCheckBox>
+            <MudCheckBox @bind-Value="@context.IsEnabled"></MudCheckBox>
         </MudTd>
         <MudTd DataLabel="Is Premium">
-            <MudCheckBox @bind-Value="@context.Premium"></MudCheckBox>
+            <MudCheckBox @bind-Value="@context.IsPremium"></MudCheckBox>
         </MudTd>
         <MudTd DataLabel="Action">
             <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => Delete(context.Name)" aria-label="delete" />
