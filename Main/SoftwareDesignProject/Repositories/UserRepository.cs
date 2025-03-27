@@ -1,29 +1,31 @@
-﻿using System.Data;
-using Dapper;
-using SoftwareDesignProject.Models;
+﻿using DTO;
+using Microsoft.EntityFrameworkCore;
+using SoftwareDesignProject.Models.DTOMapper;
+using SoftwareDesignProject.Services;
 
 
 namespace SoftwareDesignProject.Repositories
 {
     public class UserRepository
     {
-        private readonly IDbConnection _dbConnection;
+        private readonly AppDbContext _dbContext;
 
-        public UserRepository(IDbConnection dbConnection)
+        public UserRepository(AppDbContext dbContext)
         {
-            _dbConnection = dbConnection;
+            _dbContext = dbContext;
         }
 
-        public async Task<User?> GetUserByUsernameAsync(string username)
+        public async Task<UserDTO?> GetUserByUsernameAsync(string username)
         {
-            string sql = "SELECT * FROM users WHERE username = @username";
-            return await _dbConnection.QueryFirstOrDefaultAsync<User>(sql, new { username });
+            var res = await _dbContext.Users.Where(u => u.Username == username)
+                .Select((user => new UserDTOMapper().ConvertTo(user))).FirstOrDefaultAsync();
+            return res;
         }
 
-        public async Task<bool> InsertUserAsync(User user)
+        public async Task<bool> InsertUserAsync(UserDTO user)
         {
-            string sql = "INSERT INTO users (username, password_hash) VALUES (@username, @password_hash)";
-            int rowsAffected = await _dbConnection.ExecuteAsync(sql, user);
+            _dbContext.Add(new UserDTOMapper().ConvertFrom(user));
+            var rowsAffected = await _dbContext.SaveChangesAsync();
             return rowsAffected > 0;
         }
     }

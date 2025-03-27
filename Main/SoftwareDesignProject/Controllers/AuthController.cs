@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 using SoftwareDesignProject.Models;
 using System.Data;
+using DTO;
 
 
 [Route("api/auth")]

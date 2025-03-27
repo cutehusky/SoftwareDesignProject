@@ -1,12 +1,9 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using SoftwareDesignProject.Models;
+﻿using Microsoft.IdentityModel.Tokens;
 using SoftwareDesignProject.Repositories;
-using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
+using DTO;
 
 public class AuthService : IAuthService
 {
@@ -22,10 +19,10 @@ public class AuthService : IAuthService
     public async Task<string?> AuthenticateAsync(string username, string password)
     {
         var user = await _userRepository.GetUserByUsernameAsync(username);
-        Console.WriteLine("User: " + user.password_hash);
-        if (user != null && BCrypt.Net.BCrypt.Verify(password, user.password_hash))
+        //Console.WriteLine("User: " + user.HashedPassword);
+        if (user != null && BCrypt.Net.BCrypt.Verify(password, user.HashedPassword))
         {
-            return GenerateJwtToken(user.username);
+            return GenerateJwtToken(user.Username);
         }
 
         return null;
@@ -41,7 +38,7 @@ public class AuthService : IAuthService
         }
 
         string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
-        var newUser = new User { username = username, password_hash = hashedPassword };
+        var newUser = new UserDTO { Username = username, HashedPassword = hashedPassword };
         return await _userRepository.InsertUserAsync(newUser);
     }
 

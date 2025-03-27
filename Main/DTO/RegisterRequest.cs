@@ -1,4 +1,4 @@
-﻿namespace SoftwareDesignProject.Models
+﻿namespace DTO
 {
     public class RegisterRequest
     {

@@ -22,9 +22,7 @@ using SoftwareDesignProject.Repositories;
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddScoped<IDbConnection>(sp =>
-    new NpgsqlConnection(connectionString)
-);
+builder.Services.AddDbContext<AppDbContext>();
 
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<AuthService>();

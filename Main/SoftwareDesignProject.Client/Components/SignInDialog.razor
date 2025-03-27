@@ -1,4 +1,5 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
+﻿@using DTO
+@using Microsoft.AspNetCore.Components.Authorization
 @using SoftwareDesignProject.Client.Models
 
 @inject HttpClient HttpClient
@@ -26,7 +27,7 @@
 
     private async Task Login()
     {
-        var response = await HttpClient.PostAsJsonAsync("api/auth/signin", new
+        var response = await HttpClient.PostAsJsonAsync("api/auth/signin", new LoginRequest()
         {
             username = _username,
             password = _password
@@ -42,7 +43,7 @@
         }
         else
         {
-            Console.WriteLine("Failed to login", response.StatusCode);
+            Console.WriteLine("Failed to login: {0}", response.StatusCode);
             await DialogService.ShowMessageBox("Error", "Failed to login");
             StateHasChanged();
         };

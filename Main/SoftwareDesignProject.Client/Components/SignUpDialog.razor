@@ -1,4 +1,5 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
+﻿@using DTO
+@using Microsoft.AspNetCore.Components.Authorization
 @using SoftwareDesignProject.Client.Models
 
 @inject HttpClient HttpClient
@@ -41,7 +42,7 @@
             return;
         }
 
-        var response = await HttpClient.PostAsJsonAsync("api/auth/signup", new
+        var response = await HttpClient.PostAsJsonAsync("api/auth/signup", new RegisterRequest()
         {
             username = _username,
             password = _password
