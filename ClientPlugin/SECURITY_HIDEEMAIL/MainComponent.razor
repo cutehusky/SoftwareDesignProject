@@ -1,0 +1,41 @@
+﻿@using MudBlazor
+
+<MudPaper Elevation="4" Class="pa-4 d-flex flex-column align-center">
+    <MudText Typo="Typo.h3">Email Obfuscator</MudText>
+
+    <MudTextField Label="Enter Email" @bind-Value="_email" Immediate="true" Variant="Variant.Filled" />
+
+    <MudButton OnClick="ObfuscateEmail" Variant="Variant.Filled" Color="Color.Primary" Class="mt-2">
+        Obfuscate Email
+    </MudButton>
+
+    @if (!string.IsNullOrEmpty(_obfuscatedEmail))
+    {
+        <MudText Typo="Typo.subtitle1" Class="mt-2">Obfuscated: @_obfuscatedEmail</MudText>
+    }
+</MudPaper>
+
+
+@code {
+    private string _email = string.Empty;
+    private string _obfuscatedEmail = string.Empty;
+
+    private void ObfuscateEmail()
+    {
+        if (string.IsNullOrWhiteSpace(_email) || !_email.Contains('@')) return;
+
+        var parts = _email.Split('@');
+        string username = parts[0];
+        string domain = parts[1];
+
+        if (username.Length > 1)
+        {
+            string obfuscatedPart = new string('*', username.Length - 1);
+            _obfuscatedEmail = $"{username[0]}{obfuscatedPart}@{domain}";
+        }
+        else
+        {
+            _obfuscatedEmail = $"*@{domain}";
+        }
+    }
+}
