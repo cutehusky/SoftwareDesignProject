@@ -3,13 +3,12 @@
     public class UserDTO
     {
         public Guid UserId { get; set; } = Guid.NewGuid();
-        public string Username { get; set; }
-        public string HashedPassword { get; set; }
-        public UserType UserType { get; set; } = UserType.Normal;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public string? Username { get; set; }
+        public string? HashedPassword { get; set; }
+        public UserRoles? UserRole { get; set; } = UserRoles.Normal;
     }
     
-    public enum UserType
+    public enum UserRoles
     {
         Normal,
         Premium,

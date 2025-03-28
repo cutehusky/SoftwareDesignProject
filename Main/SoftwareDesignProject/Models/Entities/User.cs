@@ -2,7 +2,7 @@
 
 namespace SoftwareDesignProject.Models.Entities;
 
-public enum UserType
+public enum UserRoles
 {
     Normal,
     Premium,
@@ -16,8 +16,7 @@ public class User
 
     public string Username { get; set; } = string.Empty;
     public string HashedPassword { get; set; } = string.Empty;
-    public UserType UserType { get; set; } = UserType.Normal;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public UserRoles UserRole { get; set; } = UserRoles.Normal;
     
     public ICollection<Plugin>? Starred { get; set; }
 }

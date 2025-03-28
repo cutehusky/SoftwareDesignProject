@@ -6,6 +6,7 @@ namespace SoftwareDesignProject.Services;
 public class AppDbContext: DbContext
 {
     public DbSet<User> Users { get; set; }
+    public DbSet<Plugin> Plugins { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<User>()

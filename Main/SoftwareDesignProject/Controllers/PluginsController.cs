@@ -11,12 +11,14 @@ namespace SoftwareDesignProject.Controllers;
 public class PluginsController : ControllerBase
 {
     private readonly IHostEnvironment _env;
-    private DynamicPluginManager _manager;
+    private readonly DynamicPluginManager _manager;
+    private readonly PluginService _pluginService;
     
-    public PluginsController(IHostEnvironment env, DynamicPluginManager manager)
+    public PluginsController(IHostEnvironment env, DynamicPluginManager manager, PluginService pluginService)
     {
         _env = env;
         _manager = manager;
+        _pluginService = pluginService;
     }
     
     
@@ -28,100 +30,97 @@ public class PluginsController : ControllerBase
     }
 
     [HttpGet("GetList")]
-    public IActionResult GetList()
+    public async Task<IActionResult> GetList()
     {
         // TODO: Load plugin list in db
-        var folderPath = Path.Combine(_env.ContentRootPath, "Root/ClientPlugins");
-        var dlls = Directory.GetFiles(folderPath)
-            .Select(Path.GetFileName)
-            .ToList();
-        for (int i = 0; i < dlls.Count; i++)
-        {
-            dlls[i] = dlls[i].Replace(".dll", "");
-        }
+        var plugins = await _pluginService.GetList();
 
         var list = new List<NavItem>()
         {
-            new() { Text = "Home", Href = "home", Icon = Icons.Material.Filled.Home },
-            new() { Text = "Plugin Management", Href = "PluginManagement", Icon = Icons.Material.Filled.Home },
+            new() { 
+                Text = "Home", 
+                Href = "home", 
+                Icon = Icons.Material.Filled.Home,
+                Category = ""
+            },
+            new()
+            {
+                Text = "Dashboard", 
+                Href = "/", 
+                Icon = Icons.Material.Filled.Dashboard
+            },
         };
-        list.AddRange(dlls.Select(dll => new NavItem()
+        list.AddRange(plugins.Select(plugin => new NavItem()
         {
-            Text = dll, Href = $"dynamicDLL/{dll}", Icon = Icons.Material.Filled.List
+            Text = plugin.Name,
+            Category = plugin.Category,
+            Href = $"dynamicDLL/{plugin.PluginId}",
+            Icon = Icons.Material.Filled.List
         }));
         return Ok(list);
     }
     
     
     [HttpGet("GetListAdmin")]
-    public IActionResult GetListAdmin()
+    public async Task<IActionResult> GetListAdmin()
     {
-        // TODO: Load plugin list in db
-        var folderPath = Path.Combine(_env.ContentRootPath, "Root/ClientPlugins");
-        var dlls = Directory.GetFiles(folderPath)
-            .Select(Path.GetFileName)
-            .ToList();
-        for (int i = 0; i < dlls.Count; i++)
-        {
-            dlls[i] = dlls[i].Replace(".dll", "");
-        }
-
-        var list = new List<PluginDTO>();
-        list.AddRange(dlls.Select(dll => new PluginDTO()
-        {
-            Name = dll, Description = $"Plugin with name: {dll}",
-            Enabled = true,
-            Premium = true,
-            Date = DateTime.Today
-        }));
-        return Ok(list);
+        var plugins = await _pluginService.GetList();
+        return Ok(plugins);
     }
     
     [HttpPost("add")]
     public async Task<IActionResult> UploadFiles([FromForm] UploadPluginRequest request)
     {
-        if (request.ClientDLL == null)
-        {
-            return BadRequest("Fail to upload file");
-        }
-
-        var clientUploadPath = Path.Combine(_env.ContentRootPath, "Root/ClientPlugins");
-        if (!Directory.Exists(clientUploadPath))
-        {
-            Directory.CreateDirectory(clientUploadPath);
-        }
-        
-        var serverUploadPath = Path.Combine(_env.ContentRootPath, "Root/BackendPlugins");
-        if (!Directory.Exists(serverUploadPath))
-        {
-            Directory.CreateDirectory(serverUploadPath);
-        }
-        
-        Console.WriteLine(request.ClientDLL.Name);
-        Console.WriteLine(request.ClientDLL.Length);
-        await SaveFileAsync(request.ClientDLL, clientUploadPath);
-        
-        
         Console.WriteLine(request.Name);
         Console.WriteLine(request.Description);
         Console.WriteLine(request.IsPremium);
 
-        if (request.ServerDLL != null)
+        var clientUid = await _pluginService.SaveClientDLL(request.ClientDLL);
+        if (clientUid == null)
         {
-            Console.WriteLine(request.ServerDLL.Name);
-            Console.WriteLine(request.ServerDLL.Length);
-            await SaveFileAsync(request.ServerDLL, serverUploadPath);
-            _manager.LoadAllAssemblies();
+            Console.WriteLine("Fail to load Client DLL");
+            return BadRequest("Fail to load Client DLL");
         }
 
+        Guid? serverUid = null;
+        if (request.ServerDLL != null)
+        {
+            serverUid = await _pluginService.SaveServerDLL(request.ServerDLL);
+            if (serverUid == null)
+            {
+                await _pluginService.Rollback();
+                Console.WriteLine("Fail to load Server DLL");
+                return BadRequest("Fail to load Server DLL");
+            }
+
+            if (serverUid != clientUid)
+            {
+                await _pluginService.Rollback();
+                return BadRequest("Server and client dll must have same id");
+            }
+        }
+        
+        var res = await _pluginService.Add(new PluginDTO()
+        {
+            PluginId = (Guid)clientUid,
+            Name = request.Name,
+            Description = request.Description,
+            IsPremium = request.IsPremium,
+            Category = request.Category
+        });
+
+        if (!res)
+        {
+            Console.WriteLine("Fail to install Plugin");
+            return BadRequest("Fail to install Plugin");
+        }
+
+        if (serverUid != null)
+        {
+            _manager.LoadAllAssemblies();
+        }
+        
         return Ok(new ActionResponse<bool>() {Result = true});
-    }
-    
-    private async Task SaveFileAsync(IFormFile file, string uploadPath)
-    {
-        var filePath = Path.Combine(uploadPath, file.FileName);
-        await using var stream = new FileStream(filePath, FileMode.Create);
-        await file.CopyToAsync(stream);
     }
     
     //[ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Client)]

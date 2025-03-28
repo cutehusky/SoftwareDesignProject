@@ -12,7 +12,7 @@ namespace SoftwareDesignProject.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Plugin",
+                name: "Plugins",
                 columns: table => new
                 {
                     PluginId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -20,13 +20,11 @@ namespace SoftwareDesignProject.Migrations
                     Description = table.Column<string>(type: "text", nullable: false),
                     Category = table.Column<string>(type: "text", nullable: false),
                     IsEnabled = table.Column<bool>(type: "boolean", nullable: false),
-                    IsPremium = table.Column<bool>(type: "boolean", nullable: false),
-                    CreateAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdateAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    IsPremium = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Plugin", x => x.PluginId);
+                    table.PrimaryKey("PK_Plugins", x => x.PluginId);
                 });
 
             migrationBuilder.CreateTable(
@@ -36,8 +34,7 @@ namespace SoftwareDesignProject.Migrations
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     Username = table.Column<string>(type: "text", nullable: false),
                     HashedPassword = table.Column<string>(type: "text", nullable: false),
-                    UserType = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    UserRole = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -55,9 +52,9 @@ namespace SoftwareDesignProject.Migrations
                 {
                     table.PrimaryKey("PK_user_starred_plugins", x => new { x.StarredPluginId, x.UserId });
                     table.ForeignKey(
-                        name: "FK_user_starred_plugins_Plugin_StarredPluginId",
+                        name: "FK_user_starred_plugins_Plugins_StarredPluginId",
                         column: x => x.StarredPluginId,
-                        principalTable: "Plugin",
+                        principalTable: "Plugins",
                         principalColumn: "PluginId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -69,8 +66,8 @@ namespace SoftwareDesignProject.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Plugin_Name",
-                table: "Plugin",
+                name: "IX_Plugins_Name",
+                table: "Plugins",
                 column: "Name",
                 unique: true);
 
@@ -93,7 +90,7 @@ namespace SoftwareDesignProject.Migrations
                 name: "user_starred_plugins");
 
             migrationBuilder.DropTable(
-                name: "Plugin");
+                name: "Plugins");
 
             migrationBuilder.DropTable(
                 name: "Users");

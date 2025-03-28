@@ -47,9 +47,6 @@ namespace SoftwareDesignProject.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
@@ -64,15 +61,12 @@ namespace SoftwareDesignProject.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdateAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.HasKey("PluginId");
 
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Plugin");
+                    b.ToTable("Plugins");
                 });
 
             modelBuilder.Entity("SoftwareDesignProject.Models.Entities.User", b =>
@@ -81,14 +75,11 @@ namespace SoftwareDesignProject.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("HashedPassword")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("UserType")
+                    b.Property<int>("UserRole")
                         .HasColumnType("integer");
 
                     b.Property<string>("Username")

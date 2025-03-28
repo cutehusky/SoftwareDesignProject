@@ -1,7 +1,6 @@
 using BackendPluginTemplate;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.IdentityModel.Tokens;
 using MudBlazor.Services;
 using SoftwareDesignProject.Client;
@@ -11,11 +10,6 @@ using SoftwareDesignProject.Services;
 using System.Text;
 using PluginListLoader = SoftwareDesignProject.Services.PluginListLoader;
 using PublishPlugin = SoftwareDesignProject.Services.PublishPlugin;
-
-using Microsoft.EntityFrameworkCore;
-using Npgsql;
-using System;
-using System.Data;
 using SoftwareDesignProject.Repositories;
 
 
@@ -26,6 +20,8 @@ builder.Services.AddDbContext<AppDbContext>();
 
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<PluginRepository>();
+builder.Services.AddScoped<PluginService>();
 
 // Add MudBlazor services
 builder.Services.AddMudServices();
