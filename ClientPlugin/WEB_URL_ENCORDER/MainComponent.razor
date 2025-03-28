@@ -1,0 +1,35 @@
+﻿@using MudBlazor
+@using System.Net
+
+<MudPaper Elevation="4" Class="pa-4 d-flex flex-column align-center pa-4">
+    <MudText Typo="Typo.h3">URL Encoder/Decoder</MudText>
+
+    <!-- Encode Section -->
+    <MudText Typo="Typo.subtitle1" Class="mt-2">Encode</MudText>
+    <MudTextField Label="Enter text to encode" Value="_inputText" Immediate="true" Variant="Variant.Filled" T="string" ValueChanged="(newVal) => EncodeText(newVal)" />
+    <MudTextField Label="Encoded URL" ReadOnly="true" Variant="Variant.Filled" Value="@_encodedText" />
+
+    <!-- Decode Section -->
+    <MudText Typo="Typo.subtitle1" Class="mt-4">Decode</MudText>
+    <MudTextField Label="Enter URL-encoded text" Value="_inputEncodedText" Immediate="true" Variant="Variant.Filled" T="string" ValueChanged="(newVal) => DecodeText(newVal)" />
+    <MudTextField Label="Decoded text" ReadOnly="true" Variant="Variant.Filled" Value="@_decodedText" />
+</MudPaper>
+
+@code {
+    private string _inputText = string.Empty;
+    private string _encodedText = string.Empty;
+    private string _inputEncodedText = string.Empty;
+    private string _decodedText = string.Empty;
+
+    private void EncodeText(string newVal)
+    {
+        _inputText = newVal;
+        _encodedText = Uri.EscapeDataString(_inputText);
+    }
+
+    private void DecodeText(string newVal)
+    {
+        _inputEncodedText = newVal;
+        _decodedText = Uri.UnescapeDataString(_inputEncodedText);
+    }
+}
