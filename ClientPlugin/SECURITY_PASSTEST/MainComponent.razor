@@ -1,0 +1,61 @@
+﻿@using MudBlazor
+
+<MudPaper Elevation="4" Class="pa-4 d-flex flex-column align-center">
+    <MudText Typo="Typo.h3">Password Tester</MudText>
+
+    <MudTextField Variant="Variant.Filled" Label="Enter Password" Value="_password" Immediate="true"
+    InputType="InputType.Password" T="string" ValueChanged="(newVal) =>CheckPasswordStrength(newVal)"  />
+
+    <MudProgressLinear Color="@_strengthColor" Value="@_strengthPercentage" Class="mt-2" />
+
+    <MudText Typo="Typo.subtitle1" Color="@_strengthColor">@_strengthText</MudText>
+</MudPaper>
+
+@code {
+    private string _password = string.Empty;
+    private string _strengthText = "Enter a password";
+    private Color _strengthColor = Color.Default;
+    private int _strengthPercentage = 0;
+
+    private void CheckPasswordStrength(string newVal)
+    {
+        _password = newVal;
+
+        int score = 0;
+        if (_password.Length >= 8) score++;
+        if (_password.Any(char.IsUpper)) score++;
+        if (_password.Any(char.IsLower)) score++;
+        if (_password.Any(char.IsDigit)) score++;
+        if (_password.Any(ch => "!@#$%^&*()_+-=[]{}|;:'\",.<>?/`~".Contains(ch))) score++;
+
+        switch (score)
+        {
+            case 0:
+            case 1:
+                _strengthText = "Very Weak";
+                _strengthColor = Color.Error;
+                _strengthPercentage = 20;
+                break;
+            case 2:
+                _strengthText = "Weak";
+                _strengthColor = Color.Warning;
+                _strengthPercentage = 40;
+                break;
+            case 3:
+                _strengthText = "Medium";
+                _strengthColor = Color.Info;
+                _strengthPercentage = 60;
+                break;
+            case 4:
+                _strengthText = "Strong";
+                _strengthColor = Color.Success;
+                _strengthPercentage = 80;
+                break;
+            case 5:
+                _strengthText = "Very Strong";
+                _strengthColor = Color.Primary;
+                _strengthPercentage = 100;
+                break;
+        }
+    }
+}
