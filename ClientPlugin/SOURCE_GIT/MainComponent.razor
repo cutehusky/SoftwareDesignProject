@@ -1,0 +1,71 @@
+﻿@using MudBlazor
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="pa-4">
+    <MudPaper Elevation="4" Class="pa-4">
+        <MudText Typo="Typo.h4" Class="mb-2">Git Cheat Sheet</MudText>
+        <MudText Typo="Typo.subtitle1">
+            Git is a decentralized version management software. With this cheat sheet,
+            you will have quick access to the most common Git commands.
+        </MudText>
+    </MudPaper>
+
+    <!-- Configuration -->
+    <MudPaper Elevation="2" Class="pa-4 mt-4">
+        <MudText Typo="Typo.h5">Configuration</MudText>
+
+        <MudText Class="mb-2">Set the global config:</MudText>
+        <CodeBlock Code=@("git config --global user.name \"[name]\"") />
+        <CodeBlock Code=@("git config --global user.email \"[email]\"") />
+    </MudPaper>
+
+    <!-- Get Started -->
+    <MudPaper Elevation="2" Class="pa-4 mt-4">
+        <MudText Typo="Typo.h5">Get Started</MudText>
+
+        <MudText Class="mb-2">Create a git repository:</MudText>
+        <CodeBlock Code="git init" />
+
+        <MudText Class="mb-2 mt-2">Clone an existing repository:</MudText>
+        <CodeBlock Code="git clone [url]" />
+    </MudPaper>
+
+    <!-- Commit -->
+    <MudPaper Elevation="2" Class="pa-4 mt-4">
+        <MudText Typo="Typo.h5">Commit</MudText>
+
+        <MudText Class="mb-2">Commit all tracked changes:</MudText>
+        <CodeBlock Code=@("git commit -am \"[commit message]\"") />
+
+        <MudText Class="mb-2 mt-2">Add new modifications to the last commit:</MudText>
+        <CodeBlock Code="git commit --amend --no-edit" />
+    </MudPaper>
+
+    <!-- Undo Changes -->
+    <MudPaper Elevation="2" Class="pa-4 mt-4">
+        <MudText Typo="Typo.h5">I've made a mistake</MudText>
+
+        <MudText Class="mb-2">Change last commit message:</MudText>
+        <CodeBlock Code="git commit --amend" />
+
+        <MudText Class="mb-2 mt-2">Undo most recent commit and keep changes:</MudText>
+        <CodeBlock Code="git reset HEAD~1" />
+
+        <MudText Class="mb-2 mt-2">Undo the N most recent commits and keep changes:</MudText>
+        <CodeBlock Code="git reset HEAD~N" />
+
+        <MudText Class="mb-2 mt-2">Undo most recent commit and get rid of changes:</MudText>
+        <CodeBlock Code="git reset HEAD~1 --hard" />
+
+        <MudText Class="mb-2 mt-2">Reset branch to remote state:</MudText>
+        <CodeBlock Code="git fetch origin" />
+        <CodeBlock Code="git reset --hard origin/[branch-name]" />
+    </MudPaper>
+
+    <!-- Miscellaneous -->
+    <MudPaper Elevation="2" Class="pa-4 mt-4">
+        <MudText Typo="Typo.h5">Miscellaneous</MudText>
+
+        <MudText Class="mb-2">Rename the local master branch to main:</MudText>
+        <CodeBlock Code="git branch -m master main" />
+    </MudPaper>
+</MudContainer>

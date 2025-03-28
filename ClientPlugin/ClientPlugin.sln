@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WEB_URL_ENCORDER", "WEB_URL
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WEB_PORTGEN", "WEB_PORTGEN\WEB_PORTGEN.csproj", "{A3512D2C-17CF-4DDF-9930-035D9D209C65}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SOURCE_GIT", "SOURCE_GIT\SOURCE_GIT.csproj", "{5F0C2175-D9E9-487A-908F-E6F5FE9AC469}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -93,6 +95,10 @@ Global
 		{A3512D2C-17CF-4DDF-9930-035D9D209C65}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3512D2C-17CF-4DDF-9930-035D9D209C65}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3512D2C-17CF-4DDF-9930-035D9D209C65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F0C2175-D9E9-487A-908F-E6F5FE9AC469}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F0C2175-D9E9-487A-908F-E6F5FE9AC469}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F0C2175-D9E9-487A-908F-E6F5FE9AC469}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F0C2175-D9E9-487A-908F-E6F5FE9AC469}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

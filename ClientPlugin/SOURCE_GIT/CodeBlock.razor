@@ -1,0 +1,9 @@
+﻿@using MudBlazor
+
+<MudPaper Elevation="1" Class="pa-2" Style="background-color: #282c34; color: #abb2bf; font-family: monospace; overflow-x: auto;">
+    <pre><code>@Code</code></pre>
+</MudPaper>
+
+@code {
+    [Parameter] public string Code { get; set; } = string.Empty;
+}
