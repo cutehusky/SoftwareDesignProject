@@ -1,0 +1,41 @@
+﻿@using MudBlazor
+@using Microsoft.JSInterop
+
+<MudPaper Elevation="4" Class="pa-4 d-flex flex-column align-center pa-4">
+    <MudText Typo="Typo.h3">Random Port Generator</MudText>
+
+    <MudTextField Label="Generated Port" ReadOnly="true" Variant="Variant.Filled" @bind-Value="_port" />
+
+    <MudStack Row=true Spacing="2" Class="mt-4">
+        <MudButton OnClick="GeneratePort" Variant="Variant.Filled" Color="Color.Primary">
+            Generate
+        </MudButton>
+        <MudButton OnClick="CopyToClipboard" Variant="Variant.Outlined" Color="Color.Secondary">
+            Copy
+        </MudButton>
+    </MudStack>
+</MudPaper>
+
+@code {
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+    private string _port = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        GeneratePort();
+    }
+
+    private void GeneratePort()
+    {
+        Random random = new();
+        _port = random.Next(1024, 65535).ToString(); 
+    }
+
+    private async Task CopyToClipboard()
+    {
+        if (!string.IsNullOrEmpty(_port))
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", _port);
+        }
+    }
+}

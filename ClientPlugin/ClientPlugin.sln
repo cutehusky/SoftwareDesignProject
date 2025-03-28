@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SECURITY_HIDEEMAIL", "SECUR
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WEB_URL_ENCORDER", "WEB_URL_ENCORDER\WEB_URL_ENCORDER.csproj", "{56B485C3-2A23-45C8-BCA9-AA1849A64810}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WEB_PORTGEN", "WEB_PORTGEN\WEB_PORTGEN.csproj", "{A3512D2C-17CF-4DDF-9930-035D9D209C65}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,10 @@ Global
 		{56B485C3-2A23-45C8-BCA9-AA1849A64810}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{56B485C3-2A23-45C8-BCA9-AA1849A64810}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{56B485C3-2A23-45C8-BCA9-AA1849A64810}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3512D2C-17CF-4DDF-9930-035D9D209C65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3512D2C-17CF-4DDF-9930-035D9D209C65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3512D2C-17CF-4DDF-9930-035D9D209C65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3512D2C-17CF-4DDF-9930-035D9D209C65}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
