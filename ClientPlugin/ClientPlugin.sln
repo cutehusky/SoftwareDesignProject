@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SOURCE_GIT", "SOURCE_GIT\SO
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SOURCE_DNS", "SOURCE_DNS\SOURCE_DNS.csproj", "{7F453F2C-5B5D-450A-A00E-6AADC44FBD34}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SOURCE_QR", "SOURCE_QR\SOURCE_QR.csproj", "{B676A8EC-B96E-47FC-A57B-87C4ACD8A3CE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -105,6 +107,10 @@ Global
 		{7F453F2C-5B5D-450A-A00E-6AADC44FBD34}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F453F2C-5B5D-450A-A00E-6AADC44FBD34}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F453F2C-5B5D-450A-A00E-6AADC44FBD34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B676A8EC-B96E-47FC-A57B-87C4ACD8A3CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B676A8EC-B96E-47FC-A57B-87C4ACD8A3CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B676A8EC-B96E-47FC-A57B-87C4ACD8A3CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B676A8EC-B96E-47FC-A57B-87C4ACD8A3CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,59 @@
+﻿@using MudBlazor
+@using System.Drawing
+@using System.Drawing.Imaging
+@using System.IO
+@inject HttpClient HttpClient
+@using System.Net.Http.Json
+
+<MudPaper Elevation="4" Class="pa-4 d-flex flex-column align-center">
+    <MudText Typo="Typo.h5">QR Code Generator</MudText>
+
+    <MudTextField Label="Enter text" @bind-Value="_inputText" Variant="Variant.Outlined" />
+
+    <MudButton OnClick="GenerateQrCode" Variant="Variant.Filled" Color="MudBlazor.Color.Primary" Class="mt-2">
+        Generate QR Code
+    </MudButton>
+
+    @if (!string.IsNullOrEmpty(_qrCodeData))
+    {
+        <MudImage Src="@_qrCodeData" Alt="Generated QR Code" Class="mt-3" Width="200" Height="200" />
+    }
+</MudPaper>
+
+@code {
+    private string _inputText = string.Empty;
+    private string _qrCodeData = string.Empty;
+
+    private async Task GenerateQrCode()
+    {
+        if (string.IsNullOrWhiteSpace(_inputText))
+        {
+            _qrCodeData = string.Empty;
+            return;
+        }
+        try
+        {
+            var response = await HttpClient.PostAsJsonAsync(
+            Config.apiEndPoint + "/SourceQr/generateqr", new Request()
+                {
+                    value = _inputText.ToString(),
+                    type = "qr"
+                });
+            if (response.IsSuccessStatusCode)
+            {
+                var responseData = await response.Content.ReadFromJsonAsync<Response>();
+                Console.WriteLine("Response: " + responseData);
+                _qrCodeData = responseData.value;
+                StateHasChanged();
+            }
+            else
+            {
+                Console.WriteLine("Error: " + response.StatusCode);
+            }
+        }
+        catch (Exception ex)
+        {
+			Console.WriteLine("Error: " + ex.Message);
+        }
+    }
+}
