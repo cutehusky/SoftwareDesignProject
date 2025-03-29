@@ -1,0 +1,69 @@
+﻿@inject HttpClient HttpClient
+@using System.Net.Http.Json
+@using MudBlazor
+
+<MudPaper Elevation="4" Class="pa-4 d-flex flex-column align-center">
+    <MudText Typo="Typo.h4">DNS Lookup</MudText>
+
+    <MudTextField Label="Enter domain name" @bind-Value="_domain" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Language" />
+
+    <MudButton OnClick="ResolveDns" Variant="Variant.Filled" Color="Color.Primary" Class="mt-2">
+        Resolve
+    </MudButton>
+
+    @if (_ipAddresses.Count > 0)
+    {
+        <MudText Typo="Typo.subtitle1">Resolved IP Addresses:</MudText>
+        @foreach (var ip in _ipAddresses)
+        {
+            <MudText Class="mt-4">@ip</MudText>
+        }
+    }
+    else if (_errorMessage is not null)
+    {
+        <MudText Color="Color.Error" Class="mt-2">@_errorMessage</MudText>
+    }
+</MudPaper>
+
+@code {
+    private string _domain = string.Empty;
+    private List<string> _ipAddresses = new();
+    private string? _errorMessage;
+
+    private async Task ResolveDns()
+    {
+        _ipAddresses.Clear();
+        _errorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(_domain))
+        {
+            _errorMessage = "Please enter a domain name.";
+            return;
+        }
+
+        try
+        {
+            var response = await HttpClient.PostAsJsonAsync(
+            Config.apiEndPoint + "/SourceDns/lookup", new Request()
+                {
+                    value = _domain.ToString(),
+                    type = "dns"
+                });
+            if (response.IsSuccessStatusCode)
+            {
+                var responseData = await response.Content.ReadFromJsonAsync<Response>();
+                Console.WriteLine("Response: " + responseData);
+                _ipAddresses = responseData.value;
+                StateHasChanged();
+            }
+            else
+            {
+                Console.WriteLine("Error: " + response.StatusCode);
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error resolving domain: {ex.Message}";
+        }
+    }
+}

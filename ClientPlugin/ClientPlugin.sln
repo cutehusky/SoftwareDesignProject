@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WEB_PORTGEN", "WEB_PORTGEN\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SOURCE_GIT", "SOURCE_GIT\SOURCE_GIT.csproj", "{5F0C2175-D9E9-487A-908F-E6F5FE9AC469}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SOURCE_DNS", "SOURCE_DNS\SOURCE_DNS.csproj", "{7F453F2C-5B5D-450A-A00E-6AADC44FBD34}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -99,6 +101,10 @@ Global
 		{5F0C2175-D9E9-487A-908F-E6F5FE9AC469}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F0C2175-D9E9-487A-908F-E6F5FE9AC469}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F0C2175-D9E9-487A-908F-E6F5FE9AC469}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F453F2C-5B5D-450A-A00E-6AADC44FBD34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F453F2C-5B5D-450A-A00E-6AADC44FBD34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F453F2C-5B5D-450A-A00E-6AADC44FBD34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F453F2C-5B5D-450A-A00E-6AADC44FBD34}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
