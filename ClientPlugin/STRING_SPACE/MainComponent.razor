@@ -1,0 +1,28 @@
+﻿@using MudBlazor
+@using System.Text.RegularExpressions
+
+<MudPaper Elevation="4" Class="pa-4 d-flex flex-column align-center">
+    <MudText Typo="Typo.h5">Whitespace Cleaner</MudText>
+
+    <MudTextField Label="Enter text" @bind-Value="_inputText" Variant="Variant.Outlined" Multiline="true" Rows="4" />
+
+    <MudButton OnClick="CleanWhitespace" Variant="Variant.Filled" Color="Color.Primary" Class="mt-2">
+        Clean
+    </MudButton>
+
+    @if (!string.IsNullOrEmpty(_cleanedText))
+    {
+        <MudText Typo="Typo.body1" Class="mt-3"><strong>Output:</strong></MudText>
+        <MudText Typo="Typo.body1" Class="pa-2 border rounded">@_cleanedText</MudText>
+    }
+</MudPaper>
+
+@code {
+    private string _inputText = string.Empty;
+    private string _cleanedText = string.Empty;
+
+    private void CleanWhitespace()
+    {
+        _cleanedText = Regex.Replace(_inputText, @"\s+", " ").Trim();
+    }
+}
