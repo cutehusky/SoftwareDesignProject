@@ -45,9 +45,14 @@ public class UserDTOMapper: IDTOMapper<User, UserDTO>
         return new User()
         {
             UserId = from.UserId,
-            Username = from.Username,
-            HashedPassword = from.HashedPassword,
+            Username = string.IsNullOrEmpty(from.Username) ? from.UserId.ToString() : from.Username,
+            HashedPassword = from.HashedPassword!,
             UserRole = ConvertFrom(from.UserRole)
         };
+    }
+
+    public void CopyToEntity(User target, UserDTO source)
+    {
+        throw new NotImplementedException();
     }
 }

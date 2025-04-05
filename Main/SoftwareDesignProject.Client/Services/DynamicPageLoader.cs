@@ -4,12 +4,12 @@ using SoftwareDesignProject.Client.Models;
 
 namespace SoftwareDesignProject.Client.Services;
 
-public class CSRDynamicPageLoader: IDynamicPageLoader
+public class DynamicPageLoader: IDynamicPageLoader
 {
 
     private HttpClient _httpClient;
     
-    public CSRDynamicPageLoader(HttpClient httpClient)
+    public DynamicPageLoader(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }

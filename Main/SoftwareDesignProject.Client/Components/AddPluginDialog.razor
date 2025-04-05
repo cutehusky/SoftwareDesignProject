@@ -1,28 +1,28 @@
 ﻿@using SoftwareDesignProject.Client.Models
 @using SoftwareDesignProject.Client.Services
-@inject IPublishPlugin PublishPlugin
 @inject NavigationManager Navigation
+@inject IServiceProvider ServiceProvider
 
 <MudDialog>
     <DialogContent>
 
-        <div class="d-flex align-center justify-lg-space-between">
-            <MudTextField width="50%-20px" @bind-Value="_category" Class="mx-3"
+        <div class="d-flex justify-lg-space-between">
+            <MudTextField @bind-Value="_category" Class="mx-3"
                           Label="Category" Variant="Variant.Outlined" Lines="1" ></MudTextField>
             <MudTextField @bind-Value="_name" Class="mx-3" Label="Name" Variant="Variant.Outlined" Lines="1"></MudTextField>
         </div>
 
-        <MudTextField class="my-6 mx-3"  @bind-Value="_description" Label="Description" Variant="Variant.Outlined" Lines="5"></MudTextField>
+        <MudTextField class="mx-3" @bind-Value="_description" Label="Description" Variant="Variant.Outlined" Lines="5"></MudTextField>
 
-        <MudCheckBox Label="Is Premium" @bind-Value="_isPremium"/>
+        <MudSwitch Class="mx-3" Color="Color.Primary" Label="Is Premium" @bind-Value="_isPremium"/>
         
-        <MudAlert Severity="_alertSeverity" Class="mb-3" Style="@AlertStyle">
+        <MudAlert Severity="_alertSeverity" Class="mb-2 mx-3" Style="@AlertStyle">
             @_alertText
         </MudAlert>
         
-        <MudDivider DividerType="DividerType.Middle" Class="my-3"/>
+        <MudDivider DividerType="DividerType.Middle" Class="my-2"/>
 
-        <div class="my-6 mx-3 d-flex align-center">
+        <div class="my-3 mx-3 d-flex align-center">
             <MudFileUpload T="IBrowserFile" FilesChanged="OnClientDLLFileChanged">
                 <ActivatorContent>
                     <MudButton Color="Color.Inherit" Variant="Variant.Outlined"
@@ -36,7 +36,7 @@
             </div>
         </div>
 
-        <div class="my-6 mx-3 d-flex align-center">
+        <div class="my-3 mx-3 d-flex align-center">
             <MudFileUpload T="IBrowserFile" FilesChanged="OnServerDLLFileChanged">
                 <ActivatorContent>
                     <MudButton Color="Color.Inherit" Variant="Variant.Outlined"
@@ -61,6 +61,8 @@
 @code {
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; }
+    
+    private IPluginService? PluginService { get; set; }
 
     private Severity _alertSeverity = Severity.Info;
     private bool _showAlert = false;
@@ -82,8 +84,16 @@
         _showAlert = true;
     }
 
+    protected override void OnInitialized()
+    {
+        PluginService = ServiceProvider.GetService<IPluginService>();
+    }
+
     private async void Submit()
     {
+        if (PluginService == null)
+            return;
+        
         if (_name.Trim().Length == 0 || 
             _description.Trim().Length == 0 ||
             _category.Trim().Length == 0)
@@ -99,25 +109,25 @@
         }
         
         ShowAlert(Severity.Info, "Loading...");
-        
-        var res = await PublishPlugin.Submit(new PluginUploadData()
-        {
-            Name = _name,
-            Description = _description,
-            IsPremium = _isPremium,
-            ClientDLL = _clientDLL,
-            ServerDLL = _serverDLL,
-            Category = _category
-        });
 
-        if (res)
+        try
         {
+            await PluginService.Add(new PluginUploadData()
+            {
+                Name = _name,
+                Description = _description,
+                IsPremium = _isPremium,
+                ClientDLL = _clientDLL,
+                ServerDLL = _serverDLL,
+                Category = _category
+            });
+            
             MudDialog.Close(DialogResult.Ok(true));
             Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
         }
-        else
+        catch (Exception e)
         {
-            ShowAlert(Severity.Error, "Fail to install plugin.");
+            ShowAlert(Severity.Error, $"Fail to install plugin. Reason: {e.Message}");
             StateHasChanged();
         }
     } 

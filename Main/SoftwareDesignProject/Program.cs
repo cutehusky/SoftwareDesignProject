@@ -3,13 +3,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.IdentityModel.Tokens;
 using MudBlazor.Services;
-using SoftwareDesignProject.Client;
-using SoftwareDesignProject.Client.Services;
 using SoftwareDesignProject.Components;
 using SoftwareDesignProject.Services;
 using System.Text;
-using PluginListLoader = SoftwareDesignProject.Services.PluginListLoader;
-using PublishPlugin = SoftwareDesignProject.Services.PublishPlugin;
 using SoftwareDesignProject.Repositories;
 
 
@@ -31,13 +27,6 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
-
-// Add empty service to prevent exception when force refresh page as SSR  
-builder.Services.AddSingleton<IDynamicPageLoader, SSRDynamicPageLoader>();
-builder.Services.AddSingleton<INavMenuLoader, SSRNavMenuLoader>();
-builder.Services.AddSingleton<IPluginListLoader, PluginListLoader>();
-builder.Services.AddSingleton<IPublishPlugin, PublishPlugin>();
-
 builder.Services.AddSingleton<DynamicPluginManager>();
 builder.Services.AddSingleton<IDynamicServiceProvider, DynamicServiceProvider>();
 
@@ -55,7 +44,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSingleton<IActionDescriptorChangeProvider, ActionDescriptorChangeProvider>();
 
-builder.Services.AddScoped(sp =>
+builder.Services.AddScoped(_ =>
     new HttpClient { BaseAddress = new Uri("http://localhost:5037/") });
 
 builder.Services.AddSingleton<DynamicRouteTransformer>();

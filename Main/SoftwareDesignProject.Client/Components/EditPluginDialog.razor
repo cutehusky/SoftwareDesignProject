@@ -1,0 +1,88 @@
+﻿@using CommonDTO
+@using SoftwareDesignProject.Client.Services
+@inject NavigationManager Navigation
+@inject IServiceProvider ServiceProvider
+
+<MudDialog>
+    <DialogContent>
+
+        <div class="d-flex mb-6 justify-lg-space-between">
+            <MudTextField @bind-Value="Plugin.Category" Class="mx-3"
+                          Label="Category" Variant="Variant.Outlined" Lines="1" ></MudTextField>
+            <MudTextField @bind-Value="Plugin.Name" Class="mx-3" Label="Name" Variant="Variant.Outlined" Lines="1"></MudTextField>
+        </div>
+
+        <MudTextField class="mx-3 my-6" @bind-Value="Plugin.Description" Label="Description" Variant="Variant.Outlined" Lines="5"></MudTextField>
+
+        <div class="d-flex my-6">
+            <MudSwitch Class="mx-3" Color="Color.Primary" Label="Is Premium" @bind-Value="Plugin.IsPremium"/>
+            <MudSwitch Class="mx-3" Color="Color.Primary" Label="Is Enabled" @bind-Value="Plugin.IsEnabled"/>
+        </div>
+        
+        <MudAlert Severity="_alertSeverity" Class="mb-3 mx-3" Style="@AlertStyle">
+            @_alertText
+        </MudAlert>
+    </DialogContent>
+    
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public PluginDTO Plugin { get; set; } = null!;
+    
+    private IPluginService? PluginService { get; set; }
+
+    private Severity _alertSeverity = Severity.Info;
+    private bool _showAlert = false;
+    private string AlertStyle => _showAlert ? "display: block;" : "display: none;";
+    private string _alertText = "";
+
+    private void ShowAlert(Severity severity, string text)
+    {
+        _alertSeverity = severity;
+        _alertText = text;
+        _showAlert = true;
+    }
+
+    protected override void OnInitialized()
+    {
+        PluginService = ServiceProvider.GetService<IPluginService>();
+    }
+
+    private async void Submit()
+    {
+        if (PluginService == null)
+            return;
+        
+        if (Plugin.Name!.Trim().Length == 0 || 
+            Plugin.Description!.Trim().Length == 0 ||
+            Plugin.Category!.Trim().Length == 0)
+        {
+            ShowAlert(Severity.Error, "Must fill name, description, category.");
+            return;
+        }
+        
+        ShowAlert(Severity.Info, "Loading...");
+
+        try
+        {
+            await PluginService.Edit(Plugin);
+            MudDialog.Close(DialogResult.Ok(true));
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+        }
+        catch (Exception e)
+        {
+            ShowAlert(Severity.Error, "Fail to install plugin.");
+            StateHasChanged();
+        }
+    } 
+
+    private void Cancel() => MudDialog.Cancel();
+}

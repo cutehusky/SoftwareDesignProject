@@ -2,8 +2,8 @@
 
 public class NavItem
 {
-    public string Text { get; set; }
-    public string Href { get; set; }
-    public string Icon { get; set; }
-    public string Category { get; set; } = "";
+    public required string Text { get; init; }
+    public required string Href { get; init; }
+    public required string Icon { get; init; }
+    public required string Category { get; init; }
 }

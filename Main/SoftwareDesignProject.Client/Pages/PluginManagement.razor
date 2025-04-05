@@ -1,21 +1,22 @@
 ﻿@inject IDialogService Dialog
+@inject IServiceProvider ServiceProvider
+@inject NavigationManager Navigation
 @using CommonDTO
 @using SoftwareDesignProject.Client.Components
 @using SoftwareDesignProject.Client.Services
-@inject IPluginListLoader PluginListLoader
 
 <div class="d-flex align-center justify-end mb-6">
     <MudButton Variant="Variant.Outlined" Color="Color.Inherit"
                OnClick="@(() => OpenDialogAsync(_maxWidth))"> Add </MudButton>
 </div>
 
-<MudTable Items="plugins" Hover="true" SortLabel="Sort By" Elevation="0" AllowUnsorted="false">
+<MudTable Items="_plugins" Hover="true" SortLabel="Sort By" Elevation="0" AllowUnsorted="false">
     <HeaderContent>
-        <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<PluginDTO, object>(x=>x.Category)">Category</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.Name)">Name</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.Description)">Description</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.IsEnabled)">Enabled</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.IsPremium)">Premium</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<PluginDTO, object>(x=>x.Category!)">Category</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.Name!)">Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.Description!)">Description</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.IsEnabled!)">Enabled</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.IsPremium!)">Premium</MudTableSortLabel></MudTh>
         <MudTh>Action</MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -23,13 +24,14 @@
         <MudTd DataLabel="Name">@context.Name</MudTd>
         <MudTd DataLabel="Description">@context.Description</MudTd>
         <MudTd DataLabel="Enabled">
-            <MudCheckBox @bind-Value="@context.IsEnabled"></MudCheckBox>
+            <MudCheckBox @bind-Value="@context.IsEnabled" ReadOnly="true"></MudCheckBox>
         </MudTd>
         <MudTd DataLabel="Premium">
-            <MudCheckBox @bind-Value="@context.IsPremium"></MudCheckBox>
+            <MudCheckBox @bind-Value="@context.IsPremium" ReadOnly="true"></MudCheckBox>
         </MudTd>
         <MudTd DataLabel="Action">
             <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => Delete(context.PluginId)" aria-label="delete" />
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="() => Edit(context, _maxWidth)" aria-label="delete" />
         </MudTd>
     </RowTemplate>
     <PagerContent>
@@ -37,17 +39,42 @@
     </PagerContent>
 </MudTable>
 @code {
-    private List<PluginDTO> plugins = new();
+    
+    private IPluginService? PluginService { get; set; } = null;
+
+    private List<PluginDTO> _plugins = [];
     protected override async Task OnInitializedAsync()
     {
-        var items = await PluginListLoader.GetItem();
+        PluginService = ServiceProvider.GetService<IPluginService>();
+        if (PluginService == null)
+            return;
+        var items = await PluginService.GetList();
         if (items != null)
-            plugins = items;
+            _plugins = items;
     }
 
-    private void Delete(Guid id)
+    private Task Edit(PluginDTO pluginDto, DialogOptions options)
+    {
+        var parameters = new DialogParameters
+        {
+            { "Plugin",  pluginDto}
+        };
+        return Dialog.ShowAsync<EditPluginDialog>("Edit Plugin", parameters, options);
+    }
+
+    private async void Delete(Guid id)
     {
         Console.WriteLine($"deleting : {id}");
+        if (PluginService == null)
+            return;
+        try
+        {
+            await PluginService.Remove(id);
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+        } catch (Exception e)
+        {
+            
+        }
     }
     
     private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };

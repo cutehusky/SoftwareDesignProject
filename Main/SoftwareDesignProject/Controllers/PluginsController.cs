@@ -1,20 +1,23 @@
 ﻿using CommonDTO;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using MudBlazor;
 using SoftwareDesignProject.Models.DTO;
 using SoftwareDesignProject.Services;
 
 namespace SoftwareDesignProject.Controllers;
 
 [ApiController]
-[Route("api/plugins")]
+[Route("api/[controller]")]
 public class PluginsController : ControllerBase
 {
     private readonly IHostEnvironment _env;
     private readonly DynamicPluginManager _manager;
     private readonly PluginService _pluginService;
     
-    public PluginsController(IHostEnvironment env, DynamicPluginManager manager, PluginService pluginService)
+    public PluginsController(
+        IHostEnvironment env, 
+        DynamicPluginManager manager, 
+        PluginService pluginService)
     {
         _env = env;
         _manager = manager;
@@ -22,47 +25,44 @@ public class PluginsController : ControllerBase
     }
     
     
-    [HttpGet("Load")]
+    [HttpGet("load")]
     public IActionResult Load()
     {
         _manager.LoadAllAssemblies();
-        return Ok(new { message = "Hello, World!" });
+        return Ok(new { message = "Server Plugin Reloaded" });
     }
 
-    [HttpGet("GetList")]
-    public async Task<IActionResult> GetList()
+    [HttpPost("edit")]
+    public async Task<IActionResult> EditPlugin([FromBody] PluginDTO dto)
     {
-        // TODO: Load plugin list in db
-        var plugins = await _pluginService.GetList();
+        try
+        {
+            await _pluginService.EditPlugin(dto);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+        return Ok();
+    }
 
-        var list = new List<NavItem>()
+    [HttpPost("remove")]
+    public async Task<IActionResult> RemovePlugin([FromBody] PluginDTO request)
+    {
+        try
         {
-            new() { 
-                Text = "Home", 
-                Href = "home", 
-                Icon = Icons.Material.Filled.Home,
-                Category = ""
-            },
-            new()
-            {
-                Text = "Dashboard", 
-                Href = "/", 
-                Icon = Icons.Material.Filled.Dashboard
-            },
-        };
-        list.AddRange(plugins.Select(plugin => new NavItem()
+            await _pluginService.RemovePlugin(request.PluginId);
+        }
+        catch (Exception e)
         {
-            Text = plugin.Name,
-            Category = plugin.Category,
-            Href = $"dynamicDLL/{plugin.PluginId}",
-            Icon = Icons.Material.Filled.List
-        }));
-        return Ok(list);
+            return BadRequest(e.Message);
+        }
+        return Ok();
     }
     
     
-    [HttpGet("GetListAdmin")]
-    public async Task<IActionResult> GetListAdmin()
+    [HttpGet("getList")]
+    public async Task<IActionResult> GetList()
     {
         var plugins = await _pluginService.GetList();
         return Ok(plugins);
@@ -71,56 +71,25 @@ public class PluginsController : ControllerBase
     [HttpPost("add")]
     public async Task<IActionResult> UploadFiles([FromForm] UploadPluginRequest request)
     {
-        Console.WriteLine(request.Name);
-        Console.WriteLine(request.Description);
-        Console.WriteLine(request.IsPremium);
-
-        var clientUid = await _pluginService.SaveClientDLL(request.ClientDLL);
-        if (clientUid == null)
+        Console.WriteLine("Installing plugin with name: " + request.Name);
+        try
         {
-            Console.WriteLine("Fail to load Client DLL");
-            return BadRequest("Fail to load Client DLL");
+            await _pluginService.AddPlugin(request.Name, request.Description,
+                request.Category, request.IsPremium, request.ClientDLL, request.ServerDLL);
         }
-
-        Guid? serverUid = null;
-        if (request.ServerDLL != null)
+        catch (InvalidDataException e)
         {
-            serverUid = await _pluginService.SaveServerDLL(request.ServerDLL);
-            if (serverUid == null)
-            {
-                await _pluginService.Rollback();
-                Console.WriteLine("Fail to load Server DLL");
-                return BadRequest("Fail to load Server DLL");
-            }
-
-            if (serverUid != clientUid)
-            {
-                await _pluginService.Rollback();
-                return BadRequest("Server and client dll must have same id");
-            }
+            return BadRequest(e.Message);
         }
-        
-        var res = await _pluginService.Add(new PluginDTO()
+        catch (InvalidOperationException e)
         {
-            PluginId = (Guid)clientUid,
-            Name = request.Name,
-            Description = request.Description,
-            IsPremium = request.IsPremium,
-            Category = request.Category
-        });
-
-        if (!res)
-        {
-            Console.WriteLine("Fail to install Plugin");
-            return BadRequest("Fail to install Plugin");
+            return BadRequest(e.Message);
         }
-
-        if (serverUid != null)
+        catch (IOException e)
         {
-            _manager.LoadAllAssemblies();
+            return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
         }
-        
-        return Ok(new ActionResponse<bool>() {Result = true});
+        return Ok();
     }
     
     //[ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Client)]

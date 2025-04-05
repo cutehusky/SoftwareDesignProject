@@ -2,5 +2,5 @@
 
 public class ActionResponse<T>
 {
-    public T Result { get; set; }
+    public required T Result { get; init; }
 }

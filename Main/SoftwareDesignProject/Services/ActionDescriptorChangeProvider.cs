@@ -3,7 +3,6 @@
 namespace SoftwareDesignProject.Services;
 
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using System;
 using System.Threading;
 
 // https://stackoverflow.com/questions/46156649/asp-net-core-register-controller-at-runtime

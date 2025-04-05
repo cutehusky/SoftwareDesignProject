@@ -26,4 +26,21 @@ public class PluginRepository
         var rowAffected = await _dbContext.SaveChangesAsync();
         return rowAffected > 0;
     }
+
+    public async Task<bool> Remove(Guid id)
+    {
+        var rowAffected = await _dbContext.Plugins.Where((plugin => plugin.PluginId == id))
+            .ExecuteDeleteAsync();
+        return rowAffected > 0;
+    }
+
+    public async Task<bool> Update(PluginDTO dto)
+    {
+        var target = await _dbContext.Plugins.Where(plugin => plugin.PluginId == dto.PluginId).FirstOrDefaultAsync();
+        if (target == null)
+            return false;
+        new PluginDTOMapper().CopyToEntity(target, dto);
+        var rowAffected = await _dbContext.SaveChangesAsync();
+        return rowAffected > 0;
+    }
 }

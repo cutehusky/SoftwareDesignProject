@@ -13,6 +13,7 @@ public class DynamicPluginManager
     private readonly ApplicationPartManager _partManager;
     private readonly string _pluginPath;
     private readonly ActionDescriptorChangeProvider _changeProvider;
+    private readonly HashSet<string> _loadedPlugin = new();
     private readonly Dictionary<string, List<Type>> _controllerCollection = new();
     private readonly IServiceCollection _serviceCollection = new ServiceCollection();
     private IServiceProvider _serviceProvider;
@@ -34,6 +35,7 @@ public class DynamicPluginManager
             _partManager.ApplicationParts.RemoveAt(1);
         _controllerCollection.Clear();
         _serviceCollection.Clear();
+        _loadedPlugin.Clear();
         foreach (var dll in Directory.GetFiles(_pluginPath, "*.dll"))
         {
             LoadAssembly(dll);
@@ -68,7 +70,13 @@ public class DynamicPluginManager
         if (pluginId.Length == 0)
             return;
         _partManager.ApplicationParts.Add(new AssemblyPart(assembly));
+        _loadedPlugin.Add(pluginId);
         Console.WriteLine("Loaded assembly: {0}", assembly.FullName);
+    }
+
+    public bool CheckLoadedPlugin(string uid)
+    {
+        return _loadedPlugin.Contains(uid);
     }
 
     public IServiceProvider GetServiceProvider()

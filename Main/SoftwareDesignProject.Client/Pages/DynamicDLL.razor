@@ -1,6 +1,7 @@
 ﻿@page "/dynamicDLL/{DLLName}"
-@inject IDynamicPageLoader PageLoader
 @inject NavigationManager NavigationManager
+@inject IServiceProvider ServiceProvider
+
 @_content
 
 @code {
@@ -9,10 +10,25 @@
     private RenderFragment? _content;
     private string _currentDllName = "";
 
+    private IDynamicPageLoader? PageLoader { get; set; } = null;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (OperatingSystem.IsBrowser())
+        {
+            PageLoader = ServiceProvider.GetService<IDynamicPageLoader>();
+        }
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (_currentDllName == DLLName)
             return;
+        
+        if (PageLoader == null)
+            return;
+        
         try
         {
             var dll = await PageLoader.LoadDynamicAssembly($"/api/plugins/{DLLName}.dll");

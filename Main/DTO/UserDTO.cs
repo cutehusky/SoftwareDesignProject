@@ -2,10 +2,10 @@
 {
     public class UserDTO
     {
-        public Guid UserId { get; set; } = Guid.NewGuid();
-        public string? Username { get; set; }
-        public string? HashedPassword { get; set; }
-        public UserRoles? UserRole { get; set; } = UserRoles.Normal;
+        public Guid UserId { get; init; } = Guid.NewGuid();
+        public string? Username { get; init; }
+        public string? HashedPassword { get; init; }
+        public UserRoles? UserRole { get; init; } = UserRoles.Normal;
     }
     
     public enum UserRoles

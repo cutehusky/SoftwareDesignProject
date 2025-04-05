@@ -29,8 +29,8 @@
     {
         var response = await HttpClient.PostAsJsonAsync("api/auth/signin", new LoginRequest()
         {
-            username = _username,
-            password = _password
+            Username = _username,
+            Password = _password
         });
 
         if (response.IsSuccessStatusCode)

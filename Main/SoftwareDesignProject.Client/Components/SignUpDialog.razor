@@ -44,8 +44,8 @@
 
         var response = await HttpClient.PostAsJsonAsync("api/auth/signup", new RegisterRequest()
         {
-            username = _username,
-            password = _password
+            Username = _username,
+            Password = _password
         });
 
         if (response.IsSuccessStatusCode)

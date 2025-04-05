@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using BackendPluginTemplate;
 using CommonDTO;
-using SoftwareDesignProject.Models.Entities;
 using SoftwareDesignProject.Repositories;
 
 
@@ -9,18 +8,17 @@ namespace SoftwareDesignProject.Services;
 
 public class PluginService
 {
-    private PluginRepository _pluginRepository;
-    private readonly IHostEnvironment _env;
+    private readonly PluginRepository _pluginRepository;
+    private readonly DynamicPluginManager _pluginManager;
     private readonly string _clientUploadPath;
     private readonly string _serverUploadPath;
     
-    public PluginService(PluginRepository pluginRepository, IHostEnvironment env)
+    public PluginService(PluginRepository pluginRepository, DynamicPluginManager pluginManager, IHostEnvironment env)
     {
         _pluginRepository = pluginRepository;
-        _env = env;
-        
-        _clientUploadPath = Path.Combine(_env.ContentRootPath, "Root/ClientPlugins");
-        _serverUploadPath = Path.Combine(_env.ContentRootPath, "Root/BackendPlugins");
+        _pluginManager = pluginManager;
+        _clientUploadPath = Path.Combine(env.ContentRootPath, "Root/ClientPlugins");
+        _serverUploadPath = Path.Combine(env.ContentRootPath, "Root/BackendPlugins");
     }
     
     public async Task<List<PluginDTO>> GetList()
@@ -33,21 +31,97 @@ public class PluginService
         
     }
 
-    public async Task<bool> Add(PluginDTO pluginDto)
+    public async Task AddPlugin(
+        string name, 
+        string description, 
+        string category,
+        bool isPremium,
+        IFormFile clientDLL, 
+        IFormFile? serverDLL)
     {
-        if (string.IsNullOrEmpty(pluginDto.Category))
-            pluginDto.Category = Plugin.DefaultCategory;
-        if (string.IsNullOrEmpty(pluginDto.Name))
-            pluginDto.Name = pluginDto.PluginId + " Plugin";
-        if (string.IsNullOrEmpty(pluginDto.Description))
-            pluginDto.Description = "This is plugin with name: " + pluginDto.Name;
-        var res = await _pluginRepository.Add(pluginDto);
-        if (res)
-            return true;
-        await Rollback();
-        return false;
+        
+        var clientUid = await GetClientPluginUid(clientDLL);
+        if (clientUid == null)
+        {
+            Console.WriteLine("Fail to load Client DLL");
+            throw new InvalidDataException("Fail to load Client DLL");
+        }
+
+        Guid? serverUid = null;
+        if (serverDLL != null)
+        {
+            serverUid = await GetServerPluginUid(serverDLL);
+            if (serverUid == null)
+            {
+                Console.WriteLine("Fail to load Server DLL");
+                throw new InvalidDataException("Fail to load Server DLL");
+            }
+
+            if (serverUid != clientUid)
+            {
+                Console.WriteLine("Server and client dll must have same id");
+                throw new InvalidDataException("Server and client dll must have same id");
+            }
+        }
+        
+        var res = await _pluginRepository.Add(new PluginDTO()
+        {
+            PluginId = (Guid)clientUid,
+            Name = name,
+            Description = description,
+            IsPremium = isPremium,
+            Category = category
+        });
+
+        if (!res)
+        {
+            Console.WriteLine("Fail to insert to database");
+            throw new InvalidOperationException("Fail to insert to database");
+        }
+
+        if (!await SaveFileAsync(clientDLL, clientUid + ".dll", _clientUploadPath))
+        {
+            await Rollback();
+            Console.WriteLine("Fail to save Client Plugin");
+            throw new IOException("Fail to save Client Plugin");
+        }
+
+        if (serverDLL != null)
+        {
+            if (!await SaveFileAsync(serverDLL, serverUid + ".dll", _serverUploadPath))
+            {
+                await Rollback();
+                Console.WriteLine("Fail to save Client Plugin");
+                throw new IOException("Fail to save Client Plugin");
+            }
+            _pluginManager.LoadAllAssemblies();
+        }
     }
 
+    public async Task EditPlugin(PluginDTO dto)
+    {
+        var res = await _pluginRepository.Update(dto);
+        if (!res)
+        {
+            throw new InvalidOperationException("Fail to update in database");
+        }
+    }
+
+    public async Task RemovePlugin(Guid id)
+    {
+        var res = await _pluginRepository.Remove(id);
+        if (!res)
+        {
+            Console.WriteLine("Fail to delete from database");
+            throw new InvalidOperationException("Fail to delete from database");
+        }
+
+        await RemoveFile(id + ".dll", _clientUploadPath);
+        await RemoveFile(id + ".dll", _serverUploadPath);
+        if (_pluginManager.CheckLoadedPlugin(id.ToString()))
+            _pluginManager.LoadAllAssemblies();
+    }
+    
     private async Task<Guid?> GetClientPluginUid(IFormFile file)
     {
         var dllBytes = await SaveByteArrayAsync(file);
@@ -63,20 +137,6 @@ public class PluginService
                 return result;
             }
         }
-        return null;
-    }
-
-    public async Task<Guid?> SaveClientDLL(IFormFile file)
-    {
-        var uid = await GetClientPluginUid(file);
-        if (uid == null)
-        {
-            await Rollback();
-            return null;
-        }
-        if (await SaveFileAsync(file, uid + ".dll", _clientUploadPath)) 
-            return uid;
-        await Rollback();
         return null;
     }
 
@@ -97,25 +157,27 @@ public class PluginService
         return null;
     }
     
-    public async Task<Guid?> SaveServerDLL(IFormFile file)
-    {
-        var uid = await GetServerPluginUid(file);
-        if (uid == null)
-        {
-            await Rollback();
-            return null;
-        }
-        if (await SaveFileAsync(file, uid + ".dll", _serverUploadPath)) 
-            return uid;
-        await Rollback();
-        return null;
-    }
-    
     private static async Task<byte[]> SaveByteArrayAsync(IFormFile file)
     {
         using var memoryStream = new MemoryStream();
         await file.CopyToAsync(memoryStream);
         return memoryStream.ToArray();
+    }
+
+    private async Task<bool> RemoveFile(string fileName, string path)
+    {
+        var filePath = Path.Combine(path, fileName);
+        if (!File.Exists(filePath))
+            return true;
+        try
+        {
+            File.Delete(filePath);
+            return true;
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
     }
     
     private async Task<bool> SaveFileAsync(IFormFile file, string fileName, string uploadPath)

@@ -2,8 +2,8 @@
 {
     public class LoginRequest
     {
-        public string username { get; set; }
-        public string password { get; set; }
+        public required string Username { get; init; }
+        public required string Password { get; init; }
     }
 
 }

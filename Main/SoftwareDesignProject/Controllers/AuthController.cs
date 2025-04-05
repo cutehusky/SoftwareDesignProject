@@ -1,13 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SoftwareDesignProject.Client.Models;
-using System.Threading.Tasks;
-
-using SoftwareDesignProject.Models;
-using System.Data;
+﻿using System.Data;
 using CommonDTO;
+using Microsoft.AspNetCore.Mvc;
+using SoftwareDesignProject.Services;
 
+namespace SoftwareDesignProject.Controllers;
 
-[Route("api/auth")]
+[Route("api/[controller]")]
 [ApiController]
 public class AuthController : ControllerBase
 {
@@ -22,7 +20,7 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> SignIn([FromBody] LoginRequest request)
     {
         Console.WriteLine("Sign in request received");
-        var token = await _authService.AuthenticateAsync(request.username, request.password);
+        var token = await _authService.AuthenticateAsync(request.Username, request.Password);
 
         if (token == null)
             return Unauthorized(new { message = "Invalid credentials" });
@@ -33,12 +31,12 @@ public class AuthController : ControllerBase
     [HttpPost("signup")]
     public async Task<IActionResult> SignUp([FromBody] RegisterRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.username) || string.IsNullOrWhiteSpace(request.password))
+        if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
         {
             return BadRequest(new { message = "Username and password are required" });
         }
 
-        var success = await _authService.RegisterAsync(request.username, request.password);
+        var success = await _authService.RegisterAsync(request.Username, request.Password);
 
         if (!success)
         {

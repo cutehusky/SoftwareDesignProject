@@ -4,20 +4,20 @@ using SoftwareDesignProject.Client.Models;
 
 namespace SoftwareDesignProject.Client.Services;
 
-public class PluginListLoader: IPluginListLoader
+public class NavMenuLoader: INavMenuLoader
 {
     private HttpClient _httpClient;
     private string _endpoint;
     
-    public PluginListLoader(HttpClient httpClient, string endpoint)
+    public NavMenuLoader(HttpClient httpClient, string endpoint)
     {
         _httpClient = httpClient;
         _endpoint = endpoint;
     }
     
-    public async Task<List<PluginDTO>?> GetItem()
+    public async Task<List<NavItem>?> GetNavItem()
     {
-        var res = await _httpClient.GetFromJsonAsync<List<PluginDTO>>(_endpoint);
+        var res = await _httpClient.GetFromJsonAsync<List<NavItem>>(_endpoint);
         return res;
     }
 }

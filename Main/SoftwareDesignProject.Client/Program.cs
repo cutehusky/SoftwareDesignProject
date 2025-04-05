@@ -5,16 +5,18 @@ using SoftwareDesignProject.Client;
 using SoftwareDesignProject.Client.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
-builder.Services.AddScoped(sp =>
+builder.Services.AddScoped(_ =>
     new HttpClient { BaseAddress = new Uri("http://localhost:5037/") });
 builder.Services.AddScoped<IDynamicPageLoader>(sp =>
-    new CSRDynamicPageLoader(sp.GetService<HttpClient>()!));
+    new DynamicPageLoader(sp.GetService<HttpClient>()!));
 builder.Services.AddScoped<INavMenuLoader>(sp =>
-    new CSRNavMenuLoader(sp.GetService<HttpClient>()!, "api/plugins/GetList"));
-builder.Services.AddScoped<IPluginListLoader>(sp =>
-    new PluginListLoader(sp.GetService<HttpClient>()!, "api/plugins/GetListAdmin"));
-builder.Services.AddScoped<IPublishPlugin>(sp =>
-    new PublishPlugin(sp.GetService<HttpClient>()!, "api/plugins/Add"));
+    new NavMenuLoader(sp.GetService<HttpClient>()!, "api/navMenu/getList"));
+builder.Services.AddScoped<IPluginService>(sp =>
+    new PluginService(sp.GetService<HttpClient>()!, 
+        "api/plugins/getList",
+        "api/plugins/add", 
+        "api/plugins/edit", 
+        "api/plugins/remove"));
 
 builder.Services.AddMudServices();
 builder.Services.AddAuthorizationCore();

@@ -1,9 +1,11 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using SoftwareDesignProject.Repositories;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using CommonDTO;
+using Microsoft.IdentityModel.Tokens;
+using SoftwareDesignProject.Repositories;
+
+namespace SoftwareDesignProject.Services;
 
 public class AuthService : IAuthService
 {

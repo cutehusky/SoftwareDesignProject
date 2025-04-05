@@ -1,5 +1,5 @@
 ﻿@using CommonDTO
-@inject INavMenuLoader NavMenuLoader
+@inject IServiceProvider ServiceProvider
 
 <MudNavMenu>
     @foreach (var category in _navItems)
@@ -28,24 +28,34 @@
 </MudNavMenu>
 
 @code {
-    private List<(string, List<NavItem>)> _navItems = new();
+    private INavMenuLoader? NavMenuLoader { get; set; } = null;
+    
+    private List<(string, List<NavItem>)> _navItems = [];
     
 
     protected override async Task OnInitializedAsync()
     {
+        if (OperatingSystem.IsBrowser())
+        {
+            NavMenuLoader = ServiceProvider.GetService<INavMenuLoader>();
+        }
+
+        if (NavMenuLoader == null)
+            return;
+        
         var items = await NavMenuLoader.GetNavItem();
         var dictionary = new Dictionary<string, List<NavItem>>();
         if (items != null)
         {
             foreach (var item in items)
             {
-                if (dictionary.TryGetValue(item.Category, out var list))
+                if (dictionary.TryGetValue(item.Category.Trim(), out var list))
                 {
                     list.Add(item);
                 }
                 else
                 {
-                    dictionary.Add(item.Category, [item]);
+                    dictionary.Add(item.Category.Trim(), [item]);
                 }
             }
             _navItems = dictionary.Select(kv=> (kv.Key, kv.Value)).ToList();

@@ -4,7 +4,7 @@
     
 public class PluginDTO
 {
-    public Guid PluginId { get; set; }
+    public Guid PluginId { get; init; }
     public string? Name { get; set; }
     public string? Description { get; set; }
     
