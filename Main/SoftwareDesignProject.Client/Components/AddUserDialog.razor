@@ -1,0 +1,85 @@
+﻿@using CommonDTO
+@using MudBlazor
+@using SoftwareDesignProject.Client.Services
+@inject NavigationManager Navigation
+@inject IServiceProvider ServiceProvider
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField Label="Username"
+                      @bind-Value="_username"
+                      Required="true"
+                      Immediate="true"
+                      Class="mb-4 mx-3" 
+                      Variant="Variant.Outlined" />
+
+        <MudTextField Label="Password"
+                      @bind-Value="_password"
+                      InputType="InputType.Password"
+                      Required="true"
+                      Immediate="true"
+                      Class="mb-4 mx-3" 
+                      Variant="Variant.Outlined" />
+
+        <MudSelect Label="User Role"
+                   @bind-Value="_selectedRole"
+                   Class="mb-4 mx-3" 
+                   Variant="Variant.Outlined">
+            @foreach (UserRoles role in Enum.GetValues(typeof(UserRoles)))
+            {
+                <MudSelectItem Value="role">@role.ToString()</MudSelectItem>
+            }
+        </MudSelect>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="mb-4 mx-3">@_errorMessage</MudAlert>
+        }
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cancel" Class="mx-3">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit" Class="mx-3">Create User</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    private IUserService _userService;
+    private string _username;
+    private string _password;
+    private UserRoles _selectedRole = UserRoles.Normal;
+    private string _errorMessage;
+
+    protected override void OnInitialized()
+    {
+        _userService = ServiceProvider.GetService<IUserService>();
+    }
+
+    private async Task Submit()
+    {
+        try
+        {
+            var newUser = new UserDTO
+                {
+                    Username = _username,
+				    // TODO: Hash the password before storing it
+                    HashedPassword = _password, 
+                    UserRole = _selectedRole
+                };
+
+            await _userService.Add(newUser);
+            MudDialog.Close(DialogResult.Ok(true));
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+            StateHasChanged();
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

@@ -7,7 +7,7 @@
         public string? HashedPassword { get; init; }
         public UserRoles? UserRole { get; init; } = UserRoles.Normal;
     }
-    
+
     public enum UserRoles
     {
         Normal,

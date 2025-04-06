@@ -3,7 +3,7 @@ using SoftwareDesignProject.Models.Entities;
 
 namespace SoftwareDesignProject.Services;
 
-public class AppDbContext: DbContext
+public class AppDbContext : DbContext
 {
     public DbSet<User> Users { get; set; }
     public DbSet<Plugin> Plugins { get; set; }
@@ -24,6 +24,6 @@ public class AppDbContext: DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
-        options.UseNpgsql("Host=localhost;Database=ittools;Username=postgres;Password=1234");
+        options.UseNpgsql("Host=localhost;Database=devutils;Username=postgres;Password=1234");
     }
 }

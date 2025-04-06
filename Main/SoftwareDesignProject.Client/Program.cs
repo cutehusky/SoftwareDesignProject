@@ -23,6 +23,14 @@ builder.Services.AddScoped<IPluginService>(sp =>
         "api/plugins/edit", 
         "api/plugins/remove"));
 
+builder.Services.AddScoped<IUserService>(sp => new UserService(
+    sp.GetRequiredService<HttpClient>(),
+    getListEndpoint: "/api/users",
+    updateRoleEndpoint: "/api/users/role",
+    deleteEndpoint: "/api/users",
+    addEndpoint: "/api/users"
+));
+
 builder.Services.AddMudServices();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();

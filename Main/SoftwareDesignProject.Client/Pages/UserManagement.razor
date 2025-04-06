@@ -1,0 +1,133 @@
+﻿@using MudBlazor
+@using CommonDTO
+@using SoftwareDesignProject.Client.Components
+@using SoftwareDesignProject.Client.Services
+@inject IDialogService Dialog
+@inject IServiceProvider ServiceProvider
+@inject NavigationManager Navigation
+
+<div class="d-flex align-center justify-end mb-6">
+    <MudButton Variant="Variant.Outlined" Color="Color.Inherit"
+    OnClick="@(() => OpenDialogAsync(_maxWidth))"> Add </MudButton>
+</div>
+
+<MudTable Items="_users" Hover="true" SortLabel="Sort By" Elevation="0" AllowUnsorted="false">
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortBy="new Func<UserDTO, object>(x => x.UserId)">User ID</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<UserDTO, object>(x => x.Username)">Username</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<UserDTO, object>(x => x.UserRole)">User Role</MudTableSortLabel></MudTh>
+        <MudTh>Action</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="User ID">@context.UserId</MudTd>
+        <MudTd DataLabel="Username">@context.Username</MudTd>
+        <MudTd DataLabel="User Role">
+            <MudSelect T="UserRoles" 
+                       Value="@GetCurrentRole(context)"
+                       Immediate="true"
+                       ValueChanged="@(async (v) => await OnRoleChanged(context.UserId, v))">
+                @foreach (UserRoles role in Enum.GetValues(typeof(UserRoles)))
+                {
+                    <MudSelectItem Value="role">@role.ToString()</MudSelectItem>
+                }
+            </MudSelect>
+        </MudTd>
+        <MudTd DataLabel="Action">
+            <MudIconButton Icon="@Icons.Material.Filled.Save" OnClick="@(() => Save(context.UserId))" />
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => Delete(context.UserId))" />
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new int[]{50, 100}" />
+    </PagerContent>
+</MudTable>
+
+@code {
+    private IUserService? UserService { get; set; }
+    private List<UserDTO> _users = new();
+    private Dictionary<Guid, UserRoles?> _userRoleChanges = new();
+    private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+    protected override async Task OnInitializedAsync()
+    {
+        UserService = ServiceProvider.GetService<IUserService>();
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        _users = new List<UserDTO>
+            {
+                new UserDTO { UserId = Guid.NewGuid(), Username = "user1", UserRole = UserRoles.Normal },
+                new UserDTO { UserId = Guid.NewGuid(), Username = "user2", UserRole = UserRoles.Premium },
+                new UserDTO { UserId = Guid.NewGuid(), Username = "user3", UserRole = UserRoles.Admin }
+        };
+		// TODO: Implement user backend services 
+        // if (UserService != null)
+        // {
+        //     var items = await UserService.GetList();
+        //     if (items != null)
+        //     {
+        //         _users = items;
+        //     }
+        // }
+        // else 
+        // {
+        // 
+        // }
+    }
+
+    private UserRoles GetCurrentRole(UserDTO user)
+    {
+        if (_userRoleChanges.TryGetValue(user.UserId, out var role))
+        {
+            return role ?? user.UserRole ?? UserRoles.Normal;
+        }
+        return user.UserRole ?? UserRoles.Normal;
+    }
+
+    private async Task OnRoleChanged(Guid userId, UserRoles newRole)
+    {
+        _userRoleChanges[userId] = newRole;
+        StateHasChanged();
+    }
+
+    private async Task Save(Guid userId)
+    {
+        if (_userRoleChanges.TryGetValue(userId, out var newRole))
+        {
+            if (UserService != null)  
+            {  
+                var user = _users.FirstOrDefault(u => u.UserId == userId);  
+                if (user != null)  
+                {
+                    var userWithNewRole = new UserDTO()
+                        {
+                            UserId = user.UserId,
+                            Username = user.Username,
+                            UserRole = newRole,
+                            HashedPassword = user.HashedPassword
+                        };
+                    await UserService.UpdateUserRole(userWithNewRole);
+                    _userRoleChanges.Remove(userId);  
+                    await LoadUsers();  
+                }  
+            }
+        }
+    }
+
+    private async Task Delete(Guid userId)
+    {
+        if (UserService != null)
+        {
+            await UserService.Delete(userId);
+            await LoadUsers();
+        }
+    }
+
+    private Task OpenDialogAsync(DialogOptions options)
+    {
+        // Implement Add User dialog similar to plugin page
+        return Dialog.ShowAsync<AddUserDialog>("Add User", options);
+    }
+}
