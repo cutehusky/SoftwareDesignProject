@@ -54,7 +54,7 @@
 
 	<ItemGroup>
 	  <Folder Include="Root\BackendPlugins\" />
-	  <Folder Include="Root\ClientPlugins\" />
+	  <Folder Include="wwwroot\video\" />
 	</ItemGroup>
 
 </Project>

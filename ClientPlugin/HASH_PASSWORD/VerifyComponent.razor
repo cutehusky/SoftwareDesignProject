@@ -2,17 +2,19 @@
 @using System.Net.Http.Json
 @inject HttpClient HttpClient
 
-<h1>Verifying Password</h1>
+<MudText Typo="Typo.h5" Style="margin: 20px">
+    Verifying Password
+</MudText>
 
 <MudTextField Class="my-6" @bind-Value="_inputVerify" Label="Raw" Variant="Variant.Outlined"></MudTextField>
 
 <MudTextField Class="my-6" @bind-Value="_inputHashed" Label="Hashed" Variant="Variant.Outlined"></MudTextField>
 
-<MudAlert Severity="@_alertSeverity" Class="mb-3">
+<MudAlert Severity="@_alertSeverity" Class="mb-6">
     @_alertText
 </MudAlert>
 
-<MudButton Color="Color.Inherit" Variant="Variant.Outlined" Size="Size.Large" OnClick="Verify">Verify</MudButton>
+<MudButton FullWidth="true" Color="Color.Inherit" Variant="Variant.Outlined" Size="Size.Large" OnClick="Verify">Verify</MudButton>
 
 @code
 {

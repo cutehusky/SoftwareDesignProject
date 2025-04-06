@@ -1,11 +1,15 @@
 ﻿@page "/dashboard"
 
-<MudTabs>
+<MudTabs Style="opacity: 0.8; backdrop-filter: blur(5px)">
     <MudTabPanel Text="Manage Plugins">
-        <PluginManagement />
+        <MudPaper Style="opacity: 0.75; border-radius: 0 ;">
+            <PluginManagement/>
+        </MudPaper>
     </MudTabPanel>
     <MudTabPanel Text="Manage Users">
-        <UserList />
+        <MudPaper Style="opacity: 0.75; border-radius: 0 ;">
+            <UserList/>
+        </MudPaper>
     </MudTabPanel>
 </MudTabs>
 

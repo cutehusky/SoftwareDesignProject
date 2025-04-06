@@ -6,8 +6,12 @@
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
+<div style="opacity: 0.75; position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: -2;">
+    <img src="@BackgroundImage" style="width: 100%; height: 100%; object-fit: cover;" alt=""/>
+</div>
+
 <MudLayout>
-    <MudAppBar Elevation="1">
+    <MudAppBar Elevation="1" Style="backdrop-filter: blur(2px);">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudText Typo="Typo.h5" Class="ml-3">IT TOOLS</MudText>
         <MudSpacer />
@@ -16,7 +20,7 @@
         <MudButton @onclick="OpenSignUpDialogAsync">Sign Up</MudButton>
         <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
     </MudAppBar>
-    <MudDrawer id="nav-drawer" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+    <MudDrawer Style="backdrop-filter: blur(2px);" id="nav-drawer" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
         <NavMenu />
     </MudDrawer>
     <MudMainContent Class="mt-16 pa-4">
@@ -32,6 +36,7 @@
 </div>
 
 @code {
+    private string BackgroundImage  => _isDarkMode ? "img/BackgroundDark.png" : "img/BackgroundLight.png";
     private bool _drawerOpen = true;
     private bool _isDarkMode = true;
     private MudTheme? _theme = null;
@@ -74,8 +79,8 @@
     {
         Black = "#110e2d",
         AppbarText = "#424242",
-        AppbarBackground = "rgba(255,255,255, 1.0)",
-        DrawerBackground = "#ffffff",
+        AppbarBackground = "rgba(255,255,255, 0.5)",
+        DrawerBackground = "rgba(255,255,255, 0.5)",
         GrayLight = "#e8e8e8",
         GrayLighter = "#f9f9f9",
     };
@@ -87,8 +92,8 @@
         Background = "#1a1a27",
         BackgroundGray = "#151521",
         AppbarText = "#92929f",
-        AppbarBackground = "rgba(26,26,39, 1.0)",
-        DrawerBackground = "#1a1a27",
+        AppbarBackground = "rgba(26,26,39, 0.5)",
+        DrawerBackground = "rgba(26,26,39, 0.5)",
         ActionDefault = "#74718e",
         ActionDisabled = "#9999994d",
         ActionDisabledBackground = "#605f6d4d",

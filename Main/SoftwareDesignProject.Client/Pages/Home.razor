@@ -1,8 +1,43 @@
 ﻿@page "/Home"
 @page "/"
+@using CommonDTO
+@inject IServiceProvider ServiceProvider
+@inject HttpClient HttpClient
+@inject IJSRuntime JS
 
-<h3>Home</h3>
+<MudText Typo="Typo.h6" Style="margin: 10px"> All Tools</MudText>
+<div class="d-flex flex-grow-1 gap-2 flex-wrap align-center justify-md-space-around">
+@foreach(var plugin in Plugins)
+{
+        <MudCard Width="24%" Style="min-width: 250px; backdrop-filter: blur(5px); opacity: 0.75;">
+            <a href="@plugin.Href">
+            <MudCardHeader style="width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">
+                <MudText Typo="Typo.h6" Style=" width: 100%; text-overflow: ellipsis; overflow: hidden;">@plugin.Text</MudText>
+            </MudCardHeader>
+            <MudCardContent style="overflow: hidden; height: 100px;">
+                <MudText Style="width: 100%; height: 100%; text-overflow: ellipsis; overflow: hidden;">
+                    @plugin.Description
+                </MudText>
+            </MudCardContent>
+            </a>
+        </MudCard>
+}
+</div>
 
 @code {
-    
+
+    public List<HomeItem> Plugins { get; set; } = new ();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var navLoader = ServiceProvider.GetService<INavMenuLoader>();
+        if (navLoader != null)
+        {
+            var items = await navLoader.GetHomeItem();
+            if (items != null)
+            {
+                Plugins = items;
+            }
+        }
+    }
 }

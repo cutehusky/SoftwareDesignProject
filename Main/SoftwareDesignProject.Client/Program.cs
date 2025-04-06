@@ -13,7 +13,9 @@ builder.Services.AddScoped<IDynamicPageLoader>(sp =>
         "api/plugins/{0}.dll",
         "api/plugins/check?id={0}"));
 builder.Services.AddScoped<INavMenuLoader>(sp =>
-    new NavMenuLoader(sp.GetService<HttpClient>()!, "api/navMenu/getList"));
+    new NavMenuLoader(sp.GetService<HttpClient>()!, 
+        "api/navMenu/getList",
+        "api/navMenu/getHomeList"));
 builder.Services.AddScoped<IPluginService>(sp =>
     new PluginService(sp.GetService<HttpClient>()!, 
         "api/plugins/getList",

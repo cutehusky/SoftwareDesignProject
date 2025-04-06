@@ -7,17 +7,27 @@ namespace SoftwareDesignProject.Client.Services;
 public class NavMenuLoader: INavMenuLoader
 {
     private HttpClient _httpClient;
-    private string _endpoint;
+    private string _navItemEndpoint;
+    private string _homeItemEndpoint;
     
-    public NavMenuLoader(HttpClient httpClient, string endpoint)
+    public NavMenuLoader(HttpClient httpClient,
+        string navItemEndpoint,
+        string homeItemEndpoint)
     {
         _httpClient = httpClient;
-        _endpoint = endpoint;
+        _navItemEndpoint = navItemEndpoint;
+        _homeItemEndpoint = homeItemEndpoint;
     }
     
     public async Task<List<NavItem>?> GetNavItem()
     {
-        var res = await _httpClient.GetFromJsonAsync<List<NavItem>>(_endpoint);
+        var res = await _httpClient.GetFromJsonAsync<List<NavItem>>(_navItemEndpoint);
+        return res;
+    }
+
+    public Task<List<HomeItem>?> GetHomeItem()
+    {
+        var res = _httpClient.GetFromJsonAsync<List<HomeItem>>(_homeItemEndpoint);
         return res;
     }
 }

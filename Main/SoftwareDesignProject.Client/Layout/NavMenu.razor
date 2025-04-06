@@ -1,7 +1,7 @@
 ﻿@using CommonDTO
 @inject IServiceProvider ServiceProvider
 
-<MudNavMenu>
+<MudNavMenu Style="padding-top: 10px;">
     @foreach (var category in _navItems)
     {
         @if (category.Item1 != "")

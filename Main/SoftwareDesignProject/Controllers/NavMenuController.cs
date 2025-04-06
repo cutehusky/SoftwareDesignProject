@@ -20,6 +20,21 @@ public class NavMenuController: Controller
         _pluginService = pluginService;
     }
 
+    [HttpGet("getHomeList")]
+    public async Task<IActionResult> GetHomeList()
+    {
+        // TODO: check if the user and plugin premium
+        var plugins = await _pluginService.GetActiveList();
+        var list = plugins.Select((dto => new HomeItem()
+        {
+            Text = dto.Name!,
+            Description = dto.Description!,
+            Href = $"dynamicDLL/{dto.PluginId}",
+            Icon = Icons.Material.Filled.List
+        }));
+        return Ok(list);
+    }
+
     [HttpGet("getList")]
     public async Task<IActionResult> GetList()
     {
