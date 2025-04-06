@@ -5,7 +5,7 @@ using SoftwareDesignProject.Services;
 
 namespace SoftwareDesignProject.Repositories;
 
-public class PluginRepository
+public class PluginRepository: IPluginRepository
 {
     private readonly AppDbContext _dbContext;
 
@@ -18,6 +18,20 @@ public class PluginRepository
     {
         return await _dbContext.Plugins.Select(plugin => new PluginDTOMapper().ConvertTo(plugin))
             .ToListAsync();
+    }
+    
+    public async Task<List<PluginDTO>> GetActiveList()
+    {
+        return await _dbContext.Plugins.Where(plugin => plugin.IsEnabled)
+            .Select(plugin => new PluginDTOMapper().ConvertTo(plugin))
+            .ToListAsync();
+    }
+    
+    public async Task<PluginDTO?> GetById(Guid id)
+    {
+        return await _dbContext.Plugins.Where(plugin => plugin.PluginId == id)
+            .Select(plugin => new PluginDTOMapper().ConvertTo(plugin))
+            .FirstOrDefaultAsync();
     }
 
     public async Task<bool> Add(PluginDTO pluginDto)

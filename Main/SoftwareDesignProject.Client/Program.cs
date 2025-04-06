@@ -8,7 +8,10 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddScoped(_ =>
     new HttpClient { BaseAddress = new Uri("http://localhost:5037/") });
 builder.Services.AddScoped<IDynamicPageLoader>(sp =>
-    new DynamicPageLoader(sp.GetService<HttpClient>()!));
+    new DynamicPageLoader(sp.GetService<HttpClient>()!, 
+        "/api/plugin/{0}",
+        "api/plugins/{0}.dll",
+        "api/plugins/check?id={0}"));
 builder.Services.AddScoped<INavMenuLoader>(sp =>
     new NavMenuLoader(sp.GetService<HttpClient>()!, "api/navMenu/getList"));
 builder.Services.AddScoped<IPluginService>(sp =>

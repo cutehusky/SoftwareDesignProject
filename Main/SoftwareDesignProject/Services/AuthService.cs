@@ -10,9 +10,9 @@ namespace SoftwareDesignProject.Services;
 public class AuthService : IAuthService
 {
     private readonly IConfiguration _config;
-    private readonly UserRepository _userRepository;
+    private readonly IUserRepository _userRepository;
 
-    public AuthService(IConfiguration config, UserRepository userRepository)
+    public AuthService(IConfiguration config, IUserRepository userRepository)
     {
         _config = config;
         _userRepository = userRepository;
@@ -41,7 +41,7 @@ public class AuthService : IAuthService
 
         string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
         var newUser = new UserDTO { Username = username, HashedPassword = hashedPassword };
-        return await _userRepository.InsertUserAsync(newUser);
+        return await _userRepository.Add(newUser);
     }
 
 

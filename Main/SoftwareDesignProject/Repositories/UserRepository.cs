@@ -6,7 +6,7 @@ using SoftwareDesignProject.Services;
 
 namespace SoftwareDesignProject.Repositories
 {
-    public class UserRepository
+    public class UserRepository: IUserRepository
     {
         private readonly AppDbContext _dbContext;
 
@@ -22,11 +22,31 @@ namespace SoftwareDesignProject.Repositories
             return res;
         }
 
-        public async Task<bool> InsertUserAsync(UserDTO user)
+        public Task<List<UserDTO>> GetAll()
         {
-            _dbContext.Add(new UserDTOMapper().ConvertFrom(user));
+            throw new NotImplementedException();
+        }
+
+        public Task<UserDTO?> GetById(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<bool> Add(UserDTO pluginDto)
+        {
+            _dbContext.Add(new UserDTOMapper().ConvertFrom(pluginDto));
             var rowsAffected = await _dbContext.SaveChangesAsync();
             return rowsAffected > 0;
+        }
+
+        public Task<bool> Remove(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> Update(UserDTO dto)
+        {
+            throw new NotImplementedException();
         }
     }
 }

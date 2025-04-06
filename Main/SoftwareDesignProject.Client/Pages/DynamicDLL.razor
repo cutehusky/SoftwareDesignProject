@@ -1,4 +1,4 @@
-﻿@page "/dynamicDLL/{DLLName}"
+﻿@page "/dynamicDLL/{PluginId}"
 @inject NavigationManager NavigationManager
 @inject IServiceProvider ServiceProvider
 
@@ -6,11 +6,11 @@
 
 @code {
     [Parameter]
-    public string DLLName { get; set; }
+    public string PluginId { get; set; } = null!;
     private RenderFragment? _content;
-    private string _currentDllName = "";
+    private string _currentPluginId = "";
 
-    private IDynamicPageLoader? PageLoader { get; set; } = null;
+    private IDynamicPageLoader? PageLoader { get; set; }
 
     protected override void OnInitialized()
     {
@@ -23,7 +23,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_currentDllName == DLLName)
+        if (_currentPluginId == PluginId)
             return;
         
         if (PageLoader == null)
@@ -31,15 +31,15 @@
         
         try
         {
-            var dll = await PageLoader.LoadDynamicAssembly($"/api/plugins/{DLLName}.dll");
-            var componentType = dll?.EntryPoint;
+            var dynamicPage = await PageLoader.LoadDynamicAssembly(PluginId);
+            var componentType = dynamicPage?.EntryPoint;
             if (componentType != null)
             {
-                _currentDllName = DLLName;
+                _currentPluginId = PluginId;
                 ShowComponent(componentType);
             }
         }
-        catch (HttpRequestException e)
+        catch (HttpRequestException)
         {
             // Console.WriteLine(e.Message);
             NavigationManager.NavigateTo("/404");

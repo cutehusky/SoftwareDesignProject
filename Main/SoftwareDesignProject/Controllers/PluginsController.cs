@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SoftwareDesignProject.Models.DTO;
 using SoftwareDesignProject.Services;
+using SoftwareDesignProject.Services.ServerPluginManagement;
 
 namespace SoftwareDesignProject.Controllers;
 
@@ -12,12 +13,12 @@ public class PluginsController : ControllerBase
 {
     private readonly IHostEnvironment _env;
     private readonly DynamicPluginManager _manager;
-    private readonly PluginService _pluginService;
+    private readonly IPluginService _pluginService;
     
     public PluginsController(
         IHostEnvironment env, 
         DynamicPluginManager manager, 
-        PluginService pluginService)
+        IPluginService pluginService)
     {
         _env = env;
         _manager = manager;
@@ -26,10 +27,26 @@ public class PluginsController : ControllerBase
     
     
     [HttpGet("load")]
-    public IActionResult Load()
+    public async Task<IActionResult> Load()
     {
-        _manager.LoadAllAssemblies();
+        await _manager.LoadAllAssemblies();
         return Ok(new { message = "Server Plugin Reloaded" });
+    }
+    
+    [HttpGet("check")]
+    public async Task<IActionResult> CheckPlugin([FromQuery] string id)
+    {
+        if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out var pluginId))
+        {
+            return BadRequest("Invalid Plugin ID.");
+        }
+        
+        var plugins = await _pluginService.GetPluginById(pluginId);
+        if (plugins == null || !(bool)plugins.IsEnabled!) // TODO: check if the plugin is premium
+        {
+            return NotFound();
+        }
+        return Ok();
     }
 
     [HttpPost("edit")]

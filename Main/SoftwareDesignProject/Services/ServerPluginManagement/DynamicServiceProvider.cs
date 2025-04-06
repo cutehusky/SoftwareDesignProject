@@ -1,6 +1,6 @@
 ﻿using BackendPluginTemplate;
 
-namespace SoftwareDesignProject.Services;
+namespace SoftwareDesignProject.Services.ServerPluginManagement;
 
 public class DynamicServiceProvider: IDynamicServiceProvider 
 {

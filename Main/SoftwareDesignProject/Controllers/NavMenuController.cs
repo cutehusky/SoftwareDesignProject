@@ -9,11 +9,11 @@ namespace SoftwareDesignProject.Controllers;
 [Route("api/[controller]")]
 public class NavMenuController: Controller
 {
-    private readonly PluginService _pluginService;
+    private readonly IPluginService _pluginService;
     private readonly IAuthService _authService;
     
     public NavMenuController( 
-        PluginService pluginService,
+        IPluginService pluginService,
         IAuthService authService)
     {
         _authService = authService;
@@ -23,7 +23,8 @@ public class NavMenuController: Controller
     [HttpGet("getList")]
     public async Task<IActionResult> GetList()
     {
-        var plugins = await _pluginService.GetList();
+        // TODO: check if the user and plugin premium
+        var plugins = await _pluginService.GetActiveList();
 
         var list = new List<NavItem>()
         {

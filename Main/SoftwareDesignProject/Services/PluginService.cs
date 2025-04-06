@@ -2,18 +2,19 @@
 using BackendPluginTemplate;
 using CommonDTO;
 using SoftwareDesignProject.Repositories;
+using SoftwareDesignProject.Services.ServerPluginManagement;
 
 
 namespace SoftwareDesignProject.Services;
 
-public class PluginService
+public class PluginService: IPluginService
 {
-    private readonly PluginRepository _pluginRepository;
+    private readonly IPluginRepository _pluginRepository;
     private readonly DynamicPluginManager _pluginManager;
     private readonly string _clientUploadPath;
     private readonly string _serverUploadPath;
     
-    public PluginService(PluginRepository pluginRepository, DynamicPluginManager pluginManager, IHostEnvironment env)
+    public PluginService(IPluginRepository pluginRepository, DynamicPluginManager pluginManager, IHostEnvironment env)
     {
         _pluginRepository = pluginRepository;
         _pluginManager = pluginManager;
@@ -24,6 +25,11 @@ public class PluginService
     public async Task<List<PluginDTO>> GetList()
     {
         return await _pluginRepository.GetAll();
+    }
+    
+    public async Task<List<PluginDTO>> GetActiveList()
+    {
+        return await _pluginRepository.GetActiveList();
     }
 
     public async Task Rollback()
@@ -94,7 +100,7 @@ public class PluginService
                 Console.WriteLine("Fail to save Client Plugin");
                 throw new IOException("Fail to save Client Plugin");
             }
-            _pluginManager.LoadAllAssemblies();
+            await _pluginManager.LoadAllAssemblies();
         }
     }
 
@@ -104,6 +110,22 @@ public class PluginService
         if (!res)
         {
             throw new InvalidOperationException("Fail to update in database");
+        }
+        
+        if (dto.IsEnabled != null 
+            && (bool)dto.IsEnabled
+            && !_pluginManager.CheckLoadedPlugin(dto.PluginId.ToString()))
+        {
+            await _pluginManager.LoadAllAssemblies();
+            return;
+        }
+        
+        if (dto.IsEnabled != null 
+            && !(bool)dto.IsEnabled
+            && _pluginManager.CheckLoadedPlugin(dto.PluginId.ToString()))
+        {
+            await _pluginManager.LoadAllAssemblies();
+            return;
         }
     }
 
@@ -119,10 +141,15 @@ public class PluginService
         await RemoveFile(id + ".dll", _clientUploadPath);
         await RemoveFile(id + ".dll", _serverUploadPath);
         if (_pluginManager.CheckLoadedPlugin(id.ToString()))
-            _pluginManager.LoadAllAssemblies();
+            await _pluginManager.LoadAllAssemblies();
     }
-    
-    private async Task<Guid?> GetClientPluginUid(IFormFile file)
+
+    public Task<PluginDTO?> GetPluginById(Guid id)
+    {
+        return _pluginRepository.GetById(id);
+    }
+
+    private static async Task<Guid?> GetClientPluginUid(IFormFile file)
     {
         var dllBytes = await SaveByteArrayAsync(file);
         var assembly = Assembly.Load(dllBytes);
@@ -140,7 +167,7 @@ public class PluginService
         return null;
     }
 
-    private async Task<Guid?> GetServerPluginUid(IFormFile file)
+    private static async Task<Guid?> GetServerPluginUid(IFormFile file)
     {
         var dllBytes = await SaveByteArrayAsync(file);
         var assembly = Assembly.Load(dllBytes);
@@ -164,7 +191,7 @@ public class PluginService
         return memoryStream.ToArray();
     }
 
-    private async Task<bool> RemoveFile(string fileName, string path)
+    private static async Task<bool> RemoveFile(string fileName, string path)
     {
         var filePath = Path.Combine(path, fileName);
         if (!File.Exists(filePath))
@@ -180,7 +207,7 @@ public class PluginService
         }
     }
     
-    private async Task<bool> SaveFileAsync(IFormFile file, string fileName, string uploadPath)
+    private static async Task<bool> SaveFileAsync(IFormFile file, string fileName, string uploadPath)
     {
         Console.WriteLine(file.Name);
         Console.WriteLine(file.Length);

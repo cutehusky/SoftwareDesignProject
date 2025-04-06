@@ -2,13 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 
-namespace SoftwareDesignProject.Services;
-
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
+namespace SoftwareDesignProject.Services.ServerPluginManagement;
 
 public class DynamicRouteTransformer : DynamicRouteValueTransformer
 {
@@ -34,6 +28,7 @@ public class DynamicRouteTransformer : DynamicRouteValueTransformer
             || string.IsNullOrEmpty(id))
             return new ValueTask<RouteValueDictionary>(); 
 
+        // TODO: check if plugin is premium
         // Check if the controller exists in the loaded assemblies
         var controller = _pluginPluginManager.GetValidControllers(id, controllerName);
         

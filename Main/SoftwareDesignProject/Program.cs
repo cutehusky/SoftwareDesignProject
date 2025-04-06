@@ -7,6 +7,7 @@ using SoftwareDesignProject.Components;
 using SoftwareDesignProject.Services;
 using System.Text;
 using SoftwareDesignProject.Repositories;
+using SoftwareDesignProject.Services.ServerPluginManagement;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,10 +15,10 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<AppDbContext>();
 
-builder.Services.AddScoped<UserRepository>();
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<PluginRepository>();
-builder.Services.AddScoped<PluginService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPluginRepository, PluginRepository>();
+builder.Services.AddScoped<IPluginService, PluginService>();
 
 // Add MudBlazor services
 builder.Services.AddMudServices();
@@ -28,6 +29,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddSingleton<DynamicPluginManager>();
+builder.Services.AddHostedService(provider => provider.GetRequiredService<DynamicPluginManager>());
 builder.Services.AddSingleton<IDynamicServiceProvider, DynamicServiceProvider>();
 
 builder.Services.AddCors(options =>
@@ -48,8 +50,6 @@ builder.Services.AddScoped(_ =>
     new HttpClient { BaseAddress = new Uri("http://localhost:5037/") });
 
 builder.Services.AddSingleton<DynamicRouteTransformer>();
-
-builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddAuthentication(options =>
 {
