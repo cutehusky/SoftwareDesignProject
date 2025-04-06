@@ -1,5 +1,6 @@
 ﻿using CommonDTO;
 using Microsoft.AspNetCore.Mvc;
+using MudBlazor;
 using SoftwareDesignProject.Models.DTO;
 using SoftwareDesignProject.Services;
 using SoftwareDesignProject.Services.ServerPluginManagement;
@@ -126,9 +127,29 @@ public class PluginsController : ControllerBase
     
     
     [HttpGet("getList")]
-    public async Task<IActionResult> GetList()
+    public async Task<IActionResult> GetList(
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string sortBy = "",
+        [FromQuery] string order = "",
+        [FromQuery] string search = "")
     {
-        var plugins = await _pluginService.GetList();
+        page = Math.Max(0, page);
+        pageSize = Math.Max(1, pageSize);
+        
+        var sortDirection = SortDirection.None;
+        if (order.Equals("Ascending", StringComparison.OrdinalIgnoreCase))
+        {
+            sortDirection = SortDirection.Ascending;
+        }
+        else if (order.Equals("Descending", StringComparison.OrdinalIgnoreCase))
+        {
+            sortDirection = SortDirection.Descending;
+        }
+        
+        Console.WriteLine("Getting plugin list with page: " + page + " and pageSize: " + pageSize +  
+                          " and sortBy: " + sortBy + " and order: " + sortDirection);
+        var plugins = await _pluginService.GetList(page, pageSize, sortBy, sortDirection, search);
         return Ok(plugins);
     }
     

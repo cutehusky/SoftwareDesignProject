@@ -2,6 +2,7 @@
 using System.Net.Http.Json;
 using CommonDTO;
 using Microsoft.AspNetCore.Components.Forms;
+using MudBlazor;
 using SoftwareDesignProject.Client.Models;
 
 namespace SoftwareDesignProject.Client.Services;
@@ -57,10 +58,25 @@ public class PluginService: IPluginService
             throw new HttpRequestException($"Error: {response.StatusCode}, Message: {errorMessage}");
         }
     }
-
-    public async Task<List<PluginDTO>?> GetList()
+    
+    private string GetListEndPoint(int page, int pageSize, string sortBy, 
+        SortDirection order, string search = "")
     {
-        var res = await _httpClient.GetFromJsonAsync<List<PluginDTO>>(_getListEndpoint);
+        return string.Format(_getListEndpoint, page, pageSize, sortBy,
+            order.ToString().ToLower(), search);
+    }
+
+    public async Task<PaginationList<PluginDTO>> GetList(int page, int pageSize, 
+        string sortBy, SortDirection order, string search, CancellationToken cancellationToken)
+    {
+        Console.WriteLine($"Getting list with page: {page}, pageSize: {pageSize}, sortBy: {sortBy}, order: {order}, search: {search}");
+        var res = await _httpClient.GetFromJsonAsync<PaginationList<PluginDTO>>(
+            GetListEndPoint(page, pageSize, sortBy, order, search), cancellationToken);
+        if (res == null)
+        {
+            Console.WriteLine("Error: No data received from server");
+            throw new HttpRequestException("Error: No data received from server");
+        }
         return res;
     }
 

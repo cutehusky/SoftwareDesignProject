@@ -1,6 +1,8 @@
 ﻿using CommonDTO;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor;
 using SoftwareDesignProject.Models.DTOMapper;
+using SoftwareDesignProject.Models.Entities;
 using SoftwareDesignProject.Services;
 
 namespace SoftwareDesignProject.Repositories;
@@ -14,10 +16,39 @@ public class PluginRepository: IPluginRepository
         _dbContext = dbContext;
     }
 
-    public async Task<List<PluginDTO>> GetAll()
+    public async Task<PaginationList<PluginDTO>> GetAll(int page, int pageSize,
+        string sortBy, SortDirection order, string search)
     {
-        return await _dbContext.Plugins.Select(plugin => new PluginDTOMapper().ConvertTo(plugin))
+        var totalCount = await _dbContext.Plugins.CountAsync();
+        var plugins = sortBy switch
+        {
+            "Name" => order == SortDirection.Descending
+                ? _dbContext.Plugins.OrderByDescending(plugin => plugin.Name)
+                : _dbContext.Plugins.OrderBy(plugin => plugin.Name),
+            "Category" => order == SortDirection.Descending
+                ? _dbContext.Plugins.OrderByDescending(plugin => plugin.Category)
+                : _dbContext.Plugins.OrderBy(plugin => plugin.Category),
+            "IsPremium" => order == SortDirection.Descending
+                ? _dbContext.Plugins.OrderByDescending(plugin => plugin.IsPremium)
+                : _dbContext.Plugins.OrderBy(plugin => plugin.IsPremium),
+            "IsEnabled" => order == SortDirection.Descending
+                ? _dbContext.Plugins.OrderByDescending(plugin => plugin.IsEnabled)
+                    : _dbContext.Plugins.OrderBy(plugin => plugin.IsEnabled),
+            _ => order == SortDirection.Descending
+                ? _dbContext.Plugins.OrderByDescending(plugin => plugin.PluginId)
+                    : _dbContext.Plugins.OrderBy(plugin => plugin.PluginId)
+        };
+        var item = await plugins
+            .Skip(page * pageSize)
+            .Take(pageSize)
+            .Select(plugin => new PluginDTOMapper().ConvertTo(plugin))
             .ToListAsync();
+        
+        return new PaginationList<PluginDTO>()
+        {
+            Items = item,
+            TotalCount = totalCount
+        };
     }
     
     public async Task<List<PluginDTO>> GetActiveList()

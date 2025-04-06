@@ -5,18 +5,19 @@
 @using SoftwareDesignProject.Client.Components
 @using SoftwareDesignProject.Client.Services
 
-<div class="d-flex align-center justify-end mb-6">
-    <MudButton Variant="Variant.Outlined" Color="Color.Inherit"
+<div class="d-flex align-center justify-end">
+    <MudButton StartIcon="@Icons.Material.Filled.Add" Class="mx-6 my-3" Variant="Variant.Outlined" Color="Color.Inherit"
                OnClick="@(() => OpenDialogAsync(_maxWidth))"> Add </MudButton>
 </div>
 
-<MudTable Items="_plugins" Hover="true" SortLabel="Sort By" Elevation="0" AllowUnsorted="false">
+<MudTable ServerData="LoadServerData"
+          Hover="true" Elevation="0" AllowUnsorted="false">
     <HeaderContent>
-        <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<PluginDTO, object>(x=>x.Category!)">Category</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.Name!)">Name</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.Description!)">Description</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.IsEnabled!)">Enabled</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.IsPremium!)">Premium</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<PluginDTO, object>(x=>x.Category!)" SortLabel="Category">Category</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.Name!)" SortLabel="Name">Name</MudTableSortLabel></MudTh>
+        <MudTh>Description</MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.IsEnabled!)" SortLabel="IsEnabled">Enabled</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<PluginDTO, object>(x=>x.IsPremium!)" SortLabel="IsPremium">Premium</MudTableSortLabel></MudTh>
         <MudTh>Action</MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -37,22 +38,34 @@
         </MudTd>
     </RowTemplate>
     <PagerContent>
-        <MudTablePager PageSizeOptions="new int[]{50, 100}" />
+        <MudTablePager PageSizeOptions="new int[]{ 10, 50, 100}" />
     </PagerContent>
 </MudTable>
 @code {
     
     private IPluginService? PluginService { get; set; } = null;
-
-    private List<PluginDTO> _plugins = [];
-    protected override async Task OnInitializedAsync()
+    
+    private async Task<TableData<PluginDTO>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
-        PluginService = ServiceProvider.GetService<IPluginService>();
-        if (PluginService == null)
-            return;
-        var items = await PluginService.GetList();
-        if (items != null)
-            _plugins = items;
+        PluginService = ServiceProvider.GetService<IPluginService>()!;
+        try
+        {
+            var items = await PluginService.GetList(
+                state.Page, state.PageSize, state.SortLabel ?? "", state.SortDirection, "", cancellationToken);
+            return new TableData<PluginDTO>
+            {
+                Items = items.Items,
+                TotalItems = items.TotalCount
+            };
+        } catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return new TableData<PluginDTO>
+            {
+                Items = new List<PluginDTO>(),
+                TotalItems = 0
+            };
+        }
     }
     
     private Task Upgrade(PluginDTO pluginDto, DialogOptions options)

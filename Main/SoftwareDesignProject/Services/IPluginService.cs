@@ -1,10 +1,12 @@
 ﻿using CommonDTO;
+using MudBlazor;
 
 namespace SoftwareDesignProject.Services;
 
 public interface IPluginService
 {
-    public Task<List<PluginDTO>> GetList();
+    public Task<PaginationList<PluginDTO>> GetList(int page, int pageSize,  
+        string sortBy, SortDirection order, string search);
 
     public Task<List<PluginDTO>> GetActiveList();
     

@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using BackendPluginTemplate;
 using CommonDTO;
+using MudBlazor;
 using SoftwareDesignProject.Repositories;
 using SoftwareDesignProject.Services.ServerPluginManagement;
 
@@ -22,9 +23,12 @@ public class PluginService: IPluginService
         _serverUploadPath = Path.Combine(env.ContentRootPath, "Root/BackendPlugins");
     }
     
-    public async Task<List<PluginDTO>> GetList()
+    public async Task<PaginationList<PluginDTO>> GetList(int page, int pageSize, 
+        string sortBy, SortDirection order, string search)
     {
-        return await _pluginRepository.GetAll();
+        var plugins = await _pluginRepository.GetAll(page, pageSize, 
+            sortBy, order, search);
+        return plugins;
     }
     
     public async Task<List<PluginDTO>> GetActiveList()

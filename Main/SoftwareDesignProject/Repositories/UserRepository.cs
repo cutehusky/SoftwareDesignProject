@@ -1,5 +1,6 @@
 ﻿using CommonDTO;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor;
 using SoftwareDesignProject.Models.DTOMapper;
 using SoftwareDesignProject.Services;
 
@@ -22,9 +23,21 @@ namespace SoftwareDesignProject.Repositories
             return res;
         }
 
-        public Task<List<UserDTO>> GetAll()
+        public async Task<PaginationList<UserDTO>> GetAll( int page, int pageSize,
+            string sortBy, SortDirection order, string search)
         {
-            throw new NotImplementedException();
+            var totalCount = _dbContext.Users.Count();
+            var users = await _dbContext.Users
+                .Skip(page * pageSize)
+                .Take(pageSize)
+                .Select(user => new UserDTOMapper().ConvertTo(user))
+                .ToListAsync();
+
+            return new PaginationList<UserDTO>()
+            {
+                Items = users,
+                TotalCount = totalCount
+            };
         }
 
         public Task<UserDTO?> GetById(Guid id)

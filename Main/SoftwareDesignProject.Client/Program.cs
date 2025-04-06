@@ -18,7 +18,7 @@ builder.Services.AddScoped<INavMenuLoader>(sp =>
         "api/navMenu/getHomeList"));
 builder.Services.AddScoped<IPluginService>(sp =>
     new PluginService(sp.GetService<HttpClient>()!, 
-        "api/plugins/getList",
+        "api/plugins/getList?page={0}&pageSize={1}&sortBy={2}&order={3}&search={4}",
         "api/plugins/add", 
         "api/plugins/edit", 
         "api/plugins/upgrade",
