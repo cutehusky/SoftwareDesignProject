@@ -1,5 +1,4 @@
 ﻿using CommonDTO;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SoftwareDesignProject.Models.DTO;
 using SoftwareDesignProject.Services;
@@ -14,6 +13,8 @@ public class PluginsController : ControllerBase
     private readonly IHostEnvironment _env;
     private readonly DynamicPluginManager _manager;
     private readonly IPluginService _pluginService;
+    
+    private static readonly SemaphoreSlim PluginSemaphore = new(1, 1);
     
     public PluginsController(
         IHostEnvironment env, 
@@ -48,33 +49,79 @@ public class PluginsController : ControllerBase
         }
         return Ok();
     }
+    
+    [HttpPost("upgrade")]
+    public async Task<IActionResult> UpgradePlugin([FromForm] UpgradePluginRequest request)
+    {
+        if (request.ClientDLL == null && request.ServerDLL == null)
+        {
+            return BadRequest("Client DLL or Server DLL is required.");
+        }
+        
+        var acquired = await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10));
+        if (!acquired)
+        {
+            Console.WriteLine("Semaphore is not available");
+            return BadRequest("Busy. Please try again later.");
+        }
+        
+        try {
+            Console.WriteLine("Upgrading plugin with name: " + request.PluginId);
+            await _pluginService.UpgradePlugin(request.PluginId, request.ClientDLL, request.ServerDLL);
+            return Ok();
+        } catch (InvalidDataException e) {
+            return BadRequest(e.Message);
+        } catch (InvalidOperationException e) {
+            return BadRequest(e.Message);
+        } catch (IOException e) {
+            return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+        } catch (Exception e) {
+            return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+        } finally {
+            PluginSemaphore.Release();
+        }
+    }
 
     [HttpPost("edit")]
     public async Task<IActionResult> EditPlugin([FromBody] PluginDTO dto)
     {
-        try
+        var acquired = await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10));
+        if (!acquired)
         {
+            Console.WriteLine("Semaphore is not available");
+            return BadRequest("Busy. Please try again later.");
+        }
+
+        try {
+            Console.WriteLine("Editing plugin with name: " + dto.Name);
             await _pluginService.EditPlugin(dto);
+            return Ok();
+        } catch (Exception ex) {
+            return BadRequest("Error: " + ex.Message);
+        } finally {
+            PluginSemaphore.Release();
         }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
-        return Ok();
     }
 
     [HttpPost("remove")]
     public async Task<IActionResult> RemovePlugin([FromBody] PluginDTO request)
     {
+        var acquired = await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10));
+        if (!acquired)
+        {
+            Console.WriteLine("Semaphore is not available");
+            return BadRequest("Busy. Please try again later.");
+        }
         try
         {
+            Console.WriteLine("Removing plugin with name: " + request.Name);
             await _pluginService.RemovePlugin(request.PluginId);
-        }
-        catch (Exception e)
-        {
+            return Ok();
+        } catch (Exception e) {
             return BadRequest(e.Message);
+        } finally {
+            PluginSemaphore.Release();
         }
-        return Ok();
     }
     
     
@@ -88,25 +135,29 @@ public class PluginsController : ControllerBase
     [HttpPost("add")]
     public async Task<IActionResult> UploadFiles([FromForm] UploadPluginRequest request)
     {
-        Console.WriteLine("Installing plugin with name: " + request.Name);
-        try
+        var acquired = await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10));
+        if (!acquired)
         {
+            Console.WriteLine("Semaphore is not available");
+            return BadRequest("Busy. Please try again later.");
+        }
+        
+        try {
+            Console.WriteLine("Installing plugin with name: " + request.Name);
             await _pluginService.AddPlugin(request.Name, request.Description,
                 request.Category, request.IsPremium, request.ClientDLL, request.ServerDLL);
-        }
-        catch (InvalidDataException e)
-        {
+            return Ok();
+        } catch (InvalidDataException e) {
             return BadRequest(e.Message);
-        }
-        catch (InvalidOperationException e)
-        {
+        } catch (InvalidOperationException e) {
             return BadRequest(e.Message);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+        } catch (Exception e) {
+            return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+        } finally {
+            PluginSemaphore.Release();
         }
-        return Ok();
     }
     
     //[ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Client)]

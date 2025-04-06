@@ -1,0 +1,127 @@
+﻿@using CommonDTO
+@using SoftwareDesignProject.Client.Models
+@using SoftwareDesignProject.Client.Services
+@inject NavigationManager Navigation
+@inject IServiceProvider ServiceProvider
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.subtitle1" Style="margin: 20px">
+            Upgrade Plugin with Name: '@Plugin.Name'; Id: '@Plugin.PluginId'
+        </MudText>
+        <div class="my-3 mx-3 d-flex align-center">
+            <MudFileUpload T="IBrowserFile" FilesChanged="OnClientDLLFileChanged">
+                <ActivatorContent>
+                    <MudButton Color="Color.Inherit" Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.CloudUpload">
+                        Upload Client DLL
+                    </MudButton>
+                </ActivatorContent>
+            </MudFileUpload>
+            <div class="mx-6">
+                <MudText>@_clientDLLName</MudText>
+            </div>
+        </div>
+
+        <div class="my-3 mx-3 d-flex align-center">
+            <MudFileUpload T="IBrowserFile" FilesChanged="OnServerDLLFileChanged">
+                <ActivatorContent>
+                    <MudButton Color="Color.Inherit" Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.CloudUpload">
+                        Upload Server DLL
+                    </MudButton>
+                </ActivatorContent>
+            </MudFileUpload>
+            <div class="mx-6">
+                <MudText>@_serverDLLName</MudText>
+            </div>
+        </div>
+
+        <MudAlert Severity="_alertSeverity" Class="mb-2 mx-3" Style="@AlertStyle">
+            @_alertText
+        </MudAlert>
+
+    </DialogContent>
+    
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+    
+    [Parameter] public PluginDTO Plugin { get; set; } = null!;
+    
+    private IPluginService? PluginService { get; set; }
+
+    private Severity _alertSeverity = Severity.Info;
+    private bool _showAlert = false;
+    private string AlertStyle => _showAlert ? "display: block;" : "display: none;";
+    private string _alertText = "";
+    private IBrowserFile? _clientDLL;
+    private IBrowserFile? _serverDLL;
+    private string _clientDLLName;
+    private string _serverDLLName;
+    
+    private void ShowAlert(Severity severity, string text)
+    {
+        _alertSeverity = severity;
+        _alertText = text;
+        _showAlert = true;
+    }
+
+    protected override void OnInitialized()
+    {
+        PluginService = ServiceProvider.GetService<IPluginService>();
+    }
+
+    private async void Submit()
+    {
+        if (PluginService == null)
+            return;
+        
+        ShowAlert(Severity.Info, "Loading...");
+
+        try
+        {
+            await PluginService.Upgrade(new PluginUpgradeData()
+            {
+                PluginId = Plugin.PluginId,
+                ClientDLL = _clientDLL,
+                ServerDLL = _serverDLL
+            });
+            
+            MudDialog.Close(DialogResult.Ok(true));
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+        }
+        catch (Exception e)
+        {
+            ShowAlert(Severity.Error, $"Fail to install plugin. Reason: {e.Message}");
+            StateHasChanged();
+        }
+    } 
+
+    private void Cancel() => MudDialog.Cancel();
+
+    public void OnClientDLLFileChanged(IBrowserFile? file)
+    {
+        if (file != null)
+        {
+            _clientDLL = file;
+            _clientDLLName = file.Name;
+        }
+    }
+    
+    public void OnServerDLLFileChanged(IBrowserFile? file)
+    {
+        if (file != null)
+        {
+            _serverDLL = file;
+            _serverDLLName = file.Name;
+        }
+    }
+}

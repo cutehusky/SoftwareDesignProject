@@ -17,4 +17,5 @@ public interface IPluginService
     public Task RemovePlugin(Guid id);
     
     public Task<PluginDTO?> GetPluginById(Guid id);
+    public Task UpgradePlugin(Guid pluginId, IFormFile? clientDll, IFormFile? serverDll);
 }

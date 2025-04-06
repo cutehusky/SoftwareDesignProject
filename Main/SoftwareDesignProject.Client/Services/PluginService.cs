@@ -13,16 +13,19 @@ public class PluginService: IPluginService
     private string _addEndpoint;
     private string _removeEndpoint;
     private string _editEndpoint;
+    private string _upgradeEndpoint;
     
     public PluginService(HttpClient httpClient, 
         string getListEndpoint,
         string addEndpoint,
         string editEndpoint,
+        string upgradeEndpoint,
         string removeEndpoint)
     {
         _httpClient = httpClient;
         _getListEndpoint = getListEndpoint;
         _addEndpoint = addEndpoint;
+        _upgradeEndpoint = upgradeEndpoint;
         _editEndpoint = editEndpoint;
         _removeEndpoint = removeEndpoint;
     }
@@ -37,7 +40,24 @@ public class PluginService: IPluginService
             throw new HttpRequestException($"Error: {response.StatusCode}, Message: {errorMessage}");
         }
     }
-    
+
+    public async Task Upgrade(PluginUpgradeData data)
+    {
+        var multipartContent = new MultipartFormDataContent();
+        if (data.ClientDLL != null)
+            multipartContent.Add(GetStreamContent(data.ClientDLL), "ClientDLL", data.ClientDLL.Name);
+        if (data.ServerDLL != null)
+            multipartContent.Add(GetStreamContent(data.ServerDLL), "ServerDLL", data.ServerDLL.Name);
+        multipartContent.Add(new StringContent(data.PluginId.ToString()), "PluginId");
+        var response = await _httpClient.PostAsync(_upgradeEndpoint, multipartContent);
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Error: {response.StatusCode}, Message: {errorMessage}");
+            throw new HttpRequestException($"Error: {response.StatusCode}, Message: {errorMessage}");
+        }
+    }
+
     public async Task<List<PluginDTO>?> GetList()
     {
         var res = await _httpClient.GetFromJsonAsync<List<PluginDTO>>(_getListEndpoint);

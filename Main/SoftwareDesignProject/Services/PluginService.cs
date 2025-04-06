@@ -32,9 +32,22 @@ public class PluginService: IPluginService
         return await _pluginRepository.GetActiveList();
     }
 
-    public async Task Rollback()
+    private readonly Stack<Func<Task>> _rollbackActions = new();
+    
+    private async Task Rollback()
     {
-        
+        while (_rollbackActions.Count > 0)
+        {
+            var action = _rollbackActions.Pop();
+            try
+            {
+                await action();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
     }
 
     public async Task AddPlugin(
@@ -85,6 +98,14 @@ public class PluginService: IPluginService
             throw new InvalidOperationException("Fail to insert to database");
         }
 
+        _rollbackActions.Push(async () =>
+        {
+            if (!await _pluginRepository.Remove((Guid)clientUid))
+            {
+                Console.WriteLine("Fail to delete from database");
+            }
+        });
+
         if (!await SaveFileAsync(clientDLL, clientUid + ".dll", _clientUploadPath))
         {
             await Rollback();
@@ -92,6 +113,14 @@ public class PluginService: IPluginService
             throw new IOException("Fail to save Client Plugin");
         }
 
+        _rollbackActions.Push(async () =>
+        {
+            if (!await RemoveFile(clientUid + ".dll", _clientUploadPath))
+            {
+                Console.WriteLine("Fail to delete Client Plugin");
+            }
+        });
+        
         if (serverDLL != null)
         {
             if (!await SaveFileAsync(serverDLL, serverUid + ".dll", _serverUploadPath))
@@ -102,6 +131,7 @@ public class PluginService: IPluginService
             }
             await _pluginManager.LoadAllAssemblies();
         }
+        Console.WriteLine("Plugin added successfully");
     }
 
     public async Task EditPlugin(PluginDTO dto)
@@ -127,6 +157,7 @@ public class PluginService: IPluginService
             await _pluginManager.LoadAllAssemblies();
             return;
         }
+        Console.WriteLine("Plugin edited successfully");
     }
 
     public async Task RemovePlugin(Guid id)
@@ -142,11 +173,155 @@ public class PluginService: IPluginService
         await RemoveFile(id + ".dll", _serverUploadPath);
         if (_pluginManager.CheckLoadedPlugin(id.ToString()))
             await _pluginManager.LoadAllAssemblies();
+        Console.WriteLine("Plugin removed successfully");
     }
 
     public Task<PluginDTO?> GetPluginById(Guid id)
     {
         return _pluginRepository.GetById(id);
+    }
+
+    public async Task UpgradePlugin(Guid pluginId, 
+        IFormFile? clientDll, IFormFile? serverDll)
+    {
+        Guid? clientUid = null;
+        if (clientDll != null)
+        {
+            clientUid = GetClientPluginUid(clientDll).Result;
+            if (clientUid == null)
+            {
+                Console.WriteLine("Fail to load Client DLL");
+                throw new InvalidDataException("Fail to load Client DLL");
+            }
+
+            if (pluginId != clientUid)
+            {
+                Console.WriteLine("Plugin ID and Client DLL ID must be same");
+                throw new InvalidDataException("Plugin ID and Client DLL ID must be same");
+            }
+        }
+
+        Guid? serverUid = null;
+        if (serverDll != null)
+        {
+            serverUid = GetServerPluginUid(serverDll).Result;
+            if (serverUid == null)
+            {
+                Console.WriteLine("Fail to load Server DLL");
+                throw new InvalidDataException("Fail to load Server DLL");
+            }
+
+            if (serverUid != pluginId)
+            {
+                Console.WriteLine("Plugin ID and Server DLL ID must be same");
+                throw new InvalidDataException("Plugin ID and Server DLL ID must be same");
+            }
+        }
+        
+        if (clientDll != null)
+        {
+            await BackupFile(pluginId + ".dll", _clientUploadPath);
+            _rollbackActions.Push(async () =>
+            {
+                if (!await RemoveFile(pluginId + ".dll", _clientUploadPath))
+                {
+                    Console.WriteLine("Fail to delete Client Plugin");
+                }
+                if (!await RestoreFile(pluginId + ".dll", _clientUploadPath))
+                {
+                    Console.WriteLine("Fail to restore Client Plugin");
+                }
+            });
+
+            if (!await SaveFileAsync(clientDll, clientUid + ".dll", _clientUploadPath))
+            {
+                await Rollback();
+                Console.WriteLine("Fail to save Client Plugin");
+                throw new IOException("Fail to save Client Plugin");
+            }
+        }
+        
+        if (serverDll != null)
+        {
+            await BackupFile(pluginId + ".dll", _serverUploadPath);
+            _rollbackActions.Push(async () =>
+            {
+                if (!await RemoveFile(pluginId + ".dll", _serverUploadPath))
+                {
+                    Console.WriteLine("Fail to delete Server Plugin");
+                }
+                if (!await RestoreFile(pluginId + ".dll", _serverUploadPath))
+                {
+                    Console.WriteLine("Fail to restore Server Plugin");
+                }
+                await _pluginManager.LoadAllAssemblies();
+            });
+
+            if (!await SaveFileAsync(serverDll, serverUid + ".dll", _serverUploadPath))
+            {
+                await Rollback();
+                Console.WriteLine("Fail to save Client Plugin");
+                throw new IOException("Fail to save Client Plugin");
+            }
+            await _pluginManager.LoadAllAssemblies();
+        }
+        
+        await RemoveBackup(pluginId + ".dll", _clientUploadPath);
+        await RemoveBackup(pluginId + ".dll", _serverUploadPath);
+        Console.WriteLine("Plugin upgraded successfully");
+    }
+    
+    private static async Task<bool> RemoveBackup(string fileName, string path)
+    {
+        var backupPath = Path.Combine(path, "backup", fileName);
+        if (!File.Exists(backupPath))
+            return false;
+        try
+        {
+            File.Delete(backupPath);
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
+        return true;
+    }
+    
+    private static async Task<bool> RestoreFile(string fileName, string path)
+    {
+        var filePath = Path.Combine(path, fileName);
+        var backupPath = Path.Combine(path, "backup", fileName);
+        if (!File.Exists(backupPath))
+            return false;
+        try
+        {
+            File.Copy(backupPath, filePath, true);
+            File.Delete(backupPath);
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
+        return true;
+    }
+    
+    private static async Task<bool> BackupFile(string fileName, string path)
+    {
+        var filePath = Path.Combine(path, fileName);
+        var backupPath = Path.Combine(path, "backup", fileName);
+        if (!Directory.Exists(Path.Combine(path, "backup")))
+            Directory.CreateDirectory(Path.Combine(path, "backup"));
+        if (!File.Exists(filePath))
+            return false;
+        try
+        {
+            File.Copy(filePath, backupPath, true);
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
+        return true;
     }
 
     private static async Task<Guid?> GetClientPluginUid(IFormFile file)

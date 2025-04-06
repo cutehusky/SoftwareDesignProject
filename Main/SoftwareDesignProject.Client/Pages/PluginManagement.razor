@@ -31,7 +31,9 @@
         </MudTd>
         <MudTd DataLabel="Action">
             <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => Delete(context.PluginId)" aria-label="delete" />
-            <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="() => Edit(context, _maxWidth)" aria-label="delete" />
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="() => Edit(context, _maxWidth)" aria-label="edit" />
+            <MudIconButton Icon="@Icons.Material.Filled.Upgrade" OnClick="() => Upgrade(context, _maxWidth)" aria-label="upgrade" />
+            
         </MudTd>
     </RowTemplate>
     <PagerContent>
@@ -51,6 +53,15 @@
         var items = await PluginService.GetList();
         if (items != null)
             _plugins = items;
+    }
+    
+    private Task Upgrade(PluginDTO pluginDto, DialogOptions options)
+    {
+        var parameters = new DialogParameters
+        {
+            { "Plugin",  pluginDto}
+        };
+        return Dialog.ShowAsync<UpgradePluginDialog>("Upgrade Plugin", parameters, options);
     }
 
     private Task Edit(PluginDTO pluginDto, DialogOptions options)
