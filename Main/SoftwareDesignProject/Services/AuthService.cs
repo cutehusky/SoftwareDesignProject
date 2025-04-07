@@ -22,7 +22,7 @@ public class AuthService : IAuthService
     {
         var user = await _userRepository.GetUserByUsernameAsync(username);
         //Console.WriteLine("User: " + user.HashedPassword);
-        if (user != null && BCrypt.Net.BCrypt.Verify(password, user.HashedPassword))
+        if (user != null && BCrypt.Net.BCrypt.Verify(password, user.Password))
         {
             return GenerateJwtToken(user.Username);
         }
@@ -40,7 +40,7 @@ public class AuthService : IAuthService
         }
 
         string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
-        var newUser = new UserDTO { Username = username, HashedPassword = hashedPassword };
+        var newUser = new UserDTO { Username = username, Password = hashedPassword };
         return await _userRepository.Add(newUser);
     }
 

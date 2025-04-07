@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using CommonDTO;
+using MudBlazor;
 using SoftwareDesignProject.Client.Models;
 
 namespace SoftwareDesignProject.Client.Services;
@@ -27,9 +28,23 @@ public class UserService : IUserService
         _addEndpoint = addEndpoint;
     }
 
-    public async Task<List<UserDTO>?> GetList()
+    public async Task<PaginationList<UserDTO>> GetList(int page, int pageSize,
+        string sortBy, SortDirection order, string search, CancellationToken cancellationToken)
     {
-        return await _httpClient.GetFromJsonAsync<List<UserDTO>>(_getListEndpoint);
+        Console.WriteLine($"Getting list with page: {page}, pageSize: {pageSize}, sortBy: {sortBy}, order: {order}, search: {search}");
+        var res = await _httpClient.GetFromJsonAsync<PaginationList<UserDTO>>(
+            GetListEndPoint(page, pageSize, sortBy, order, search), cancellationToken);
+        if (res == null)
+        {
+            Console.WriteLine("Error: No data received from server");
+            throw new HttpRequestException("Error: No data received from server");
+        }
+        return res;
+    }
+
+    private string GetListEndPoint(int page, int pageSize, string sortBy, SortDirection order, string search)
+    {
+        return $"{_getListEndpoint}?page={page}&pageSize={pageSize}&sortBy={sortBy}&order={order}&search={search}";
     }
 
     public async Task UpdateUserRole(UserDTO dto)
@@ -59,6 +74,20 @@ public class UserService : IUserService
         {
             var errorMessage = await response.Content.ReadAsStringAsync();
             throw new HttpRequestException($"Error adding user: {errorMessage}");
+        }
+    }
+
+    public async Task<UserDTO?> GetById(Guid id)
+    {
+        var response = await _httpClient.GetAsync($"{_getListEndpoint}/{id}");
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<UserDTO>();
+        }
+        else
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"Error fetching user by id: {errorMessage}");
         }
     }
 }

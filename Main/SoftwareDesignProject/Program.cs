@@ -19,6 +19,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPluginRepository, PluginRepository>();
 builder.Services.AddScoped<IPluginService, PluginService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
 
 // Add MudBlazor services
 builder.Services.AddMudServices();
@@ -87,6 +89,7 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
 
 app.UseHttpsRedirection();
 app.UseRouting();

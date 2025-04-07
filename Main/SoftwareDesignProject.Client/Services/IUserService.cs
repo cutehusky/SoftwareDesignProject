@@ -1,11 +1,16 @@
 ﻿using CommonDTO;
+using MudBlazor;
 
 namespace SoftwareDesignProject.Client.Services;
 
 public interface IUserService
 {
-    Task<List<UserDTO>?> GetList();
+    public Task<PaginationList<UserDTO>> GetList(int page, int pageSize,
+        string sortBy, SortDirection order, string search,
+        CancellationToken cancellationToken);
     Task UpdateUserRole(UserDTO dto);
     Task Delete(Guid id);
     Task Add(UserDTO user);
+
+    public Task<UserDTO?> GetById(Guid id);
 }

@@ -4,7 +4,7 @@ using UserRoles = SoftwareDesignProject.Models.Entities.UserRoles;
 
 namespace SoftwareDesignProject.Models.DTOMapper;
 
-public class UserDTOMapper: IDTOMapper<User, UserDTO>
+public class UserDTOMapper : IDTOMapper<User, UserDTO>
 {
 
     private CommonDTO.UserRoles ConvertTo(UserRoles userRoles)
@@ -35,7 +35,7 @@ public class UserDTOMapper: IDTOMapper<User, UserDTO>
         {
             UserId = from.UserId,
             Username = from.Username,
-            HashedPassword = from.HashedPassword,
+            Password = from.HashedPassword,
             UserRole = ConvertTo(from.UserRole)
         };
     }
@@ -46,13 +46,18 @@ public class UserDTOMapper: IDTOMapper<User, UserDTO>
         {
             UserId = from.UserId,
             Username = string.IsNullOrEmpty(from.Username) ? from.UserId.ToString() : from.Username,
-            HashedPassword = from.HashedPassword!,
+            HashedPassword = from.Password!,
             UserRole = ConvertFrom(from.UserRole)
         };
     }
 
     public void CopyToEntity(User target, UserDTO source)
     {
-        throw new NotImplementedException();
+        if (source.Username != null)
+            target.Username = source.Username;
+        if (source.Password != null)
+            target.HashedPassword = source.Password;
+        if (source.UserRole != null)
+            target.UserRole = ConvertFrom(source.UserRole);
     }
 }

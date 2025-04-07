@@ -65,8 +65,7 @@
             var newUser = new UserDTO
                 {
                     Username = _username,
-				    // TODO: Hash the password before storing it
-                    HashedPassword = _password, 
+                    Password = _password, 
                     UserRole = _selectedRole
                 };
 

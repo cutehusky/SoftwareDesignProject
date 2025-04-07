@@ -25,7 +25,7 @@ builder.Services.AddScoped<IPluginService>(sp =>
         "api/plugins/remove"));
 
 builder.Services.AddScoped<IUserService>(sp => new UserService(
-    sp.GetRequiredService<HttpClient>(),
+    sp.GetService<HttpClient>()!,
     getListEndpoint: "/api/users",
     updateRoleEndpoint: "/api/users/role",
     deleteEndpoint: "/api/users",
