@@ -5,14 +5,15 @@
 @inject IDialogService Dialog
 @inject IServiceProvider ServiceProvider
 @inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <div class="d-flex align-center justify-end mb-6">
     <MudButton StartIcon="@Icons.Material.Filled.Add" Class="mx-6 my-3" Variant="Variant.Outlined" Color="Color.Inherit"
-    OnClick="@(() => OpenDialogAsync(_maxWidth))"> Add </MudButton>
+               OnClick="@(() => OpenDialogAsync(_maxWidth))"> Add </MudButton>
 </div>
 
-<MudTable ServerData="LoadServerData"
-Hover="true" Elevation="0" AllowUnsorted="false">
+<MudTable ServerData="LoadServerData" @ref="_userTable"
+          Hover="true" Elevation="0" AllowUnsorted="false">
     <HeaderContent>
         <MudTh><MudTableSortLabel SortBy="new Func<UserDTO, object>(x => x.UserId)">User ID</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<UserDTO, object>(x => x.Username!)">Username</MudTableSortLabel></MudTh>
@@ -23,18 +24,25 @@ Hover="true" Elevation="0" AllowUnsorted="false">
         <MudTd DataLabel="User ID">@context.UserId</MudTd>
         <MudTd DataLabel="Username">@context.Username</MudTd>
         <MudTd DataLabel="User Role">
-            <MudSelect T="UserRoles" 
-            Value="@GetCurrentRole(context)"
-            Immediate="true"
-            ValueChanged="@(async (v) => await OnRoleChanged(context.UserId, v))">
+            <MudSelect T="UserRoles"
+                       Value="@GetCurrentRole(context)"
+                       Immediate="true"
+                       ValueChanged="@(async (v) => await OnRoleChanged(context.UserId, v))">
                 @foreach (UserRoles role in Enum.GetValues(typeof(UserRoles)))
                 {
                     <MudSelectItem Value="role">@role.ToString()</MudSelectItem>
                 }
             </MudSelect>
         </MudTd>
-        <MudTd DataLabel="Action">
-            <MudIconButton Icon="@Icons.Material.Filled.Save" OnClick="@(() => Save(context.UserId))" />
+        <MudTd DataLabel="Action" Class="d-flex align-center">
+            @if (_isSaving && _currentSavingUserId == context.UserId)
+            {
+                <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true" />
+            }
+            else
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.Save" OnClick="@(() => Save(context.UserId))" />
+            }
             <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => Delete(context.UserId))" />
         </MudTd>
     </RowTemplate>
@@ -47,6 +55,9 @@ Hover="true" Elevation="0" AllowUnsorted="false">
     private IUserService? UserService { get; set; }
     private Dictionary<Guid, UserRoles?> _userRoleChanges = new();
     private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+    private MudTable<UserDTO> _userTable;
+    private bool _isSaving = false;
+    private Guid _currentSavingUserId;
 
     private async Task<TableData<UserDTO>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
@@ -57,18 +68,19 @@ Hover="true" Elevation="0" AllowUnsorted="false">
                 state.Page, state.PageSize, state.SortLabel ?? "", state.SortDirection, "", cancellationToken);
             Console.WriteLine(items);
             return new TableData<UserDTO>
-            {
-                Items = items.Items,
-                TotalItems = items.TotalCount
-            };
-        } catch (Exception e)
+                {
+                    Items = items.Items,
+                    TotalItems = items.TotalCount
+                };
+        }
+        catch (Exception e)
         {
             Console.WriteLine(e);
             return new TableData<UserDTO>
-            {
-                Items = new List<UserDTO>(),
-                TotalItems = 0
-            };
+                {
+                    Items = new List<UserDTO>(),
+                    TotalItems = 0
+                };
         }
     }
 
@@ -90,12 +102,16 @@ Hover="true" Elevation="0" AllowUnsorted="false">
 
     private async Task Save(Guid userId)
     {
+        _isSaving = true;
+        _currentSavingUserId = userId;
+        StateHasChanged();
+
         if (_userRoleChanges.TryGetValue(userId, out var newRole))
         {
-            if (UserService != null)  
+            if (UserService != null)
             {
                 var user = await UserService.GetById(userId);
-                if (user != null)  
+                if (user != null)
                 {
                     var userWithNewRole = new UserDTO()
                         {
@@ -104,20 +120,47 @@ Hover="true" Elevation="0" AllowUnsorted="false">
                             UserRole = newRole,
                             Password = user.Password
                         };
-                    await UserService.UpdateUserRole(userWithNewRole);
-                    _userRoleChanges.Remove(userId);  
-                    await LoadServerData(new TableState(), new CancellationToken());  
-                }  
+                    try
+                    {
+                        await UserService.UpdateUserRole(userWithNewRole);
+                        _userRoleChanges.Remove(userId);
+                        await _userTable.ReloadServerData();
+                        StateHasChanged();
+
+                        Snackbar.Add("Updated successfully", Severity.Success);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        Snackbar.Add("Failed to update", Severity.Error);
+                    }
+                }
             }
         }
+
+        _isSaving = false;
+        _currentSavingUserId = Guid.Empty;
+        StateHasChanged();
     }
 
     private async Task Delete(Guid userId)
     {
         if (UserService != null)
         {
-            await UserService.Delete(userId);
-            await LoadServerData(new TableState(), new CancellationToken());
+            try
+            {
+                await UserService.Delete(userId);
+                await LoadServerData(new TableState(), new CancellationToken());
+
+                await _userTable.ReloadServerData();
+                StateHasChanged();
+                Snackbar.Add("Deleted successfully", Severity.Success);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Snackbar.Add("Failed to delete", Severity.Error);
+            }
         }
     }
 
@@ -125,4 +168,5 @@ Hover="true" Elevation="0" AllowUnsorted="false">
     {
         return Dialog.ShowAsync<AddUserDialog>("Add User", options);
     }
+    
 }
