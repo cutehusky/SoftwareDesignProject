@@ -8,7 +8,7 @@ using SoftwareDesignProject.Services;
 using System.Text;
 using SoftwareDesignProject.Repositories;
 using SoftwareDesignProject.Services.ServerPluginManagement;
-
+using CommonDTO;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -76,6 +76,17 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// Register authorization policies
+builder.Services.AddAuthorizationCore(options =>
+{
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireRole(UserRoles.Admin.ToString()));
+
+    options.AddPolicy("PremiumPlus", policy =>
+        policy.RequireRole(UserRoles.Premium.ToString(), UserRoles.Admin.ToString()));
+});
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -86,16 +97,20 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    // The default HSTS value is 30 days. You may want to change this for production scenarios.
     app.UseHsts();
 }
-
 
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseSession();
 app.UseAntiforgery();
 
+// Add authentication and authorization middleware here 
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Maps assets and endpoints
 app.MapStaticAssets();
 app.MapControllers();
 app.MapRazorComponents<App>()
@@ -104,5 +119,14 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(SoftwareDesignProject.Client._Imports).Assembly);
 
 app.MapDynamicControllerRoute<DynamicRouteTransformer>("api/plugin/{id}/{controller}/{action}");
+
+// In Program.cs or a seed data class
+using (var scope = app.Services.CreateScope())
+{
+    var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
+    await authService.RegisterAsync("admin", "securePassword123", UserRoles.Admin);
+}
+
+app.MapFallbackToFile("index.html");
 
 app.Run();

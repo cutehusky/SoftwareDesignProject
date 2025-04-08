@@ -36,7 +36,7 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = "Username and password are required" });
         }
 
-        var success = await _authService.RegisterAsync(request.Username, request.Password);
+        var success = await _authService.RegisterAsync(request.Username, request.Password, UserRoles.Normal);
 
         if (!success)
         {

@@ -1,9 +1,13 @@
 ﻿@page "/Home"
 @page "/"
 @using CommonDTO
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 @inject IServiceProvider ServiceProvider
 @inject HttpClient HttpClient
 @inject IJSRuntime JS
+@inject AuthenticationStateProvider AuthStateProvider
+
 
 <MudText Typo="Typo.h6" Style="margin: 10px"> All Tools</MudText>
 <div class="d-flex flex-grow-1 gap-2 flex-wrap align-center justify-md-space-around">
@@ -28,16 +32,31 @@
 
     public List<HomeItem> Plugins { get; set; } = new ();
 
+    private UserRoles _currentUserRole = UserRoles.Normal;
+
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        _currentUserRole = GetUserRole(authState.User);
+
         var navLoader = ServiceProvider.GetService<INavMenuLoader>();
         if (navLoader != null)
         {
             var items = await navLoader.GetHomeItem();
-            if (items != null)
-            {
-                Plugins = items;
-            }
+            Plugins = FilterPlugins(items, _currentUserRole);
         }
+    }
+
+    private List<HomeItem> FilterPlugins(List<HomeItem> plugins, UserRoles role)
+    {
+        return role >= UserRoles.Premium
+            ? plugins
+            : plugins.Where(p => !p.IsPremium).ToList();
+    }
+
+    private UserRoles GetUserRole(ClaimsPrincipal user)
+    {
+        var roleClaim = user.FindFirst(ClaimTypes.Role)?.Value;
+        return Enum.TryParse(roleClaim, out UserRoles role) ? role : UserRoles.Normal;
     }
 }

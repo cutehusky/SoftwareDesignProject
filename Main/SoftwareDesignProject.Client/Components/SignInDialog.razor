@@ -39,6 +39,7 @@
             var authStateProvider = (CustomAuthStateProvider)AuthStateProvider;
             await authStateProvider.Login(result.Token);
             await DialogService.ShowMessageBox("Success", "Logged in successfully");
+            NavigationManager.NavigateTo("/", forceLoad: true);
             StateHasChanged();
         }
         else
