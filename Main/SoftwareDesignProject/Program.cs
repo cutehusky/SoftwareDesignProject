@@ -124,7 +124,7 @@ app.MapDynamicControllerRoute<DynamicRouteTransformer>("api/plugin/{id}/{control
 using (var scope = app.Services.CreateScope())
 {
     var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
-    await authService.RegisterAsync("admin", "securePassword123", UserRoles.Admin);
+    await authService.RegisterAsync("admin", "admin", UserRoles.Admin);
 }
 
 app.MapFallbackToFile("index.html");
