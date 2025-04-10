@@ -1,5 +1,5 @@
 ﻿@page "/dynamicDLL/{PluginId}"
-@inject NavigationManager NavigationManager
+@using System.Net
 @inject IServiceProvider ServiceProvider
 
 @_content
@@ -39,10 +39,17 @@
                 ShowComponent(componentType);
             }
         }
-        catch (HttpRequestException)
+        catch (HttpRequestException e) when (e.StatusCode == HttpStatusCode.Forbidden)
         {
             // Console.WriteLine(e.Message);
-            NavigationManager.NavigateTo("/404");
+            //NavigationManager.NavigateTo("/403");
+            ShowComponent(typeof(Page403));
+        } 
+        catch (Exception e)
+        {
+            // Console.WriteLine(e.Message);
+            //NavigationManager.NavigateTo("/404");
+            ShowComponent(typeof(Page404));
         }
     }
     

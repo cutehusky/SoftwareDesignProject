@@ -1,6 +1,12 @@
-﻿@using SoftwareDesignProject.Client.Components
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using SoftwareDesignProject.Client.Components
 @inherits LayoutComponentBase
 @inject IDialogService DialogService
+
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthProvider
+@inject NavigationManager NavigationManager
+
 
 <MudThemeProvider Theme="@_theme"  IsDarkMode="_isDarkMode"/>
 <MudPopoverProvider />
@@ -15,11 +21,21 @@
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudText Typo="Typo.h5" Class="ml-3">IT TOOLS</MudText>
         <MudSpacer />
-        @* <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" /> *@
-        <MudButton @onclick="OpenSignInDialogAsync">Sign In</MudButton>
-        <MudButton @onclick="OpenSignUpDialogAsync">Sign Up</MudButton>
+
+        @if (_authState?.User?.Identity?.IsAuthenticated == true)
+        {
+            <MudText Class="mr-2">Hello, @_authState.User.Identity.Name!</MudText>
+            <MudButton OnClick="Logout">Logout</MudButton>
+        }
+        else
+        {
+            <MudButton OnClick="OpenSignInDialogAsync">Sign In</MudButton>
+            <MudButton OnClick="OpenSignUpDialogAsync">Sign Up</MudButton>
+        }
+
         <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
     </MudAppBar>
+
     <MudDrawer Style="backdrop-filter: blur(2px);" id="nav-drawer" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
         <NavMenu />
     </MudDrawer>
@@ -36,6 +52,16 @@
 </div>
 
 @code {
+    private CustomAuthStateProvider CustomAuthStateProvider => (CustomAuthStateProvider)AuthProvider;
+    private AuthenticationState _authState;
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _authState = await AuthenticationStateTask;
+    }
+
     private string BackgroundImage  => _isDarkMode ? "img/BackgroundDark.png" : "img/BackgroundLight.png";
     private bool _drawerOpen = true;
     private bool _isDarkMode = true;
@@ -52,6 +78,13 @@
             LayoutProperties = new LayoutProperties()
         };
     }
+
+    private async Task Logout()
+    {
+        await CustomAuthStateProvider.Logout();
+        NavigationManager.NavigateTo("/", forceLoad: true); // or StateHasChanged if you prefer
+    }
+
 
     private void DrawerToggle()
     {

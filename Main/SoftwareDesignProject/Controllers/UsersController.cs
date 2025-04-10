@@ -2,6 +2,7 @@
 using CommonDTO;
 using SoftwareDesignProject.Services;
 using MudBlazor;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SoftwareDesignProject.Controllers;
 
@@ -44,6 +45,7 @@ public class UsersController : ControllerBase
         return Ok(users);
     }
 
+    [Authorize(Policy = "AdminOnly")]
     [HttpPut("role")]
     public async Task<IActionResult> UpdateRole([FromBody] UserDTO dto)
     {
@@ -65,6 +67,7 @@ public class UsersController : ControllerBase
         }
     }
 
+    [Authorize(Policy = "AdminOnly")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
@@ -79,6 +82,7 @@ public class UsersController : ControllerBase
         }
     }
 
+    [Authorize(Policy = "AdminOnly")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] UserDTO user)
     {

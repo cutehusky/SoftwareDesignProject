@@ -1,5 +1,6 @@
-﻿@using MudBlazor
+﻿@using System.Security.Claims
 @using CommonDTO
+@using Microsoft.AspNetCore.Components.Authorization
 @using SoftwareDesignProject.Client.Components
 @using SoftwareDesignProject.Client.Services
 @inject IDialogService Dialog
@@ -7,51 +8,95 @@
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
-<div class="d-flex align-center justify-end mb-6">
-    <MudButton StartIcon="@Icons.Material.Filled.Add" Class="mx-6 my-3" Variant="Variant.Outlined" Color="Color.Inherit"
-               OnClick="@(() => OpenDialogAsync(_maxWidth))"> Add </MudButton>
-</div>
+@page "/user-management"
 
-<MudTable ServerData="LoadServerData" @ref="_userTable"
-          Hover="true" Elevation="0" AllowUnsorted="false">
-    <HeaderContent>
-        <MudTh><MudTableSortLabel SortBy="new Func<UserDTO, object>(x => x.UserId)">User ID</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<UserDTO, object>(x => x.Username!)">Username</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<UserDTO, object>(x => x.UserRole!)">User Role</MudTableSortLabel></MudTh>
-        <MudTh>Action</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="User ID">@context.UserId</MudTd>
-        <MudTd DataLabel="Username">@context.Username</MudTd>
-        <MudTd DataLabel="User Role">
-            <MudSelect T="UserRoles"
-                       Value="@GetCurrentRole(context)"
-                       Immediate="true"
-                       ValueChanged="@(async (v) => await OnRoleChanged(context.UserId, v))">
-                @foreach (UserRoles role in Enum.GetValues(typeof(UserRoles)))
+
+@if (_isLoading)
+{
+    <!--
+        <MudAlert Severity="Severity.Info">Loading...</MudAlert> 
+    -->
+} else if (!_isAuthorized)
+{
+    <Page403 />
+}
+else
+{
+    <div class="d-flex align-center justify-end mb-6">
+        <MudButton StartIcon="@Icons.Material.Filled.Add" Class="mx-6 my-3" Variant="Variant.Outlined" Color="Color.Inherit"
+                   OnClick="@(() => OpenDialogAsync(_maxWidth))"> Add </MudButton>
+    </div>
+
+    <MudTable ServerData="LoadServerData" @ref="_userTable"
+              Hover="true" Elevation="0" AllowUnsorted="false">
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortBy="new Func<UserDTO, object>(x => x.UserId)">User ID</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<UserDTO, object>(x => x.Username!)">Username</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<UserDTO, object>(x => x.UserRole!)">User Role</MudTableSortLabel></MudTh>
+            <MudTh>Action</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="User ID">@context.UserId</MudTd>
+            <MudTd DataLabel="Username">@context.Username</MudTd>
+            <MudTd DataLabel="User Role">
+                <MudSelect T="UserRoles"
+                           Value="@GetCurrentRole(context)"
+                           Immediate="true"
+                           ValueChanged="@(async (v) => await OnRoleChanged(context.UserId, v))">
+                    @foreach (UserRoles role in Enum.GetValues(typeof(UserRoles)))
+                    {
+                        <MudSelectItem Value="role">@role.ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudTd>
+            <MudTd DataLabel="Action" Class="d-flex align-center">
+                @if (_isSaving && _currentSavingUserId == context.UserId)
                 {
-                    <MudSelectItem Value="role">@role.ToString()</MudSelectItem>
+                    <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true"/>
                 }
-            </MudSelect>
-        </MudTd>
-        <MudTd DataLabel="Action" Class="d-flex align-center">
-            @if (_isSaving && _currentSavingUserId == context.UserId)
-            {
-                <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true" />
-            }
-            else
-            {
-                <MudIconButton Icon="@Icons.Material.Filled.Save" OnClick="@(() => Save(context.UserId))" />
-            }
-            <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => Delete(context.UserId))" />
-        </MudTd>
-    </RowTemplate>
-    <PagerContent>
-        <MudTablePager PageSizeOptions="new int[]{10, 50, 100}" />
-    </PagerContent>
-</MudTable>
+                else
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Save" OnClick="@(() => Save(context.UserId))"/>
+                }
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => Delete(context.UserId))"/>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new int[] { 10, 50, 100 }"/>
+        </PagerContent>
+    </MudTable>
+}
 
 @code {
+    private bool _isAuthorized = false;
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        if (OperatingSystem.IsBrowser())
+        {
+            if (ServiceProvider.GetService<AuthenticationStateProvider>() is CustomAuthStateProvider authService)
+            {
+                var user = await authService.GetAuthenticationStateAsync();
+                if (user.User.Identity?.IsAuthenticated == true)
+                {
+                    var roles = user.User.Claims.Where(c => c.Type == ClaimTypes.Role)
+                        .Select(c => c.Value).ToList();
+                    if (roles.Contains("Admin"))
+                    {
+                        _isLoading = false;
+                        _isAuthorized = true;
+                        return;
+                    }
+                }
+
+                //Navigation.NavigateTo("/403");
+                _isLoading = false;
+            }
+        }
+    }
+    
     private IUserService? UserService { get; set; }
     private Dictionary<Guid, UserRoles?> _userRoleChanges = new();
     private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };

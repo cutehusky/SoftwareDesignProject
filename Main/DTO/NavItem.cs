@@ -6,4 +6,6 @@ public class NavItem
     public required string Href { get; init; }
     public required string Icon { get; init; }
     public required string Category { get; init; }
+
+    public bool IsPremium { get; init; } = false;
 }

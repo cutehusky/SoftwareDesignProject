@@ -2,19 +2,20 @@
 using BackendPluginTemplate;
 using CommonDTO;
 using MudBlazor;
+using SoftwareDesignProject.Models.DTOMapper;
 using SoftwareDesignProject.Repositories;
 using SoftwareDesignProject.Services.ServerPluginManagement;
 
 
 namespace SoftwareDesignProject.Services;
 
-public class PluginService: IPluginService
+public class PluginService : IPluginService
 {
     private readonly IPluginRepository _pluginRepository;
     private readonly DynamicPluginManager _pluginManager;
     private readonly string _clientUploadPath;
     private readonly string _serverUploadPath;
-    
+
     public PluginService(IPluginRepository pluginRepository, DynamicPluginManager pluginManager, IHostEnvironment env)
     {
         _pluginRepository = pluginRepository;
@@ -22,22 +23,33 @@ public class PluginService: IPluginService
         _clientUploadPath = Path.Combine(env.ContentRootPath, "Root/ClientPlugins");
         _serverUploadPath = Path.Combine(env.ContentRootPath, "Root/BackendPlugins");
     }
-    
-    public async Task<PaginationList<PluginDTO>> GetList(int page, int pageSize, 
-        string sortBy, SortDirection order, string search)
+
+    public async Task<PaginationList<PluginDTO>> GetList(int page, int pageSize, string sortBy,
+        SortDirection order, string search, UserRoles? userRole)
     {
-        var plugins = await _pluginRepository.GetAll(page, pageSize, 
-            sortBy, order, search);
-        return plugins;
+        var query = await _pluginRepository.GetAll(page, pageSize, sortBy, order, search);
+
+        if (userRole < UserRoles.Premium)
+        {
+            query.Items = query.Items.Where(p => p.IsPremium == false).ToList();
+        }
+
+        return query;
     }
-    
-    public async Task<List<PluginDTO>> GetActiveList()
+
+    public async Task<List<PluginDTO>> GetActiveList(UserRoles? userRole)
     {
-        return await _pluginRepository.GetActiveList();
+        var query = await _pluginRepository.GetActiveList();
+
+        if (userRole < UserRoles.Premium)
+        {
+            query = query.Where(p => p.IsPremium == false).ToList();
+        }
+        return query;
     }
 
     private readonly Stack<Func<Task>> _rollbackActions = new();
-    
+
     private async Task Rollback()
     {
         while (_rollbackActions.Count > 0)
@@ -55,14 +67,14 @@ public class PluginService: IPluginService
     }
 
     public async Task AddPlugin(
-        string name, 
-        string description, 
+        string name,
+        string description,
         string category,
         bool isPremium,
-        IFormFile clientDLL, 
+        IFormFile clientDLL,
         IFormFile? serverDLL)
     {
-        
+
         var clientUid = await GetClientPluginUid(clientDLL);
         if (clientUid == null)
         {
@@ -86,7 +98,7 @@ public class PluginService: IPluginService
                 throw new InvalidDataException("Server and client dll must have same id");
             }
         }
-        
+
         var res = await _pluginRepository.Add(new PluginDTO()
         {
             PluginId = (Guid)clientUid,
@@ -124,7 +136,7 @@ public class PluginService: IPluginService
                 Console.WriteLine("Fail to delete Client Plugin");
             }
         });
-        
+
         if (serverDLL != null)
         {
             if (!await SaveFileAsync(serverDLL, serverUid + ".dll", _serverUploadPath))
@@ -145,16 +157,16 @@ public class PluginService: IPluginService
         {
             throw new InvalidOperationException("Fail to update in database");
         }
-        
-        if (dto.IsEnabled != null 
+
+        if (dto.IsEnabled != null
             && (bool)dto.IsEnabled
             && !_pluginManager.CheckLoadedPlugin(dto.PluginId.ToString()))
         {
             await _pluginManager.LoadAllAssemblies();
             return;
         }
-        
-        if (dto.IsEnabled != null 
+
+        if (dto.IsEnabled != null
             && !(bool)dto.IsEnabled
             && _pluginManager.CheckLoadedPlugin(dto.PluginId.ToString()))
         {
@@ -185,7 +197,7 @@ public class PluginService: IPluginService
         return _pluginRepository.GetById(id);
     }
 
-    public async Task UpgradePlugin(Guid pluginId, 
+    public async Task UpgradePlugin(Guid pluginId,
         IFormFile? clientDll, IFormFile? serverDll)
     {
         Guid? clientUid = null;
@@ -221,7 +233,7 @@ public class PluginService: IPluginService
                 throw new InvalidDataException("Plugin ID and Server DLL ID must be same");
             }
         }
-        
+
         if (clientDll != null)
         {
             await BackupFile(pluginId + ".dll", _clientUploadPath);
@@ -244,7 +256,7 @@ public class PluginService: IPluginService
                 throw new IOException("Fail to save Client Plugin");
             }
         }
-        
+
         if (serverDll != null)
         {
             await BackupFile(pluginId + ".dll", _serverUploadPath);
@@ -269,12 +281,12 @@ public class PluginService: IPluginService
             }
             await _pluginManager.LoadAllAssemblies();
         }
-        
+
         await RemoveBackup(pluginId + ".dll", _clientUploadPath);
         await RemoveBackup(pluginId + ".dll", _serverUploadPath);
         Console.WriteLine("Plugin upgraded successfully");
     }
-    
+
     private static async Task<bool> RemoveBackup(string fileName, string path)
     {
         var backupPath = Path.Combine(path, "backup", fileName);
@@ -290,7 +302,7 @@ public class PluginService: IPluginService
         }
         return true;
     }
-    
+
     private static async Task<bool> RestoreFile(string fileName, string path)
     {
         var filePath = Path.Combine(path, fileName);
@@ -308,7 +320,7 @@ public class PluginService: IPluginService
         }
         return true;
     }
-    
+
     private static async Task<bool> BackupFile(string fileName, string path)
     {
         var filePath = Path.Combine(path, fileName);
@@ -335,7 +347,7 @@ public class PluginService: IPluginService
 
         foreach (var type in assembly.GetTypes())
         {
-            if (!type.IsClass || !typeof(ClientPluginTemplate.IConfig).IsAssignableFrom(type)) 
+            if (!type.IsClass || !typeof(ClientPluginTemplate.IConfig).IsAssignableFrom(type))
                 continue;
             var config = (Activator.CreateInstance(type) as ClientPluginTemplate.IConfig)!;
             if (Guid.TryParse(config.ID, out var result))
@@ -350,19 +362,19 @@ public class PluginService: IPluginService
     {
         var dllBytes = await SaveByteArrayAsync(file);
         var assembly = Assembly.Load(dllBytes);
-        
+
         foreach (var type in assembly.GetTypes())
         {
-            if (!type.IsClass || !typeof(IConfig).IsAssignableFrom(type)) 
+            if (!type.IsClass || !typeof(IConfig).IsAssignableFrom(type))
                 continue;
             var config = (Activator.CreateInstance(type) as IConfig)!;
-            if (!Guid.TryParse(config.ID, out var result)) 
+            if (!Guid.TryParse(config.ID, out var result))
                 continue;
             return result;
         }
         return null;
     }
-    
+
     private static async Task<byte[]> SaveByteArrayAsync(IFormFile file)
     {
         using var memoryStream = new MemoryStream();
@@ -385,12 +397,12 @@ public class PluginService: IPluginService
             return false;
         }
     }
-    
+
     private static async Task<bool> SaveFileAsync(IFormFile file, string fileName, string uploadPath)
     {
         Console.WriteLine(file.Name);
         Console.WriteLine(file.Length);
-        
+
         var filePath = Path.Combine(uploadPath, fileName);
         try
         {
