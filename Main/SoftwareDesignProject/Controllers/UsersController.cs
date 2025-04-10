@@ -3,6 +3,7 @@ using CommonDTO;
 using SoftwareDesignProject.Services;
 using MudBlazor;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace SoftwareDesignProject.Controllers;
 
@@ -49,6 +50,11 @@ public class UsersController : ControllerBase
     [HttpPut("role")]
     public async Task<IActionResult> UpdateRole([FromBody] UserDTO dto)
     {
+        var userRole = await GetCurrentUserRoleAsync();
+        if (userRole < CommonDTO.UserRoles.Admin)
+        {
+            return Forbid();
+        }
         if (!await _semaphore.WaitAsync(TimeSpan.FromSeconds(10)))
             return StatusCode(503, "Service unavailable");
 
@@ -71,6 +77,11 @@ public class UsersController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
+        var userRole = await GetCurrentUserRoleAsync();
+        if (userRole < CommonDTO.UserRoles.Admin)
+        {
+            return Forbid();
+        }
         try
         {
             await _userService.Delete(id);
@@ -86,6 +97,11 @@ public class UsersController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] UserDTO user)
     {
+        var userRole = await GetCurrentUserRoleAsync();
+        if (userRole < CommonDTO.UserRoles.Admin)
+        {
+            return Forbid();
+        }
         try
         {
             await _userService.Add(user);
@@ -124,4 +140,21 @@ public class UsersController : ControllerBase
         }
     }
 
+    private async Task<CommonDTO.UserRoles> GetCurrentUserRoleAsync()
+    {
+        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+        // Default role if no valid user ID is found
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        {
+            return CommonDTO.UserRoles.Normal;
+        }
+
+        var user = await _userService.GetById(userId);
+        if (user == null)
+        {
+            return CommonDTO.UserRoles.Normal;
+        }
+
+        return user.UserRole ?? CommonDTO.UserRoles.Normal;
+    }
 }

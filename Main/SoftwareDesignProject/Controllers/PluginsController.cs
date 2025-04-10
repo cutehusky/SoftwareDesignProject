@@ -37,6 +37,11 @@ public class PluginsController : ControllerBase
     [HttpGet("load")]
     public async Task<IActionResult> Load()
     {
+        var userRole = await GetCurrentUserRoleAsync();
+        if (userRole < CommonDTO.UserRoles.Admin)
+        {
+            return Forbid();
+        }
         await _manager.LoadAllAssemblies();
         return Ok(new { message = "Server Plugin Reloaded" });
     }
@@ -68,6 +73,11 @@ public class PluginsController : ControllerBase
     [HttpPost("upgrade")]
     public async Task<IActionResult> UpgradePlugin([FromForm] UpgradePluginRequest request)
     {
+        var userRole = await GetCurrentUserRoleAsync();
+        if (userRole < CommonDTO.UserRoles.Admin)
+        {
+            return Forbid();
+        }
         if (request.ClientDLL == null && request.ServerDLL == null)
         {
             return BadRequest("Client DLL or Server DLL is required.");
@@ -112,6 +122,11 @@ public class PluginsController : ControllerBase
     [HttpPost("edit")]
     public async Task<IActionResult> EditPlugin([FromBody] PluginDTO dto)
     {
+        var userRole = await GetCurrentUserRoleAsync();
+        if (userRole < CommonDTO.UserRoles.Admin)
+        {
+            return Forbid();
+        }
         var acquired = await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10));
         if (!acquired)
         {
@@ -139,6 +154,11 @@ public class PluginsController : ControllerBase
     [HttpPost("remove")]
     public async Task<IActionResult> RemovePlugin([FromBody] PluginDTO request)
     {
+        var userRole = await GetCurrentUserRoleAsync();
+        if (userRole < CommonDTO.UserRoles.Admin)
+        {
+            return Forbid();
+        }
         var acquired = await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10));
         if (!acquired)
         {
@@ -194,6 +214,11 @@ public class PluginsController : ControllerBase
     [HttpPost("add")]
     public async Task<IActionResult> UploadFiles([FromForm] UploadPluginRequest request)
     {
+        var userRole = await GetCurrentUserRoleAsync();
+        if (userRole < CommonDTO.UserRoles.Admin)
+        {
+            return Forbid();
+        }
         var acquired = await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10));
         if (!acquired)
         {
