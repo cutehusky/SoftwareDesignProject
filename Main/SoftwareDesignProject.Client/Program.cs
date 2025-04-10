@@ -31,7 +31,9 @@ builder.Services.AddScoped<IUserService>(sp => new UserService(
     getListEndpoint: "/api/users",
     updateRoleEndpoint: "/api/users/role",
     deleteEndpoint: "/api/users",
-    addEndpoint: "/api/users"
+    addEndpoint: "/api/users",
+    upgradeEndpoint: "/api/users/upgrade",
+    refreshTokenEndpoint: "/api/auth/refresh-token"
 ));
 
 builder.Services.AddTransient<CustomAuthorizationMessageHandler>();

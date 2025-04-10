@@ -11,4 +11,6 @@ public interface IUserService
     public Task Delete(Guid id);
     public Task Add(UserDTO user);
     public Task<UserDTO?> GetById(Guid id);
+
+    public Task Upgrade(Guid id);
 }

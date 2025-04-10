@@ -11,6 +11,9 @@ public interface IUserService
     Task UpdateUserRole(UserDTO dto);
     Task Delete(Guid id);
     Task Add(UserDTO user);
+    Task Upgrade(Guid id);
+
+    Task<string> RefreshToken(string oldToken);
 
     public Task<UserDTO?> GetById(Guid id);
 }

@@ -46,6 +46,21 @@ public class AuthController : ControllerBase
         return Ok(new { message = "Account created successfully" });
     }
 
+    [HttpPut("refresh-token")]
+    public async Task<IActionResult> RefreshToken([FromBody] string oldToken)
+    {
+        if (string.IsNullOrWhiteSpace(oldToken))
+        {
+            return BadRequest(new { message = "Token is required" });
+        }
+        var newToken = await _authService.RefreshToken(oldToken);
+        if (newToken == null)
+        {
+            return Unauthorized(new { message = "Invalid token" });
+        }
+        return Ok(new JwtResponse { Token = newToken });
+    }
+
     [HttpGet("test-db")]
     public async Task<IActionResult> TestDatabaseConnection([FromServices] IDbConnection dbConnection)
     {

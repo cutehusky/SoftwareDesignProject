@@ -1,0 +1,82 @@
+﻿@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
+@using MudBlazor
+@using SoftwareDesignProject.Client.Services
+@using System.Security.Claims
+@inject IServiceProvider ServiceProvider
+@inject AuthenticationStateProvider AuthProvider
+@inject NavigationManager NavigationManager
+
+
+<MudDialog>
+    <DialogContent>
+        <MudText Align="Align.Center">Do you want to upgrade to premium?</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="HandleUpgrade" Variant="Variant.Filled" Color="Color.Primary">Yes</MudButton>
+        <MudButton OnClick="HandleCancel" Variant="Variant.Outlined" Color="Color.Secondary">No</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Inject] private IDialogService DialogService { get; set; }
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    private CustomAuthStateProvider CustomAuthStateProvider => (CustomAuthStateProvider)AuthProvider;
+    private AuthenticationState _authState;
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _authState = await AuthenticationStateTask;
+    }
+
+
+    private IUserService _userService;
+
+    protected override void OnInitialized()
+    {
+        _userService = ServiceProvider.GetService<IUserService>();
+    }
+
+    private async Task HandleUpgrade()
+    {
+        var userId = _authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Upn)?.Value;
+        var token = await CustomAuthStateProvider.GetToken();
+        Console.WriteLine(token);
+
+        try
+        {
+            Console.WriteLine($"UserId: {userId}");
+            if (Guid.TryParse(userId, out var userGuid))
+            {
+                await _userService.Upgrade(userGuid);
+                var newToken = await _userService.RefreshToken(token); 
+                if (!string.IsNullOrEmpty(newToken))
+                {
+                    await CustomAuthStateProvider.Login(newToken);
+                }
+
+                await DialogService.ShowMessageBox("Success", "User upgraded to premium successfully.");
+                NavigationManager.NavigateTo("/", forceLoad: true);
+                StateHasChanged();
+            }
+            else
+            {
+                Console.WriteLine("Invalid UserId format.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
+        }
+    }
+
+
+    private void HandleCancel()
+    {
+        MudDialog.Close();
+    }
+}

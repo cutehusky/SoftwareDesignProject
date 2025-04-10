@@ -17,17 +17,20 @@ public class PluginsController : ControllerBase
     private readonly IHostEnvironment _env;
     private readonly DynamicPluginManager _manager;
     private readonly IPluginService _pluginService;
+    private readonly IUserService _userService;
 
     private static readonly SemaphoreSlim PluginSemaphore = new(1, 1);
 
     public PluginsController(
         IHostEnvironment env,
         DynamicPluginManager manager,
-        IPluginService pluginService)
+        IPluginService pluginService,
+        IUserService userService)
     {
         _env = env;
         _manager = manager;
         _pluginService = pluginService;
+        _userService = userService;
     }
 
     [Authorize(Policy = "AdminOnly")]
@@ -52,7 +55,7 @@ public class PluginsController : ControllerBase
             return NotFound();
         }
 
-        var userRole = GetCurrentUserRole();
+        var userRole = await GetCurrentUserRoleAsync();
         if (plugin.IsPremium == true && userRole < CommonDTO.UserRoles.Premium)
         {
             return Forbid();
@@ -182,7 +185,7 @@ public class PluginsController : ControllerBase
 
         Console.WriteLine("Getting plugin list with page: " + page + " and pageSize: " + pageSize +
                           " and sortBy: " + sortBy + " and order: " + sortDirection);
-        var userRole = GetCurrentUserRole();
+        var userRole = await GetCurrentUserRoleAsync();
         var plugins = await _pluginService.GetList(page, pageSize, sortBy, sortDirection, search, userRole);
         return Ok(plugins);
     }
@@ -243,9 +246,21 @@ public class PluginsController : ControllerBase
         return File(stream, "application/octet-stream", fileName);
     }
 
-    private CommonDTO.UserRoles GetCurrentUserRole()
+    private async Task<CommonDTO.UserRoles> GetCurrentUserRoleAsync()
     {
-        var roleClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
-        return Enum.Parse<CommonDTO.UserRoles>(roleClaim?.Value ?? "Normal");
+        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+        // Default role if no valid user ID is found
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        {
+            return CommonDTO.UserRoles.Normal;
+        }
+
+        var user = await _userService.GetById(userId);
+        if (user == null)
+        {
+            return CommonDTO.UserRoles.Normal;
+        }
+
+        return user.UserRole ?? CommonDTO.UserRoles.Normal;
     }
 }

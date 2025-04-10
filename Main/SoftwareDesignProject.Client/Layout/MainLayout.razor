@@ -24,6 +24,12 @@
 
         @if (_authState?.User?.Identity?.IsAuthenticated == true)
         {
+            // If user is normal role, have upgrade button here
+		    @if (_authState.User.IsInRole("Normal"))
+		    {
+			    <MudButton OnClick="Upgrade">Upgrade</MudButton>
+		    }
+
             <MudText Class="mr-2">Hello, @_authState.User.Identity.Name!</MudText>
             <MudButton OnClick="Logout">Logout</MudButton>
         }
@@ -78,6 +84,12 @@
             LayoutProperties = new LayoutProperties()
         };
     }
+
+	private async Task Upgrade()
+	{
+		var options = new DialogOptions { CloseOnEscapeKey = true };
+		await DialogService.ShowAsync<UpgradeDialog>("Upgrade", options);
+	}
 
     private async Task Logout()
     {

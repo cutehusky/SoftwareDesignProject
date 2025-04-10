@@ -32,6 +32,19 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         return new AuthenticationState(user);
     }
 
+    public async Task<string> GetToken()
+    {
+        var token = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "token");
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new Exception("Token not found");
+        }
+        else
+        {
+            return token;
+        }
+    }
+
 
     public async Task Login(string token)
     {

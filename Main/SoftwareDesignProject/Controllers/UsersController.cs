@@ -103,4 +103,25 @@ public class UsersController : ControllerBase
         var user = await _userService.GetById(id);
         return user != null ? Ok(user) : NotFound();
     }
+
+    [HttpPut("upgrade")]
+    public async Task<IActionResult> Upgrade([FromBody] Guid id)
+    {
+        if (!await _semaphore.WaitAsync(TimeSpan.FromSeconds(10)))
+            return StatusCode(503, "Service unavailable");
+        try
+        {
+            await _userService.Upgrade(id);
+            return Ok();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
 }

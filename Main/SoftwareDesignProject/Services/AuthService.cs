@@ -45,6 +45,26 @@ public class AuthService : IAuthService
         return await _userRepository.Add(newUser);
     }
 
+    public async Task<string?> RefreshToken(string oldToken)
+    {
+        var user = await GetUserByToken(oldToken);
+        Console.WriteLine("User from token: " + user?.Username);
+        if (user == null) return null;
+        var newToken = GenerateJwtToken(user);
+        Console.WriteLine("New token: " + newToken);
+        return newToken;
+    }
+
+    private async Task<UserDTO?> GetUserByToken(string token)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(token);
+        var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Upn);
+        if (userIdClaim == null) return null;
+        var userId = Guid.Parse(userIdClaim.Value);
+        return await _userRepository.GetById(userId);
+    }
+
 
     private string GenerateJwtToken(UserDTO user)
     {
@@ -54,6 +74,7 @@ public class AuthService : IAuthService
         var claims = new[]
         {
             new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.Upn, user.UserId.ToString()),
             new Claim(ClaimTypes.Role, user.UserRole.ToString())
          };
 
@@ -67,4 +88,5 @@ public class AuthService : IAuthService
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
 }

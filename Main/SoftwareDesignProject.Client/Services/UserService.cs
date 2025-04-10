@@ -14,18 +14,24 @@ public class UserService : IUserService
     private readonly string _updateRoleEndpoint;
     private readonly string _deleteEndpoint;
     private readonly string _addEndpoint;
+    private readonly string _upgradeEndpoint;
+    private readonly string _refreshTokenEndpoint;
 
     public UserService(HttpClient httpClient,
         string getListEndpoint,
         string updateRoleEndpoint,
         string deleteEndpoint,
-        string addEndpoint)
+        string addEndpoint,
+        string upgradeEndpoint,
+        string refreshTokenEndpoint)
     {
         _httpClient = httpClient;
         _getListEndpoint = getListEndpoint;
         _updateRoleEndpoint = updateRoleEndpoint;
         _deleteEndpoint = deleteEndpoint;
         _addEndpoint = addEndpoint;
+        _upgradeEndpoint = upgradeEndpoint;
+        _refreshTokenEndpoint = refreshTokenEndpoint;
     }
 
     public async Task<PaginationList<UserDTO>> GetList(int page, int pageSize,
@@ -89,5 +95,31 @@ public class UserService : IUserService
             var errorMessage = await response.Content.ReadAsStringAsync();
             throw new HttpRequestException($"Error fetching user by id: {errorMessage}");
         }
+    }
+
+    public async Task Upgrade(Guid id)
+    {
+        var response = await _httpClient.PutAsJsonAsync(_upgradeEndpoint, id);
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"Error upgrading user: {errorMessage}");
+        }
+    }
+
+    public async Task<string> RefreshToken(string oldToken)
+    {
+        var response = await _httpClient.PutAsJsonAsync(_refreshTokenEndpoint, oldToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"Error refreshing token: {errorMessage}");
+        }
+        else
+        {
+            var token = await response.Content.ReadAsStringAsync();
+            return token;
+        }
+
     }
 }
