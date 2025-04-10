@@ -15,13 +15,17 @@ public class PluginService: IPluginService
     private string _removeEndpoint;
     private string _editEndpoint;
     private string _upgradeEndpoint;
+    private string _starEndpoint;
+    private string _unstarEndpoint;
     
     public PluginService(HttpClient httpClient, 
         string getListEndpoint,
         string addEndpoint,
         string editEndpoint,
         string upgradeEndpoint,
-        string removeEndpoint)
+        string removeEndpoint,
+        string starEndpoint,
+        string unstarEndpoint)
     {
         _httpClient = httpClient;
         _getListEndpoint = getListEndpoint;
@@ -29,6 +33,8 @@ public class PluginService: IPluginService
         _upgradeEndpoint = upgradeEndpoint;
         _editEndpoint = editEndpoint;
         _removeEndpoint = removeEndpoint;
+        _starEndpoint = starEndpoint;
+        _unstarEndpoint = unstarEndpoint;
     }
 
     public async Task Edit(PluginDTO dto)
@@ -93,7 +99,35 @@ public class PluginService: IPluginService
             throw new HttpRequestException($"Error: {response.StatusCode}, Message: {errorMessage}");
         }
     }
-    
+
+    public async Task StarPlugin(Guid pluginId)
+    {
+        var response = await _httpClient.PostAsJsonAsync(_starEndpoint, new PluginDTO()
+        {
+            PluginId = pluginId
+        });
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Error: {response.StatusCode}, Message: {errorMessage}");
+            throw new HttpRequestException($"Error: {response.StatusCode}, Message: {errorMessage}", null, response.StatusCode);
+        }
+    }
+
+    public async Task UnstarPlugin(Guid pluginId)
+    {
+        var response = await _httpClient.PostAsJsonAsync(_unstarEndpoint, new PluginDTO()
+        {
+            PluginId = pluginId
+        });
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Error: {response.StatusCode}, Message: {errorMessage}");
+            throw new HttpRequestException($"Error: {response.StatusCode}, Message: {errorMessage}", null, response.StatusCode);
+        }
+    }
+
     public async Task Add(PluginUploadData data)
     {
         var multipartContent = new MultipartFormDataContent();

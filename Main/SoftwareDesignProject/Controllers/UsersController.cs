@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
 using CommonDTO;
-using SoftwareDesignProject.Services;
-using MudBlazor;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
+using MudBlazor;
+using SoftwareDesignProject.Services;
 
 namespace SoftwareDesignProject.Controllers;
 
@@ -51,7 +51,7 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> UpdateRole([FromBody] UserDTO dto)
     {
         var userRole = await GetCurrentUserRoleAsync();
-        if (userRole < CommonDTO.UserRoles.Admin)
+        if (userRole < UserRoles.Admin)
         {
             return Forbid();
         }
@@ -78,7 +78,7 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> Delete(Guid id)
     {
         var userRole = await GetCurrentUserRoleAsync();
-        if (userRole < CommonDTO.UserRoles.Admin)
+        if (userRole < UserRoles.Admin)
         {
             return Forbid();
         }
@@ -98,7 +98,7 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> Create([FromBody] UserDTO user)
     {
         var userRole = await GetCurrentUserRoleAsync();
-        if (userRole < CommonDTO.UserRoles.Admin)
+        if (userRole < UserRoles.Admin)
         {
             return Forbid();
         }
@@ -140,21 +140,20 @@ public class UsersController : ControllerBase
         }
     }
 
-    private async Task<CommonDTO.UserRoles> GetCurrentUserRoleAsync()
+    private async Task<UserRoles?> GetCurrentUserRoleAsync()
     {
-        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-        // Default role if no valid user ID is found
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        var userId = GetCurrentUserId();
+        if (userId == null)
         {
-            return CommonDTO.UserRoles.Normal;
+            return null;
         }
-
-        var user = await _userService.GetById(userId);
-        if (user == null)
-        {
-            return CommonDTO.UserRoles.Normal;
-        }
-
-        return user.UserRole ?? CommonDTO.UserRoles.Normal;
+        var user = await _userService.GetById(userId.Value);
+        return user?.UserRole;
+    }
+       
+    private Guid? GetCurrentUserId()
+    {
+        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Upn);
+        return Guid.TryParse(userIdClaim?.Value ?? string.Empty, out var res) ? res : null;
     }
 }

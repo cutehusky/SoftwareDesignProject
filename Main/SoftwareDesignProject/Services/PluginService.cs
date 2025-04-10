@@ -41,7 +41,7 @@ public class PluginService : IPluginService
     {
         var query = await _pluginRepository.GetActiveList();
 
-        if (userRole < UserRoles.Premium)
+        if (userRole is null or < UserRoles.Premium)
         {
             query = query.Where(p => p.IsPremium == false).ToList();
         }
@@ -285,6 +285,21 @@ public class PluginService : IPluginService
         await RemoveBackup(pluginId + ".dll", _clientUploadPath);
         await RemoveBackup(pluginId + ".dll", _serverUploadPath);
         Console.WriteLine("Plugin upgraded successfully");
+    }
+
+    public Task<List<Guid>> GetStarredPluginUserById(Guid id)
+    {
+        return _pluginRepository.GetStarredPluginUserById(id);
+    }
+
+    public Task<bool> StarPlugin(Guid pluginId, Guid userId)
+    {
+        return _pluginRepository.StarPlugin(pluginId, userId);
+    }
+
+    public Task<bool> UnstarPlugin(Guid pluginId, Guid userId)
+    {
+        return _pluginRepository.UnstarPlugin(pluginId, userId);
     }
 
     private static async Task<bool> RemoveBackup(string fileName, string path)

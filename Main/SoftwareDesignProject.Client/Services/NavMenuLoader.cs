@@ -25,9 +25,9 @@ public class NavMenuLoader: INavMenuLoader
         return res;
     }
 
-    public Task<List<HomeItem>?> GetHomeItem()
+    public Task<HomeData?> GetHomeItem()
     {
-        var res = _httpClient.GetFromJsonAsync<List<HomeItem>>(_homeItemEndpoint);
+        var res = _httpClient.GetFromJsonAsync<HomeData>(_homeItemEndpoint);
         return res;
     }
 }

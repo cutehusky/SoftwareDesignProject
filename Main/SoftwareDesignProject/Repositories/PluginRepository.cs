@@ -58,6 +58,40 @@ public class PluginRepository: IPluginRepository
             .ToListAsync();
     }
     
+    public async Task<List<Guid>> GetStarredPluginUserById(Guid id)
+    {
+        return await _dbContext.UserPlugins
+            .Where(userPlugin => userPlugin.UserId == id)
+            .OrderByDescending(plugin => plugin.UpdatedAt)
+            .Select(userPlugin => userPlugin.PluginId)
+            .ToListAsync();
+    }
+
+    public async Task<bool> StarPlugin(Guid pluginId, Guid userId)
+    {
+        var userPlugin = await _dbContext.UserPlugins
+            .FirstOrDefaultAsync(userPlugin => userPlugin.PluginId == pluginId && userPlugin.UserId == userId);
+        if (userPlugin != null)
+            return true;
+        var newUserPlugin = new User_Plugin()
+        {
+            UserId = userId,
+            PluginId = pluginId
+        };
+        _dbContext.UserPlugins.Add(newUserPlugin);
+        return await _dbContext.SaveChangesAsync() > 0;
+    }
+
+    public async Task<bool> UnstarPlugin(Guid pluginId, Guid userId)
+    {
+        var userPlugin = await _dbContext.UserPlugins
+            .FirstOrDefaultAsync(userPlugin => userPlugin.PluginId == pluginId && userPlugin.UserId == userId);
+        if (userPlugin == null)
+            return true;
+        _dbContext.UserPlugins.Remove(userPlugin);
+        return await _dbContext.SaveChangesAsync() > 0;
+    }
+
     public async Task<PluginDTO?> GetById(Guid id)
     {
         return await _dbContext.Plugins.Where(plugin => plugin.PluginId == id)

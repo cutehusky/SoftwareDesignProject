@@ -9,7 +9,7 @@ public enum UserRoles
     Admin
 }
 
-public class User
+public class User: ITimestampedEntity
 {
     [Key]
     public Guid UserId { get; set; } = Guid.NewGuid();
@@ -17,6 +17,6 @@ public class User
     public string Username { get; set; } = string.Empty;
     public string HashedPassword { get; set; } = string.Empty;
     public UserRoles UserRole { get; set; } = UserRoles.Normal;
-    
-    public ICollection<Plugin>? Starred { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 }

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MudBlazor;
 using SoftwareDesignProject.Models.DTO;
-using SoftwareDesignProject.Models.Entities;
 using SoftwareDesignProject.Services;
 using SoftwareDesignProject.Services.ServerPluginManagement;
 using System.Security.Claims;
@@ -74,7 +73,7 @@ public class PluginsController : ControllerBase
     public async Task<IActionResult> UpgradePlugin([FromForm] UpgradePluginRequest request)
     {
         var userRole = await GetCurrentUserRoleAsync();
-        if (userRole < CommonDTO.UserRoles.Admin)
+        if (userRole is null or < UserRoles.Admin)
         {
             return Forbid();
         }
@@ -123,7 +122,8 @@ public class PluginsController : ControllerBase
     public async Task<IActionResult> EditPlugin([FromBody] PluginDTO dto)
     {
         var userRole = await GetCurrentUserRoleAsync();
-        if (userRole < CommonDTO.UserRoles.Admin)
+        Console.WriteLine(userRole);
+        if (userRole is null or < UserRoles.Admin)
         {
             return Forbid();
         }
@@ -155,7 +155,8 @@ public class PluginsController : ControllerBase
     public async Task<IActionResult> RemovePlugin([FromBody] PluginDTO request)
     {
         var userRole = await GetCurrentUserRoleAsync();
-        if (userRole < CommonDTO.UserRoles.Admin)
+        Console.WriteLine(userRole);
+        if (userRole is null or < UserRoles.Admin)
         {
             return Forbid();
         }
@@ -215,7 +216,7 @@ public class PluginsController : ControllerBase
     public async Task<IActionResult> UploadFiles([FromForm] UploadPluginRequest request)
     {
         var userRole = await GetCurrentUserRoleAsync();
-        if (userRole < CommonDTO.UserRoles.Admin)
+        if (userRole < UserRoles.Admin)
         {
             return Forbid();
         }
@@ -271,21 +272,58 @@ public class PluginsController : ControllerBase
         return File(stream, "application/octet-stream", fileName);
     }
 
-    private async Task<CommonDTO.UserRoles> GetCurrentUserRoleAsync()
+    private async Task<UserRoles?> GetCurrentUserRoleAsync()
     {
-        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-        // Default role if no valid user ID is found
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        var userId = GetCurrentUserId();
+        if (userId == null)
         {
-            return CommonDTO.UserRoles.Normal;
+            return null;
         }
 
-        var user = await _userService.GetById(userId);
-        if (user == null)
+        var user = await _userService.GetById(userId.Value);
+        return user?.UserRole;
+    }
+    
+    [HttpPost("[action]")]
+    public async Task<IActionResult> StarPlugin([FromBody] PluginDTO pluginDto)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == null)
         {
-            return CommonDTO.UserRoles.Normal;
+            return Unauthorized();
         }
 
-        return user.UserRole ?? CommonDTO.UserRoles.Normal;
+        var success = await _pluginService.StarPlugin(pluginDto.PluginId, userId.Value);
+        if (!success)
+        {
+            return BadRequest("Failed to star plugin.");
+        }
+
+        return Ok();
+    }
+    
+    [HttpPost("[action]")]
+    public async Task<IActionResult> UnstarPlugin([FromBody] PluginDTO pluginDto)
+    {
+        var userId = GetCurrentUserId();
+        Console.WriteLine(userId);
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var success = await _pluginService.UnstarPlugin(pluginDto.PluginId, userId.Value);
+        if (!success)
+        {
+            return BadRequest("Failed to unstar plugin.");
+        }
+
+        return Ok();
+    }
+    
+    private Guid? GetCurrentUserId()
+    {
+        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Upn);
+        return Guid.TryParse(userIdClaim?.Value ?? string.Empty, out var res) ? res : null;
     }
 }

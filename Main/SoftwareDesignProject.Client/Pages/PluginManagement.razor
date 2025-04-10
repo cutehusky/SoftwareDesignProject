@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using SoftwareDesignProject.Client.Components
 @using SoftwareDesignProject.Client.Services
+@inject AuthenticationStateProvider AuthStateProvider
 
 @page "/plugin-management"
 
@@ -68,24 +69,20 @@ else
 
         if (OperatingSystem.IsBrowser())
         {
-            if (ServiceProvider.GetService<AuthenticationStateProvider>() is CustomAuthStateProvider authService)
+            var user = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (user.User.Identity?.IsAuthenticated == true)
             {
-                var user = await authService.GetAuthenticationStateAsync();
-                if (user.User.Identity?.IsAuthenticated == true)
+                var roles = user.User.FindFirst(ClaimTypes.Role)?.Value;
+                if (Enum.TryParse(roles, out UserRoles role) && role == UserRoles.Admin)
                 {
-                    var roles = user.User.Claims.Where(c => c.Type == ClaimTypes.Role)
-                        .Select(c => c.Value).ToList();
-                    if (roles.Contains("Admin"))
-                    {
-                        _isAuthorized = true;
-                        _isLoading = false;
-                        return;
-                    }
+                    _isAuthorized = true;
+                    _isLoading = false;
+                    return;
                 }
-
-                //Navigation.NavigateTo("/403");
-                _isLoading = false;
             }
+
+            //Navigation.NavigateTo("/403");
+            _isLoading = false;
         }
     }
 

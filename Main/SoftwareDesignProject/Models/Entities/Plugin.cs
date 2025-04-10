@@ -2,7 +2,7 @@
 
 namespace SoftwareDesignProject.Models.Entities;
 
-public class Plugin
+public class Plugin: ITimestampedEntity
 {
     public static readonly string DefaultCategory = "Uncategorized";
     
@@ -14,4 +14,6 @@ public class Plugin
     public string Category { get; set; } = DefaultCategory;
     public bool IsEnabled { get; set; } = true;
     public bool IsPremium { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 }

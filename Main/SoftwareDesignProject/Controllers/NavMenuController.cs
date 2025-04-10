@@ -11,39 +11,51 @@ namespace SoftwareDesignProject.Controllers;
 public class NavMenuController : Controller
 {
     private readonly IPluginService _pluginService;
-    private readonly IAuthService _authService;
+    private readonly IUserService _userService;
 
     public NavMenuController(
         IPluginService pluginService,
-        IAuthService authService)
+        IUserService userService)
     {
-        _authService = authService;
         _pluginService = pluginService;
+        _userService = userService;
     }
 
     [HttpGet("getHomeList")]
     public async Task<IActionResult> GetHomeList()
     {
-        var userRole = GetCurrentUserRole();
+        var userRole = await GetCurrentUserRoleAsync();
         var plugins = await _pluginService.GetActiveList(userRole);
 
-        var list = plugins.Select(dto => new HomeItem()
+        var pluginItems = plugins.Select(dto => new HomeItem()
         {
+            PluginId = dto.PluginId,
             Text = dto.Name!,
             Description = dto.Description!,
             Href = $"dynamicDLL/{dto.PluginId}",
             Icon = Icons.Material.Filled.List,
             IsPremium = dto.IsPremium ?? false
         });
+        
+        var userId = GetCurrentUserId();
+        IEnumerable<Guid> favoriteItems;
+        if (userId != null)
+            favoriteItems = await _pluginService.GetStarredPluginUserById(Guid.Parse(User.FindFirst(ClaimTypes.Upn)?.Value ?? string.Empty));
+        else 
+            favoriteItems = [];
 
-        return Ok(list);
+        return Ok(new HomeData()
+        {
+            PluginItems = pluginItems.ToList(),
+            FavoriteItems = [..favoriteItems]
+        });
     }
 
 
     [HttpGet("getList")]
     public async Task<IActionResult> GetList()
     {
-        var userRole = GetCurrentUserRole();
+        var userRole = await GetCurrentUserRoleAsync();
         var plugins = await _pluginService.GetActiveList(userRole);
         var isAdmin = userRole == UserRoles.Admin;
 
@@ -89,10 +101,22 @@ public class NavMenuController : Controller
 
         return Ok(list);
     }
-
-    private UserRoles GetCurrentUserRole()
+    
+    private Guid? GetCurrentUserId()
     {
-        var roleClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
-        return Enum.Parse<UserRoles>(roleClaim?.Value ?? "Normal");
+        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Upn);
+        return Guid.TryParse(userIdClaim?.Value ?? string.Empty, out var res) ? res : null;
+    }
+    
+    private async Task<UserRoles?> GetCurrentUserRoleAsync()
+    {
+        var userId = GetCurrentUserId();
+        if (userId == null)
+        {
+            return null;
+        }
+
+        var user = await _userService.GetById(userId.Value);
+        return user?.UserRole;
     }
 }

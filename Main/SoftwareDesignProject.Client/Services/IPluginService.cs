@@ -13,4 +13,7 @@ public interface IPluginService
     public Task Edit(PluginDTO dto);
     public Task Upgrade(PluginUpgradeData data);
     public Task Remove(Guid id);
+    
+    public Task StarPlugin(Guid pluginId);
+    public Task UnstarPlugin(Guid pluginId);
 }

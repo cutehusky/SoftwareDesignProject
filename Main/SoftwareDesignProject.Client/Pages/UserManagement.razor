@@ -7,6 +7,7 @@
 @inject IServiceProvider ServiceProvider
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
+@inject AuthenticationStateProvider AuthStateProvider
 
 @page "/user-management"
 
@@ -76,24 +77,20 @@ else
 
         if (OperatingSystem.IsBrowser())
         {
-            if (ServiceProvider.GetService<AuthenticationStateProvider>() is CustomAuthStateProvider authService)
+            var user = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (user.User.Identity?.IsAuthenticated == true)
             {
-                var user = await authService.GetAuthenticationStateAsync();
-                if (user.User.Identity?.IsAuthenticated == true)
+                var roles = user.User.FindFirst(ClaimTypes.Role)?.Value;
+                if (Enum.TryParse(roles, out UserRoles role) && role == UserRoles.Admin)
                 {
-                    var roles = user.User.Claims.Where(c => c.Type == ClaimTypes.Role)
-                        .Select(c => c.Value).ToList();
-                    if (roles.Contains("Admin"))
-                    {
-                        _isLoading = false;
-                        _isAuthorized = true;
-                        return;
-                    }
+                    _isAuthorized = true;
+                    _isLoading = false;
+                    return;
                 }
-
-                //Navigation.NavigateTo("/403");
-                _isLoading = false;
             }
+
+            //Navigation.NavigateTo("/403");
+            _isLoading = false;
         }
     }
     

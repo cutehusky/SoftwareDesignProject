@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SoftwareDesignProject.Services;
@@ -11,9 +12,11 @@ using SoftwareDesignProject.Services;
 namespace SoftwareDesignProject.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250410114013_Update")]
+    partial class Update
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,9 +35,6 @@ namespace SoftwareDesignProject.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
@@ -49,13 +49,15 @@ namespace SoftwareDesignProject.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("PluginId");
 
                     b.HasIndex("Name")
                         .IsUnique();
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Plugins");
                 });
@@ -66,15 +68,9 @@ namespace SoftwareDesignProject.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("HashedPassword")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("UserRole")
                         .HasColumnType("integer");
@@ -99,17 +95,18 @@ namespace SoftwareDesignProject.Migrations
                     b.Property<Guid>("PluginId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.HasKey("UserId", "PluginId");
 
                     b.HasIndex("PluginId");
 
                     b.ToTable("UserPlugins");
+                });
+
+            modelBuilder.Entity("SoftwareDesignProject.Models.Entities.Plugin", b =>
+                {
+                    b.HasOne("SoftwareDesignProject.Models.Entities.User", null)
+                        .WithMany("Starred")
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("SoftwareDesignProject.Models.Entities.User_Plugin", b =>
@@ -129,6 +126,11 @@ namespace SoftwareDesignProject.Migrations
                     b.Navigation("Plugin");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SoftwareDesignProject.Models.Entities.User", b =>
+                {
+                    b.Navigation("Starred");
                 });
 #pragma warning restore 612, 618
         }

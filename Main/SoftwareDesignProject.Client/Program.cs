@@ -24,7 +24,9 @@ builder.Services.AddScoped<IPluginService>(sp =>
         "api/plugins/add",
         "api/plugins/edit",
         "api/plugins/upgrade",
-        "api/plugins/remove"));
+        "api/plugins/remove",
+        "api/plugins/starPlugin",
+        "api/plugins/unstarPlugin"));
 
 builder.Services.AddScoped<IUserService>(sp => new UserService(
     sp.GetService<HttpClient>()!,
