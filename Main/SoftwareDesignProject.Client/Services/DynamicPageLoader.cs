@@ -39,21 +39,19 @@ public class DynamicPageLoader: IDynamicPageLoader
         return string.Format(_checkEndpoint, id);
     }
     
-    private async Task<bool> CheckPlugin(string id)
+    private async Task<HttpStatusCode> CheckPlugin(string id)
     {
         var response = await _httpClient.GetAsync(GetCheckEndPoint(id));
-        if (response.StatusCode == HttpStatusCode.OK)
-            return true;
-        return false;
+        return response.StatusCode;
     }
 
     public async Task<DynamicPage?> LoadDynamicAssembly(string pluginId)
     {
-        var isValid = await CheckPlugin(pluginId);
-        if (!isValid)
+        var statusCode = await CheckPlugin(pluginId);
+        if (statusCode != HttpStatusCode.OK)
         {
-            Console.WriteLine($"Plugin {pluginId} is not valid");
-            throw new HttpRequestException("Plugin is not valid");
+            Console.WriteLine($"Plugin {pluginId} is not valid: {statusCode}");
+            throw new HttpRequestException("Plugin is not valid", null, statusCode);
         }
         Console.WriteLine($"Downloading DLL in Server: " + pluginId);
         var dllBytes = await _httpClient.GetByteArrayAsync(GetDownloadEndPoint(pluginId));
