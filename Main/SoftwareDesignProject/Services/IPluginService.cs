@@ -23,7 +23,9 @@ public interface IPluginService
     
     public Task<List<Guid>> GetStarredPluginUserById(Guid id);
     
-    public Task<bool> StarPlugin(Guid pluginId, Guid userId);
+    public Task StarPlugin(Guid pluginId, Guid userId);
     
-    public Task<bool> UnstarPlugin(Guid pluginId, Guid userId);
+    public Task UnstarPlugin(Guid pluginId, Guid userId);
+    
+    public Task<FileStream> GetClientPluginFile(string fileName);
 }

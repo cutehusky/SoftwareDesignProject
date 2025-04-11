@@ -1,24 +1,49 @@
 ﻿@using SoftwareDesignProject.Client.Models
 @using SoftwareDesignProject.Client.Services
-@inject NavigationManager Navigation
 @inject IServiceProvider ServiceProvider
 
 <MudDialog>
     <DialogContent>
 
         <div class="d-flex justify-lg-space-between">
-            <MudTextField @bind-Value="_category" Class="mx-3"
-                          Label="Category" Variant="Variant.Outlined" Lines="1" ></MudTextField>
-            <MudTextField @bind-Value="_name" Class="mx-3" Label="Name" Variant="Variant.Outlined" Lines="1"></MudTextField>
+            <MudTextField 
+                @bind-Value="_category" 
+                Class="mx-3"
+                Label="Category" 
+                Required="true"
+                Immediate="true"
+                Variant="Variant.Outlined" 
+                Lines="1" />
+            <MudTextField 
+                @bind-Value="_name" 
+                Class="mx-3" 
+                Label="Name"
+                Required="true"
+                Immediate="true"
+                Variant="Variant.Outlined" 
+                Lines="1"/>
         </div>
 
-        <MudTextField class="mx-3" @bind-Value="_description" Label="Description" Variant="Variant.Outlined" Lines="5"></MudTextField>
+        <MudTextField 
+            class="mx-3" 
+            Required="true"
+            Immediate="true"
+            @bind-Value="_description" 
+            Label="Description" 
+            Variant="Variant.Outlined" 
+            Lines="5"/>
 
-        <MudSwitch Class="mx-3" Color="Color.Primary" Label="Is Premium" @bind-Value="_isPremium"/>
-        
-        <MudAlert Severity="_alertSeverity" Class="mb-2 mx-3" Style="@AlertStyle">
-            @_alertText
-        </MudAlert>
+        <MudSwitch Class="mx-3" 
+                   Color="Color.Primary" 
+                   Label="Is Premium" 
+                   @bind-Value="_isPremium"/>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <MudAlert Severity="@Severity.Error" Class="mb-3 mx-3">
+                @_errorMessage
+            </MudAlert>
+        }
         
         <MudDivider DividerType="DividerType.Middle" Class="my-2"/>
 
@@ -32,8 +57,13 @@
                 </ActivatorContent>
             </MudFileUpload>
             <div class="mx-6">
-                <MudText>@_clientDLLName</MudText>
+                <MudText>@_clientDllName</MudText>
             </div>
+            @if (!string.IsNullOrEmpty(_clientDllName))
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="OnClientDLLFileRemoved"
+                               Color="Color.Error" Size="Size.Small" />
+            }
         </div>
 
         <div class="my-3 mx-3 d-flex align-center">
@@ -46,8 +76,13 @@
                 </ActivatorContent>
             </MudFileUpload>
             <div class="mx-6">
-                <MudText>@_serverDLLName</MudText>
+                <MudText>@_serverDllName</MudText>
             </div>
+            @if (!string.IsNullOrEmpty(_serverDllName))
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="OnServerDLLFileRemoved"
+                               Color="Color.Error" Size="Size.Small" />
+            }
         </div>
     </DialogContent>
     
@@ -59,56 +94,45 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter]
-    private IMudDialogInstance MudDialog { get; set; }
-    
-    private IPluginService? PluginService { get; set; }
+    [CascadingParameter] 
+    private IMudDialogInstance MudDialog { get; set; } = null!;
 
-    private Severity _alertSeverity = Severity.Info;
-    private bool _showAlert = false;
-    private string AlertStyle => _showAlert ? "display: block;" : "display: none;";
-    private string _alertText = "";
+    private IPluginService PluginService { get; set; } = null!;
+    protected IComponentRefreshService ComponentRefreshService { get; set; } = null!;
+    
     private string _name = "";
     private string _description = "";
-    private bool _isPremium = false;
-    private IBrowserFile? _clientDLL;
-    private IBrowserFile? _serverDLL;
-    private string _clientDLLName;
-    private string _serverDLLName;
+    private bool _isPremium;
+    private string _errorMessage = "";
+    private IBrowserFile? _clientDll;
+    private IBrowserFile? _serverDll;
+    private string _clientDllName = "";
+    private string _serverDllName = "";
     private string _category = "";
-
-    private void ShowAlert(Severity severity, string text)
-    {
-        _alertSeverity = severity;
-        _alertText = text;
-        _showAlert = true;
-    }
 
     protected override void OnInitialized()
     {
-        PluginService = ServiceProvider.GetService<IPluginService>();
+        PluginService = ServiceProvider.GetService<IPluginService>()!;
+        ComponentRefreshService = ServiceProvider.GetService<IComponentRefreshService>()!;
     }
 
     private async void Submit()
     {
-        if (PluginService == null)
-            return;
-        
         if (_name.Trim().Length == 0 || 
             _description.Trim().Length == 0 ||
             _category.Trim().Length == 0)
         {
-            ShowAlert(Severity.Error, "Must fill name, description, category.");
+            _errorMessage = "Must fill name, description, category.";
+            StateHasChanged();
             return;
         }
 
-        if (_clientDLL == null)
+        if (_clientDll == null)
         {
-            ShowAlert(Severity.Error, "Must upload client DLL.");
+            _errorMessage = "Must upload client DLL.";
+            StateHasChanged();
             return;
         }
-        
-        ShowAlert(Severity.Info, "Loading...");
 
         try
         {
@@ -117,17 +141,17 @@
                 Name = _name,
                 Description = _description,
                 IsPremium = _isPremium,
-                ClientDLL = _clientDLL,
-                ServerDLL = _serverDLL,
+                ClientDLL = _clientDll,
+                ServerDLL = _serverDll,
                 Category = _category
             });
             
             MudDialog.Close(DialogResult.Ok(true));
-            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+            ComponentRefreshService.NotifyStateChanged(this);
         }
         catch (Exception e)
         {
-            ShowAlert(Severity.Error, $"Fail to install plugin. Reason: {e.Message}");
+            _errorMessage = $"Fail to install plugin. Reason: {e.Message}";
             StateHasChanged();
         }
     } 
@@ -138,8 +162,8 @@
     {
         if (file != null)
         {
-            _clientDLL = file;
-            _clientDLLName = file.Name;
+            _clientDll = file;
+            _clientDllName = file.Name;
         }
     }
     
@@ -147,8 +171,20 @@
     {
         if (file != null)
         {
-            _serverDLL = file;
-            _serverDLLName = file.Name;
+            _serverDll = file;
+            _serverDllName = file.Name;
         }
+    }
+    
+    public void OnClientDLLFileRemoved()
+    {
+        _clientDll = null;
+        _clientDllName = "";
+    }
+    
+    public void OnServerDLLFileRemoved()
+    {
+        _serverDll = null;
+        _serverDllName = "";
     }
 }

@@ -31,6 +31,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddSingleton<DynamicPluginManager>();
+builder.Services.AddSingleton<IFileStorage, LocalFileStorage>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<DynamicPluginManager>());
 builder.Services.AddSingleton<IDynamicServiceProvider, DynamicServiceProvider>();
 

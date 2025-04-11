@@ -5,9 +5,9 @@
 @using SoftwareDesignProject.Client.Services
 @inject IDialogService Dialog
 @inject IServiceProvider ServiceProvider
-@inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @inject AuthenticationStateProvider AuthStateProvider
+@implements IDisposable
 
 @page "/user-management"
 
@@ -25,7 +25,7 @@ else
 {
     <div class="d-flex align-center justify-end mb-6">
         <MudButton StartIcon="@Icons.Material.Filled.Add" Class="mx-6 my-3" Variant="Variant.Outlined" Color="Color.Inherit"
-                   OnClick="@(() => OpenDialogAsync(_maxWidth))"> Add </MudButton>
+                   OnClick="@(() => OpenAddDialogAsync(_maxWidth))"> Add </MudButton>
     </div>
 
     <MudTable ServerData="LoadServerData" @ref="_userTable"
@@ -43,7 +43,7 @@ else
                 <MudSelect T="UserRoles"
                            Value="@GetCurrentRole(context)"
                            Immediate="true"
-                           ValueChanged="@(async (v) => await OnRoleChanged(context.UserId, v))">
+                           ValueChanged="@((v) => OnRoleChanged(context.UserId, v))">
                     @foreach (UserRoles role in Enum.GetValues(typeof(UserRoles)))
                     {
                         <MudSelectItem Value="role">@role.ToString()</MudSelectItem>
@@ -57,19 +57,21 @@ else
                 }
                 else
                 {
-                    <MudIconButton Icon="@Icons.Material.Filled.Save" OnClick="@(() => Save(context.UserId))"/>
+                    <MudIconButton Disabled="_isSaving || _isDeleting 
+                                                       || !_userRoleChanges.ContainsKey(context.UserId)
+                                                       || _userRoleChanges[context.UserId] == context.UserRole" Icon="@Icons.Material.Filled.Save" OnClick="@(() => Save(context.UserId))"/>
                 }
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => Delete(context.UserId))"/>
+                <MudIconButton Disabled="_isSaving || _isDeleting" Icon="@Icons.Material.Filled.Delete" OnClick="@(() => Delete(context.UserId))"/>
             </MudTd>
         </RowTemplate>
         <PagerContent>
-            <MudTablePager PageSizeOptions="new int[] { 10, 50, 100 }"/>
+            <MudTablePager PageSizeOptions="new[] { 10, 50, 100 }"/>
         </PagerContent>
     </MudTable>
 }
 
 @code {
-    private bool _isAuthorized = false;
+    private bool _isAuthorized;
     private bool _isLoading = true;
 
     protected override async Task OnInitializedAsync()
@@ -77,6 +79,9 @@ else
 
         if (OperatingSystem.IsBrowser())
         {
+            UserService = ServiceProvider.GetService<IUserService>()!;
+            ComponentRefreshService = ServiceProvider.GetService<IComponentRefreshService>()!;
+            ComponentRefreshService.Refresh += Update;
             var user = await AuthStateProvider.GetAuthenticationStateAsync();
             if (user.User.Identity?.IsAuthenticated == true)
             {
@@ -93,17 +98,18 @@ else
             _isLoading = false;
         }
     }
-    
-    private IUserService? UserService { get; set; }
-    private Dictionary<Guid, UserRoles?> _userRoleChanges = new();
+
+    private IUserService UserService { get; set; } = null!;
+    protected IComponentRefreshService? ComponentRefreshService { get; set; }
+    private readonly Dictionary<Guid, UserRoles?> _userRoleChanges = new();
     private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
-    private MudTable<UserDTO> _userTable;
-    private bool _isSaving = false;
+    private MudTable<UserDTO> _userTable = null!;
+    private bool _isSaving;
+    private bool _isDeleting;
     private Guid _currentSavingUserId;
 
     private async Task<TableData<UserDTO>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
-        UserService = ServiceProvider.GetService<IUserService>()!;
         try
         {
             var items = await UserService.GetList(
@@ -135,49 +141,37 @@ else
         return user.UserRole ?? UserRoles.Normal;
     }
 
-    private async Task OnRoleChanged(Guid userId, UserRoles newRole)
+    private void OnRoleChanged(Guid userId, UserRoles newRole)
     {
         _userRoleChanges[userId] = newRole;
-        await Task.CompletedTask;
         StateHasChanged();
     }
 
     private async Task Save(Guid userId)
     {
+        if (_isSaving || _isDeleting || !_userRoleChanges.TryGetValue(userId, out var newRole))
+            return;
+        
         _isSaving = true;
         _currentSavingUserId = userId;
         StateHasChanged();
-
-        if (_userRoleChanges.TryGetValue(userId, out var newRole))
+    
+        var userWithNewRole = new UserDTO()
         {
-            if (UserService != null)
-            {
-                var user = await UserService.GetById(userId);
-                if (user != null)
-                {
-                    var userWithNewRole = new UserDTO()
-                        {
-                            UserId = user.UserId,
-                            Username = user.Username,
-                            UserRole = newRole,
-                            Password = user.Password
-                        };
-                    try
-                    {
-                        await UserService.UpdateUserRole(userWithNewRole);
-                        _userRoleChanges.Remove(userId);
-                        await _userTable.ReloadServerData();
-                        StateHasChanged();
-
-                        Snackbar.Add("Updated successfully", Severity.Success);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        Snackbar.Add("Failed to update", Severity.Error);
-                    }
-                }
-            }
+            UserId = userId,
+            UserRole = newRole,
+        };
+        try
+        {
+            await UserService.UpdateUserRole(userWithNewRole);
+            _userRoleChanges.Remove(userId);
+            await _userTable.ReloadServerData();
+            Snackbar.Add("Updated successfully", Severity.Success);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            Snackbar.Add("Failed to update", Severity.Error);
         }
 
         _isSaving = false;
@@ -187,28 +181,43 @@ else
 
     private async Task Delete(Guid userId)
     {
-        if (UserService != null)
-        {
-            try
-            {
-                await UserService.Delete(userId);
-                await LoadServerData(new TableState(), new CancellationToken());
+        if (_isSaving || _isDeleting)
+            return;
+        _isDeleting = true;
+        StateHasChanged();
 
-                await _userTable.ReloadServerData();
-                StateHasChanged();
-                Snackbar.Add("Deleted successfully", Severity.Success);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                Snackbar.Add("Failed to delete", Severity.Error);
-            }
+        try
+        {
+            await UserService.Delete(userId);
+            await _userTable.ReloadServerData();
+            Snackbar.Add("Deleted successfully", Severity.Success);
         }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            Snackbar.Add("Failed to delete", Severity.Error);
+        }
+
+        _isDeleting = false;
+        StateHasChanged();
     }
 
-    private Task OpenDialogAsync(DialogOptions options)
+    private Task OpenAddDialogAsync(DialogOptions options)
     {
         return Dialog.ShowAsync<AddUserDialog>("Add User", options);
     }
     
+    private async void Update(object sender, EventArgs? e)
+    {
+        await _userTable.ReloadServerData();
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        if (ComponentRefreshService != null)
+        {
+            ComponentRefreshService.Refresh -= Update;
+        }
+    }
 }

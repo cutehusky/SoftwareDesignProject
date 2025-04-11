@@ -58,7 +58,7 @@ public class PluginRepository: IPluginRepository
             .ToListAsync();
     }
     
-    public async Task<List<Guid>> GetStarredPluginUserById(Guid id)
+    public async Task<List<Guid>> GetStarredPluginByUserId(Guid id)
     {
         return await _dbContext.UserPlugins
             .Where(userPlugin => userPlugin.UserId == id)

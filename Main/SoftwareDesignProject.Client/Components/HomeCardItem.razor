@@ -1,0 +1,24 @@
+﻿@using CommonDTO
+<MudCard Width="24%" Style="min-width: 250px; backdrop-filter: blur(5px); opacity: 0.75;">
+    <MudCardHeader style="width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">
+        <MudLink Href="@Plugin.Href" Underline="Underline.None" Typo="Typo.h6" Style="width: 100%; text-overflow: ellipsis; overflow: hidden;">@Plugin.Text</MudLink>
+        @if(IsAuthorized)
+        {
+            <MudIconButton Style="padding: 3px" OnClick="()=> Select(Plugin.PluginId)" Icon="@GetSelectedFavoriteIcon(Plugin.PluginId)" Color="Color.Secondary" aria-label="add to favorite"/>
+        }
+    </MudCardHeader>
+    <a href="@Plugin.Href">
+        <MudCardContent style="overflow: hidden; height: 100px;">
+            <MudText Style="width: 100%; height: 100%; text-overflow: ellipsis; overflow: hidden;">
+                @Plugin.Description
+            </MudText>
+        </MudCardContent>
+    </a>
+</MudCard>
+
+@code {
+    [Parameter] public HomeItem Plugin { get; set; } = null!;
+    [Parameter] public Action<Guid> Select { get; set; } = null!;
+    [Parameter] public Func<Guid, string> GetSelectedFavoriteIcon { get; set; } = null!;
+    [Parameter] public bool IsAuthorized { get; set; }
+}

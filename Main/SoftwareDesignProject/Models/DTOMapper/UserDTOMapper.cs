@@ -6,29 +6,6 @@ namespace SoftwareDesignProject.Models.DTOMapper;
 
 public class UserDTOMapper : IDTOMapper<User, UserDTO>
 {
-
-    private CommonDTO.UserRoles ConvertTo(UserRoles userRoles)
-    {
-        return userRoles switch
-        {
-            UserRoles.Normal => CommonDTO.UserRoles.Normal,
-            UserRoles.Premium => CommonDTO.UserRoles.Premium,
-            UserRoles.Admin => CommonDTO.UserRoles.Admin,
-            _ => CommonDTO.UserRoles.Normal
-        };
-    }
-
-    private UserRoles ConvertFrom(CommonDTO.UserRoles? userRoles)
-    {
-        return userRoles switch
-        {
-            CommonDTO.UserRoles.Normal => UserRoles.Normal,
-            CommonDTO.UserRoles.Premium => UserRoles.Premium,
-            CommonDTO.UserRoles.Admin => UserRoles.Admin,
-            _ => UserRoles.Normal
-        };
-    }
-
     public UserDTO ConvertTo(User from)
     {
         return new UserDTO()
@@ -36,7 +13,7 @@ public class UserDTOMapper : IDTOMapper<User, UserDTO>
             UserId = from.UserId,
             Username = from.Username,
             Password = from.HashedPassword,
-            UserRole = ConvertTo(from.UserRole)
+            UserRole = (CommonDTO.UserRoles) from.UserRole
         };
     }
 
@@ -47,7 +24,7 @@ public class UserDTOMapper : IDTOMapper<User, UserDTO>
             UserId = from.UserId,
             Username = string.IsNullOrEmpty(from.Username) ? from.UserId.ToString() : from.Username,
             HashedPassword = from.Password!,
-            UserRole = ConvertFrom(from.UserRole)
+            UserRole = from.UserRole.HasValue ? (UserRoles) from.UserRole.Value : UserRoles.Normal
         };
     }
 
@@ -58,6 +35,6 @@ public class UserDTOMapper : IDTOMapper<User, UserDTO>
         if (source.Password != null)
             target.HashedPassword = source.Password;
         if (source.UserRole != null)
-            target.UserRole = ConvertFrom(source.UserRole);
+            target.UserRole = (UserRoles) source.UserRole;
     }
 }

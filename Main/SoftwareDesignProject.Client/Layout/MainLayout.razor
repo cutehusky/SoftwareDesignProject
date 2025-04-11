@@ -2,8 +2,6 @@
 @using SoftwareDesignProject.Client.Components
 @inherits LayoutComponentBase
 @inject IDialogService DialogService
-
-@using System.Security.Claims
 @inject AuthenticationStateProvider AuthProvider
 @inject NavigationManager NavigationManager
 
@@ -88,7 +86,7 @@
 	private async Task Upgrade()
 	{
 		var options = new DialogOptions { CloseOnEscapeKey = true };
-		await DialogService.ShowAsync<UpgradeDialog>("Upgrade", options);
+		await DialogService.ShowAsync<UpgradePremiumDialog>("Upgrade", options);
 	}
 
     private async Task Logout()

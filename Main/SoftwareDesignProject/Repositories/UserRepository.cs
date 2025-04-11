@@ -38,11 +38,6 @@ public class UserRepository : IUserRepository
                 : _dbContext.Users.OrderBy(user => user.UserId)
         };
 
-        if (!string.IsNullOrEmpty(search))
-        {
-            users = users.Where(user => user.Username.Contains(search)) as IOrderedQueryable<User>;
-        }
-
         var items = await users
             .Skip(page * pageSize)
             .Take(pageSize)

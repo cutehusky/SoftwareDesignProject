@@ -1,12 +1,13 @@
 ﻿@inject IDialogService Dialog
 @inject IServiceProvider ServiceProvider
-@inject NavigationManager Navigation
 @using System.Security.Claims
 @using CommonDTO
 @using Microsoft.AspNetCore.Components.Authorization
 @using SoftwareDesignProject.Client.Components
 @using SoftwareDesignProject.Client.Services
 @inject AuthenticationStateProvider AuthStateProvider
+@inject ISnackbar Snackbar
+@implements IDisposable
 
 @page "/plugin-management"
 
@@ -24,10 +25,10 @@ else
 {
     <div class="d-flex align-center justify-end">
         <MudButton StartIcon="@Icons.Material.Filled.Add" Class="mx-6 my-3" Variant="Variant.Outlined" Color="Color.Inherit"
-                   OnClick="@(() => OpenDialogAsync(_maxWidth))"> Add </MudButton>
+                   OnClick="@(() => OpenAddDialogAsync(_maxWidth))"> Add </MudButton>
     </div>
 
-    <MudTable ServerData="LoadServerData"
+    <MudTable ServerData="LoadServerData" @ref="_pluginTable"
               Hover="true" Elevation="0" AllowUnsorted="false">
         <HeaderContent>
             <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<PluginDTO, object>(x => x.Category!)" SortLabel="Category">Category</MudTableSortLabel></MudTh>
@@ -49,26 +50,28 @@ else
             </MudTd>
             <MudTd DataLabel="Action">
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => Delete(context.PluginId)" aria-label="delete"/>
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="() => Edit(context, _maxWidth)" aria-label="edit"/>
-                <MudIconButton Icon="@Icons.Material.Filled.Upgrade" OnClick="() => Upgrade(context, _maxWidth)" aria-label="upgrade"/>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="() => OpenEditDialog(context, _maxWidth)" aria-label="edit"/>
+                <MudIconButton Icon="@Icons.Material.Filled.Upgrade" OnClick="() => OpenUpgradeDialog(context, _maxWidth)" aria-label="upgrade"/>
 
             </MudTd>
         </RowTemplate>
         <PagerContent>
-            <MudTablePager PageSizeOptions="new int[] { 10, 50, 100 }"/>
+            <MudTablePager PageSizeOptions="new[] { 10, 50, 100 }"/>
         </PagerContent>
     </MudTable>
 }
 
 @code {
-    private bool _isAuthorized = false;
+    private bool _isAuthorized;
     private bool _isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-
         if (OperatingSystem.IsBrowser())
         {
+            PluginService = ServiceProvider.GetService<IPluginService>()!;
+            ComponentRefreshService = ServiceProvider.GetService<IComponentRefreshService>()!;
+            ComponentRefreshService.Refresh += Update;
             var user = await AuthStateProvider.GetAuthenticationStateAsync();
             if (user.User.Identity?.IsAuthenticated == true)
             {
@@ -86,11 +89,12 @@ else
         }
     }
 
-    private IPluginService? PluginService { get; set; } = null;
-
+    private IPluginService PluginService { get; set; } = null!;
+    private IComponentRefreshService? ComponentRefreshService { get; set; }
+    private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+    private MudTable<PluginDTO> _pluginTable = null!;
     private async Task<TableData<PluginDTO>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
-        PluginService = ServiceProvider.GetService<IPluginService>()!;
         try
         {
             var items = await PluginService.GetList(
@@ -112,7 +116,7 @@ else
         }
     }
 
-    private Task Upgrade(PluginDTO pluginDto, DialogOptions options)
+    private Task OpenUpgradeDialog(PluginDTO pluginDto, DialogOptions options)
     {
         var parameters = new DialogParameters
         {
@@ -121,7 +125,7 @@ else
         return Dialog.ShowAsync<UpgradePluginDialog>("Upgrade Plugin", parameters, options);
     }
 
-    private Task Edit(PluginDTO pluginDto, DialogOptions options)
+    private Task OpenEditDialog(PluginDTO pluginDto, DialogOptions options)
     {
         var parameters = new DialogParameters
         {
@@ -133,23 +137,33 @@ else
     private async void Delete(Guid id)
     {
         Console.WriteLine($"deleting : {id}");
-        if (PluginService == null)
-            return;
         try
         {
             await PluginService.Remove(id);
-            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+            ComponentRefreshService?.NotifyStateChanged(this);
+            Snackbar.Add("Deleted successfully", Severity.Success);
         }
         catch (Exception e)
         {
-
+            Console.WriteLine(e);
+            Snackbar.Add("Failed to delete", Severity.Error);
         }
     }
 
-    private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
-
-    private Task OpenDialogAsync(DialogOptions options)
+    private Task OpenAddDialogAsync(DialogOptions options)
     {
         return Dialog.ShowAsync<AddPluginDialog>("Add Plugin", options);
+    }
+    
+    private async void Update(object sender, EventArgs? e)
+    {
+        await _pluginTable.ReloadServerData();
+        StateHasChanged();
+    }
+    
+    public void Dispose()
+    {
+        if (ComponentRefreshService != null) 
+            ComponentRefreshService.Refresh -= Update;
     }
 }

@@ -1,5 +1,9 @@
 ﻿@using CommonDTO
+@using SoftwareDesignProject.Client.Components
+@using SoftwareDesignProject.Client.Pages
+@using SoftwareDesignProject.Client.Services
 @inject IServiceProvider ServiceProvider
+@implements IDisposable
 
 <MudNavMenu Style="padding-top: 10px;">
     @foreach (var category in _navItems)
@@ -28,21 +32,25 @@
 </MudNavMenu>
 
 @code {
-    private INavMenuLoader? NavMenuLoader { get; set; } = null;
+    private IComponentRefreshService? ComponentRefreshService { get; set; }
+    private INavMenuLoader NavMenuLoader { get; set; } = null!;
     
     private List<(string, List<NavItem>)> _navItems = [];
-    
 
     protected override async Task OnInitializedAsync()
     {
         if (OperatingSystem.IsBrowser())
         {
-            NavMenuLoader = ServiceProvider.GetService<INavMenuLoader>();
-        }
+            NavMenuLoader = ServiceProvider.GetService<INavMenuLoader>()!;
+            ComponentRefreshService = ServiceProvider.GetService<IComponentRefreshService>()!;
+            ComponentRefreshService.Refresh += Update;
 
-        if (NavMenuLoader == null)
-            return;
-        
+            await Load();
+        }
+    }
+
+    private async Task Load()
+    {
         var items = await NavMenuLoader.GetNavItem();
         var dictionary = new Dictionary<string, List<NavItem>>();
         if (items != null)
@@ -60,5 +68,20 @@
             }
             _navItems = dictionary.Select(kv=> (kv.Key, kv.Value)).ToList();
         }
+    }
+
+    private async void Update(object sender, EventArgs? e)
+    {
+        if (sender is not UserManagement)
+        {
+            await Load();
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        if (ComponentRefreshService != null) 
+            ComponentRefreshService.Refresh -= Update;
     }
 }

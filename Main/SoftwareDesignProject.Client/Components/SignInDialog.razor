@@ -1,10 +1,8 @@
 ﻿@using CommonDTO
 @using Microsoft.AspNetCore.Components.Authorization
-@using SoftwareDesignProject.Client.Models
 
 @inject HttpClient HttpClient
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
 @inject AuthenticationStateProvider AuthStateProvider
 
 <MudDialog>
@@ -21,9 +19,10 @@
 </MudDialog>
 
 @code {
-    [Inject] private IDialogService DialogService { get; set; }
-    private string _username { get; set; } = string.Empty;
-    private string _password { get; set; } = string.Empty;
+    [Inject] 
+    private IDialogService DialogService { get; set; } = null!;
+    private string _username = string.Empty;
+    private string _password = string.Empty;
 
     private async Task Login()
     {
@@ -37,7 +36,7 @@
         {
             var result = await response.Content.ReadFromJsonAsync<JwtResponse>();
             var authStateProvider = (CustomAuthStateProvider)AuthStateProvider;
-            await authStateProvider.Login(result.Token);
+            await authStateProvider.Login(result!.Token);
             await DialogService.ShowMessageBox("Success", "Logged in successfully");
             NavigationManager.NavigateTo("/", forceLoad: true);
             StateHasChanged();
@@ -47,11 +46,6 @@
             Console.WriteLine("Failed to login: {0}", response.StatusCode);
             await DialogService.ShowMessageBox("Error", "Failed to login");
             StateHasChanged();
-        };
-    }
-
-    private void SignUp()
-    {
-        NavigationManager.NavigateTo("/signup");
+        }
     }
 }

@@ -1,6 +1,4 @@
-﻿@using Microsoft.AspNetCore.Components
-@using Microsoft.AspNetCore.Components.Authorization
-@using MudBlazor
+﻿@using Microsoft.AspNetCore.Components.Authorization
 @using SoftwareDesignProject.Client.Services
 @using System.Security.Claims
 @inject IServiceProvider ServiceProvider
@@ -19,14 +17,15 @@
 </MudDialog>
 
 @code {
-    [Inject] private IDialogService DialogService { get; set; }
-    [CascadingParameter]
-    private IMudDialogInstance MudDialog { get; set; }
+    [Inject] 
+    private IDialogService DialogService { get; set; } = null!;
+    [CascadingParameter] 
+    private IMudDialogInstance MudDialog { get; set; } = null!;
 
     private CustomAuthStateProvider CustomAuthStateProvider => (CustomAuthStateProvider)AuthProvider;
-    private AuthenticationState _authState;
-    [CascadingParameter]
-    public Task<AuthenticationState> AuthenticationStateTask { get; set; }
+    private AuthenticationState _authState = null!;
+    [CascadingParameter] 
+    public Task<AuthenticationState> AuthenticationStateTask { get; set; } = null!;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -34,11 +33,11 @@
     }
 
 
-    private IUserService _userService;
+    private IUserService UserService { get; set; } = null!;
 
     protected override void OnInitialized()
     {
-        _userService = ServiceProvider.GetService<IUserService>();
+        UserService = ServiceProvider.GetService<IUserService>()!;
     }
 
     private async Task HandleUpgrade()
@@ -52,8 +51,8 @@
             Console.WriteLine($"UserId: {userId}");
             if (Guid.TryParse(userId, out var userGuid))
             {
-                await _userService.Upgrade(userGuid);
-                var newToken = await _userService.RefreshToken(token); 
+                await UserService.Upgrade(userGuid);
+                var newToken = await UserService.RefreshToken(token); 
                 if (!string.IsNullOrEmpty(newToken))
                 {
                     await CustomAuthStateProvider.Login(newToken);

@@ -1,7 +1,6 @@
 ﻿@using CommonDTO
 @using SoftwareDesignProject.Client.Models
 @using SoftwareDesignProject.Client.Services
-@inject NavigationManager Navigation
 @inject IServiceProvider ServiceProvider
 
 <MudDialog>
@@ -19,8 +18,13 @@
                 </ActivatorContent>
             </MudFileUpload>
             <div class="mx-6">
-                <MudText>@_clientDLLName</MudText>
+                <MudText>@_clientDllName</MudText>
             </div>
+            @if (!string.IsNullOrEmpty(_clientDllName))
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="OnClientDLLFileRemoved"
+                               Color="Color.Error" Size="Size.Small" />
+            }
         </div>
 
         <div class="my-3 mx-3 d-flex align-center">
@@ -33,14 +37,22 @@
                 </ActivatorContent>
             </MudFileUpload>
             <div class="mx-6">
-                <MudText>@_serverDLLName</MudText>
+                <MudText>@_serverDllName</MudText>
             </div>
+            @if (!string.IsNullOrEmpty(_serverDllName))
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="OnServerDLLFileRemoved"
+                               Color="Color.Error" Size="Size.Small" />
+            }
         </div>
 
-        <MudAlert Severity="_alertSeverity" Class="mb-2 mx-3" Style="@AlertStyle">
-            @_alertText
-        </MudAlert>
-
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <MudAlert Severity="@Severity.Error" Class="mb-2 mx-3">
+                @_errorMessage
+            </MudAlert>
+        }
+        
     </DialogContent>
     
     <DialogActions>
@@ -51,56 +63,50 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter]
-    private IMudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] 
+    private IMudDialogInstance MudDialog { get; set; } = null!;
     
-    [Parameter] public PluginDTO Plugin { get; set; } = null!;
+    [Parameter] 
+    public PluginDTO Plugin { get; set; } = null!;
     
-    private IPluginService? PluginService { get; set; }
+    private IPluginService PluginService { get; set; } = null!;
+    protected IComponentRefreshService ComponentRefreshService { get; set; } = null!;
 
-    private Severity _alertSeverity = Severity.Info;
-    private bool _showAlert = false;
-    private string AlertStyle => _showAlert ? "display: block;" : "display: none;";
-    private string _alertText = "";
-    private IBrowserFile? _clientDLL;
-    private IBrowserFile? _serverDLL;
-    private string _clientDLLName;
-    private string _serverDLLName;
-    
-    private void ShowAlert(Severity severity, string text)
-    {
-        _alertSeverity = severity;
-        _alertText = text;
-        _showAlert = true;
-    }
+    private string _errorMessage = "";
+    private IBrowserFile? _clientDll;
+    private IBrowserFile? _serverDll;
+    private string _clientDllName = "";
+    private string _serverDllName = "";
 
     protected override void OnInitialized()
     {
-        PluginService = ServiceProvider.GetService<IPluginService>();
+        PluginService = ServiceProvider.GetService<IPluginService>()!;
     }
 
     private async void Submit()
     {
-        if (PluginService == null)
+        if (_clientDll == null && _serverDll == null)
+        {
+            _errorMessage = "Must upload at least one file.";
+            StateHasChanged();
             return;
-        
-        ShowAlert(Severity.Info, "Loading...");
+        }
 
         try
         {
             await PluginService.Upgrade(new PluginUpgradeData()
             {
                 PluginId = Plugin.PluginId,
-                ClientDLL = _clientDLL,
-                ServerDLL = _serverDLL
+                ClientDLL = _clientDll,
+                ServerDLL = _serverDll
             });
             
             MudDialog.Close(DialogResult.Ok(true));
-            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+            ComponentRefreshService.NotifyStateChanged(this);
         }
         catch (Exception e)
         {
-            ShowAlert(Severity.Error, $"Fail to install plugin. Reason: {e.Message}");
+            _errorMessage = $"Fail to install plugin. Reason: {e.Message}";
             StateHasChanged();
         }
     } 
@@ -111,8 +117,8 @@
     {
         if (file != null)
         {
-            _clientDLL = file;
-            _clientDLLName = file.Name;
+            _clientDll = file;
+            _clientDllName = file.Name;
         }
     }
     
@@ -120,8 +126,20 @@
     {
         if (file != null)
         {
-            _serverDLL = file;
-            _serverDLLName = file.Name;
+            _serverDll = file;
+            _serverDllName = file.Name;
         }
+    }
+    
+    public void OnClientDLLFileRemoved()
+    {
+        _clientDll = null;
+        _clientDllName = "";
+    }
+    
+    public void OnServerDLLFileRemoved()
+    {
+        _serverDll = null;
+        _serverDllName = "";
     }
 }

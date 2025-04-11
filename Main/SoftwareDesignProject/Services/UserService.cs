@@ -1,6 +1,4 @@
 ﻿using CommonDTO;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 using SoftwareDesignProject.Repositories;
 
@@ -28,15 +26,7 @@ public class UserService : IUserService
         var user = await _userRepository.GetById(dto.UserId);
         if (user == null) throw new KeyNotFoundException("User not found");
 
-        var updatedUser = new UserDTO
-        {
-            UserId = user.UserId,
-            Username = user.Username,
-            Password = user.Password,
-            UserRole = dto.UserRole
-        };
-
-        var sucesss = await _userRepository.Update(updatedUser);
+        var sucesss = await _userRepository.Update(dto);
         if (!sucesss) throw new InvalidOperationException("Failed to update user role");
     }
 
@@ -78,15 +68,10 @@ public class UserService : IUserService
         var updatedUser = new UserDTO
         {
             UserId = user.UserId,
-            Username = user.Username,
-            Password = user.Password,
             UserRole = UserRoles.Premium
         };
         var success = await _userRepository.Update(updatedUser);
-        if (!success)
-        {
-            throw new InvalidOperationException("Failed to upgrade user");
-        }
+        if (!success) throw new InvalidOperationException("Failed to upgrade user");
     }
     public async Task<UserDTO?> GetById(Guid id) => await _userRepository.GetById(id);
 }

@@ -13,7 +13,6 @@ namespace SoftwareDesignProject.Controllers;
 [Route("api/[controller]")]
 public class PluginsController : ControllerBase
 {
-    private readonly IHostEnvironment _env;
     private readonly DynamicPluginManager _manager;
     private readonly IPluginService _pluginService;
     private readonly IUserService _userService;
@@ -21,12 +20,10 @@ public class PluginsController : ControllerBase
     private static readonly SemaphoreSlim PluginSemaphore = new(1, 1);
 
     public PluginsController(
-        IHostEnvironment env,
         DynamicPluginManager manager,
         IPluginService pluginService,
         IUserService userService)
     {
-        _env = env;
         _manager = manager;
         _pluginService = pluginService;
         _userService = userService;
@@ -260,16 +257,14 @@ public class PluginsController : ControllerBase
     [HttpGet("{fileName}")]
     public async Task<IActionResult> Get(string fileName)
     {
-        var filePath = Path.Combine(_env.ContentRootPath, "Root/ClientPlugins", fileName);
-        Console.WriteLine("Getting file: " + fileName);
-        if (!System.IO.File.Exists(filePath))
+        try
         {
-            return NotFound("File not found.");
+            var stream = await _pluginService.GetClientPluginFile(fileName);
+            return File(stream, "application/octet-stream", fileName);
+        } catch (FileNotFoundException)
+        {
+            return NotFound("File not found");
         }
-
-        // add caching here to optimize performance
-        var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
-        return File(stream, "application/octet-stream", fileName);
     }
 
     private async Task<UserRoles?> GetCurrentUserRoleAsync()
@@ -293,9 +288,13 @@ public class PluginsController : ControllerBase
             return Unauthorized();
         }
 
-        var success = await _pluginService.StarPlugin(pluginDto.PluginId, userId.Value);
-        if (!success)
+        try
         {
+            await _pluginService.StarPlugin(pluginDto.PluginId, userId.Value);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
             return BadRequest("Failed to star plugin.");
         }
 
@@ -312,9 +311,13 @@ public class PluginsController : ControllerBase
             return Unauthorized();
         }
 
-        var success = await _pluginService.UnstarPlugin(pluginDto.PluginId, userId.Value);
-        if (!success)
+        try
         {
+            await _pluginService.UnstarPlugin(pluginDto.PluginId, userId.Value);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
             return BadRequest("Failed to unstar plugin.");
         }
 

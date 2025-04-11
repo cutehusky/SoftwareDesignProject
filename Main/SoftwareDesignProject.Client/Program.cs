@@ -47,6 +47,7 @@ builder.Services.AddHttpClient("AuthHttpClient", client =>
 
 builder.Services.AddScoped(sp =>
     sp.GetRequiredService<IHttpClientFactory>().CreateClient("AuthHttpClient"));
+builder.Services.AddSingleton<IComponentRefreshService, ComponentRefreshService>();
 
 // Register authentication policies
 builder.Services.AddAuthorizationCore();

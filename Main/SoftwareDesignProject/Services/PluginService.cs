@@ -2,7 +2,6 @@
 using BackendPluginTemplate;
 using CommonDTO;
 using MudBlazor;
-using SoftwareDesignProject.Models.DTOMapper;
 using SoftwareDesignProject.Repositories;
 using SoftwareDesignProject.Services.ServerPluginManagement;
 
@@ -12,16 +11,18 @@ namespace SoftwareDesignProject.Services;
 public class PluginService : IPluginService
 {
     private readonly IPluginRepository _pluginRepository;
+    private readonly IFileStorage _fileStorage;
     private readonly DynamicPluginManager _pluginManager;
-    private readonly string _clientUploadPath;
-    private readonly string _serverUploadPath;
+    private readonly string _clientUploadPath = "ClientPlugins";
+    private readonly string _serverUploadPath = "BackendPlugins";
 
-    public PluginService(IPluginRepository pluginRepository, DynamicPluginManager pluginManager, IHostEnvironment env)
+    public PluginService(IPluginRepository pluginRepository, 
+        IFileStorage fileStorage,
+        DynamicPluginManager pluginManager)
     {
         _pluginRepository = pluginRepository;
         _pluginManager = pluginManager;
-        _clientUploadPath = Path.Combine(env.ContentRootPath, "Root/ClientPlugins");
-        _serverUploadPath = Path.Combine(env.ContentRootPath, "Root/BackendPlugins");
+        _fileStorage = fileStorage;
     }
 
     public async Task<PaginationList<PluginDTO>> GetList(int page, int pageSize, string sortBy,
@@ -122,7 +123,7 @@ public class PluginService : IPluginService
             }
         });
 
-        if (!await SaveFileAsync(clientDLL, clientUid + ".dll", _clientUploadPath))
+        if (!await _fileStorage.SaveFileAsync(clientDLL, clientUid + ".dll", _clientUploadPath))
         {
             await Rollback();
             Console.WriteLine("Fail to save Client Plugin");
@@ -131,7 +132,7 @@ public class PluginService : IPluginService
 
         _rollbackActions.Push(async () =>
         {
-            if (!await RemoveFile(clientUid + ".dll", _clientUploadPath))
+            if (!await _fileStorage.RemoveFile(clientUid + ".dll", _clientUploadPath))
             {
                 Console.WriteLine("Fail to delete Client Plugin");
             }
@@ -139,7 +140,7 @@ public class PluginService : IPluginService
 
         if (serverDLL != null)
         {
-            if (!await SaveFileAsync(serverDLL, serverUid + ".dll", _serverUploadPath))
+            if (!await _fileStorage.SaveFileAsync(serverDLL, serverUid + ".dll", _serverUploadPath))
             {
                 await Rollback();
                 Console.WriteLine("Fail to save Client Plugin");
@@ -185,8 +186,8 @@ public class PluginService : IPluginService
             throw new InvalidOperationException("Fail to delete from database");
         }
 
-        await RemoveFile(id + ".dll", _clientUploadPath);
-        await RemoveFile(id + ".dll", _serverUploadPath);
+        await _fileStorage.RemoveFile(id + ".dll", _clientUploadPath);
+        await _fileStorage.RemoveFile(id + ".dll", _serverUploadPath);
         if (_pluginManager.CheckLoadedPlugin(id.ToString()))
             await _pluginManager.LoadAllAssemblies();
         Console.WriteLine("Plugin removed successfully");
@@ -236,20 +237,20 @@ public class PluginService : IPluginService
 
         if (clientDll != null)
         {
-            await BackupFile(pluginId + ".dll", _clientUploadPath);
+            await _fileStorage.BackupFile(pluginId + ".dll", _clientUploadPath);
             _rollbackActions.Push(async () =>
             {
-                if (!await RemoveFile(pluginId + ".dll", _clientUploadPath))
+                if (!await _fileStorage.RemoveFile(pluginId + ".dll", _clientUploadPath))
                 {
                     Console.WriteLine("Fail to delete Client Plugin");
                 }
-                if (!await RestoreFile(pluginId + ".dll", _clientUploadPath))
+                if (!await _fileStorage.RestoreFile(pluginId + ".dll", _clientUploadPath))
                 {
                     Console.WriteLine("Fail to restore Client Plugin");
                 }
             });
 
-            if (!await SaveFileAsync(clientDll, clientUid + ".dll", _clientUploadPath))
+            if (!await _fileStorage.SaveFileAsync(clientDll, clientUid + ".dll", _clientUploadPath))
             {
                 await Rollback();
                 Console.WriteLine("Fail to save Client Plugin");
@@ -259,21 +260,21 @@ public class PluginService : IPluginService
 
         if (serverDll != null)
         {
-            await BackupFile(pluginId + ".dll", _serverUploadPath);
+            await _fileStorage.BackupFile(pluginId + ".dll", _serverUploadPath);
             _rollbackActions.Push(async () =>
             {
-                if (!await RemoveFile(pluginId + ".dll", _serverUploadPath))
+                if (!await _fileStorage.RemoveFile(pluginId + ".dll", _serverUploadPath))
                 {
                     Console.WriteLine("Fail to delete Server Plugin");
                 }
-                if (!await RestoreFile(pluginId + ".dll", _serverUploadPath))
+                if (!await _fileStorage.RestoreFile(pluginId + ".dll", _serverUploadPath))
                 {
                     Console.WriteLine("Fail to restore Server Plugin");
                 }
                 await _pluginManager.LoadAllAssemblies();
             });
 
-            if (!await SaveFileAsync(serverDll, serverUid + ".dll", _serverUploadPath))
+            if (!await _fileStorage.SaveFileAsync(serverDll, serverUid + ".dll", _serverUploadPath))
             {
                 await Rollback();
                 Console.WriteLine("Fail to save Client Plugin");
@@ -282,77 +283,45 @@ public class PluginService : IPluginService
             await _pluginManager.LoadAllAssemblies();
         }
 
-        await RemoveBackup(pluginId + ".dll", _clientUploadPath);
-        await RemoveBackup(pluginId + ".dll", _serverUploadPath);
+        await _fileStorage.RemoveBackup(pluginId + ".dll", _clientUploadPath);
+        await _fileStorage.RemoveBackup(pluginId + ".dll", _serverUploadPath);
         Console.WriteLine("Plugin upgraded successfully");
     }
 
     public Task<List<Guid>> GetStarredPluginUserById(Guid id)
     {
-        return _pluginRepository.GetStarredPluginUserById(id);
+        return _pluginRepository.GetStarredPluginByUserId(id);
     }
 
-    public Task<bool> StarPlugin(Guid pluginId, Guid userId)
+    public async Task StarPlugin(Guid pluginId, Guid userId)
     {
-        return _pluginRepository.StarPlugin(pluginId, userId);
+        var res = await _pluginRepository.StarPlugin(pluginId, userId);
+        if (!res)
+        {
+            Console.WriteLine("Fail to star plugin");
+            throw new InvalidOperationException("Fail to star plugin");
+        }
     }
 
-    public Task<bool> UnstarPlugin(Guid pluginId, Guid userId)
+    public async Task UnstarPlugin(Guid pluginId, Guid userId)
     {
-        return _pluginRepository.UnstarPlugin(pluginId, userId);
+        var res = await _pluginRepository.UnstarPlugin(pluginId, userId);
+        if (!res)
+        {
+            Console.WriteLine("Fail to unstar plugin");
+            throw new InvalidOperationException("Fail to unstar plugin");
+        }
     }
 
-    private static async Task<bool> RemoveBackup(string fileName, string path)
+    public async Task<FileStream> GetClientPluginFile(string fileName)
     {
-        var backupPath = Path.Combine(path, "backup", fileName);
-        if (!File.Exists(backupPath))
-            return false;
-        try
+        var res = await _fileStorage.GetFile(fileName, _clientUploadPath);
+        if (res == null)
         {
-            File.Delete(backupPath);
+            Console.WriteLine("Fail to get Client Plugin File");
+            throw new FileNotFoundException("Fail to get Client Plugin File");
         }
-        catch (Exception e)
-        {
-            return false;
-        }
-        return true;
-    }
-
-    private static async Task<bool> RestoreFile(string fileName, string path)
-    {
-        var filePath = Path.Combine(path, fileName);
-        var backupPath = Path.Combine(path, "backup", fileName);
-        if (!File.Exists(backupPath))
-            return false;
-        try
-        {
-            File.Copy(backupPath, filePath, true);
-            File.Delete(backupPath);
-        }
-        catch (Exception e)
-        {
-            return false;
-        }
-        return true;
-    }
-
-    private static async Task<bool> BackupFile(string fileName, string path)
-    {
-        var filePath = Path.Combine(path, fileName);
-        var backupPath = Path.Combine(path, "backup", fileName);
-        if (!Directory.Exists(Path.Combine(path, "backup")))
-            Directory.CreateDirectory(Path.Combine(path, "backup"));
-        if (!File.Exists(filePath))
-            return false;
-        try
-        {
-            File.Copy(filePath, backupPath, true);
-        }
-        catch (Exception e)
-        {
-            return false;
-        }
-        return true;
+        return res;
     }
 
     private static async Task<Guid?> GetClientPluginUid(IFormFile file)
@@ -395,41 +364,5 @@ public class PluginService : IPluginService
         using var memoryStream = new MemoryStream();
         await file.CopyToAsync(memoryStream);
         return memoryStream.ToArray();
-    }
-
-    private static async Task<bool> RemoveFile(string fileName, string path)
-    {
-        var filePath = Path.Combine(path, fileName);
-        if (!File.Exists(filePath))
-            return true;
-        try
-        {
-            File.Delete(filePath);
-            return true;
-        }
-        catch (Exception e)
-        {
-            return false;
-        }
-    }
-
-    private static async Task<bool> SaveFileAsync(IFormFile file, string fileName, string uploadPath)
-    {
-        Console.WriteLine(file.Name);
-        Console.WriteLine(file.Length);
-
-        var filePath = Path.Combine(uploadPath, fileName);
-        try
-        {
-            if (!Directory.Exists(uploadPath))
-                Directory.CreateDirectory(uploadPath);
-            await using var stream = new FileStream(filePath, FileMode.Create);
-            await file.CopyToAsync(stream);
-        }
-        catch (Exception e)
-        {
-            return false;
-        }
-        return true;
     }
 }

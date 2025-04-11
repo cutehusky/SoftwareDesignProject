@@ -1,7 +1,5 @@
 ﻿@using CommonDTO
-@using MudBlazor
 @using SoftwareDesignProject.Client.Services
-@inject NavigationManager Navigation
 @inject IServiceProvider ServiceProvider
 
 <MudDialog>
@@ -44,22 +42,31 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter]
-    private IMudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] 
+    private IMudDialogInstance MudDialog { get; set; } = null!;
 
-    private IUserService _userService;
-    private string _username;
-    private string _password;
+    private IUserService UserService { get; set; } = null!;
+    private IComponentRefreshService ComponentRefreshService { get; set; } = null!;
+    private string _username = "";
+    private string _password = "";
     private UserRoles _selectedRole = UserRoles.Normal;
-    private string _errorMessage;
+    private string _errorMessage = "";
 
     protected override void OnInitialized()
     {
-        _userService = ServiceProvider.GetService<IUserService>();
+        UserService = ServiceProvider.GetService<IUserService>()!;
+        ComponentRefreshService = ServiceProvider.GetService<IComponentRefreshService>()!;
     }
 
     private async Task Submit()
     {
+        if (_username.Trim().Length == 0 || _password.Length == 0)
+        {
+            _errorMessage = "Username and Password cannot be empty.";
+            StateHasChanged();
+            return;
+        }
+        
         try
         {
             var newUser = new UserDTO
@@ -69,13 +76,13 @@
                     UserRole = _selectedRole
                 };
 
-            await _userService.Add(newUser);
+            await UserService.Add(newUser);
             MudDialog.Close(DialogResult.Ok(true));
-            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+            ComponentRefreshService.NotifyStateChanged(this);
         }
         catch (Exception ex)
         {
-            _errorMessage = ex.Message;
+            _errorMessage = $"Fail to add user. Reason:{ex.Message}";
             StateHasChanged();
         }
     }

@@ -1,11 +1,7 @@
 ﻿@using CommonDTO
-@using Microsoft.AspNetCore.Components.Authorization
-@using SoftwareDesignProject.Client.Models
 
 @inject HttpClient HttpClient
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
-@inject AuthenticationStateProvider AuthStateProvider
 
 <MudDialog>
     <DialogContent>
@@ -15,7 +11,7 @@
         <MudTextField Label="Password" @bind-Value="_password" Variant="Variant.Outlined" Adornment="Adornment.Start" Type="password" InputType="InputType.Password">
         </MudTextField>
 
-        <MudTextField Label="Confirm Password" @bind-Value="_confirmpassword" Variant="Variant.Outlined" Adornment="Adornment.Start" Type="password" InputType="InputType.Password" >
+        <MudTextField Label="Confirm Password" @bind-Value="_confirmPassword" Variant="Variant.Outlined" Adornment="Adornment.Start" Type="password" InputType="InputType.Password" >
         </MudTextField>
     </DialogContent>
     <DialogActions>
@@ -26,16 +22,17 @@
 
 
 @code {
-    [Inject] private IDialogService DialogService { get; set; }
+    [Inject] 
+    private IDialogService DialogService { get; set; } = null!;
 
-    private string _username { get; set; } = string.Empty;
-    private string _password { get; set; } = string.Empty;
-    private string _confirmpassword { get; set; } = string.Empty;
+    private string _username = string.Empty;
+    private string _password = string.Empty;
+    private string _confirmPassword = string.Empty;
 
 
     private async Task HandleSignUp()
     {
-        if (_password != _confirmpassword)
+        if (_password != _confirmPassword)
         {
             await DialogService.ShowMessageBox("Error", "Passwords do not match");
             StateHasChanged();
@@ -52,11 +49,10 @@
         {
             await DialogService.ShowMessageBox("Success", "Account created successfully");
             StateHasChanged();
-            NavigationManager.NavigateTo("/signin");
         }
         else
         {
-            Console.WriteLine("Failed to sign up", response);
+            Console.WriteLine("Failed to sign up. Reason: {0}", response.StatusCode);
             await DialogService.ShowMessageBox("Error", "Failed to create account");
             StateHasChanged();
         }
