@@ -34,7 +34,7 @@ public class PluginsController : ControllerBase
     public async Task<IActionResult> Load()
     {
         var userRole = await GetCurrentUserRoleAsync();
-        if (userRole < CommonDTO.UserRoles.Admin)
+        if (userRole is null or < UserRoles.Admin)
         {
             return Forbid();
         }
@@ -42,8 +42,8 @@ public class PluginsController : ControllerBase
         return Ok(new { message = "Server Plugin Reloaded" });
     }
 
-    [HttpGet("check")]
-    public async Task<IActionResult> CheckPlugin([FromQuery] string id)
+    [HttpGet("getPlugin")]
+    public async Task<IActionResult> GetPlugin([FromQuery] string id)
     {
         if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out var pluginId))
         {
@@ -51,18 +51,18 @@ public class PluginsController : ControllerBase
         }
 
         var plugin = await _pluginService.GetPluginById(pluginId);
-        if (plugin == null || plugin.IsEnabled != true)
+        if (plugin is not { IsEnabled: true })
         {
             return NotFound();
         }
 
         var userRole = await GetCurrentUserRoleAsync();
-        if (plugin.IsPremium == true && userRole < CommonDTO.UserRoles.Premium)
+        if (plugin.IsPremium == true && userRole is null or < UserRoles.Premium)
         {
             return Forbid();
         }
 
-        return Ok();
+        return Ok(plugin);
     }
 
     [Authorize(Policy = "AdminOnly")]
@@ -188,6 +188,11 @@ public class PluginsController : ControllerBase
         [FromQuery] string order = "",
         [FromQuery] string search = "")
     {
+        var userRole = await GetCurrentUserRoleAsync();
+        if (userRole is null or < UserRoles.Admin)
+        {
+            return Forbid();
+        }
         page = Math.Max(0, page);
         pageSize = Math.Max(1, pageSize);
 
@@ -203,8 +208,7 @@ public class PluginsController : ControllerBase
 
         Console.WriteLine("Getting plugin list with page: " + page + " and pageSize: " + pageSize +
                           " and sortBy: " + sortBy + " and order: " + sortDirection);
-        var userRole = await GetCurrentUserRoleAsync();
-        var plugins = await _pluginService.GetList(page, pageSize, sortBy, sortDirection, search, userRole);
+        var plugins = await _pluginService.GetList(page, pageSize, sortBy, sortDirection, search);
         return Ok(plugins);
     }
 
@@ -213,7 +217,7 @@ public class PluginsController : ControllerBase
     public async Task<IActionResult> UploadFiles([FromForm] UploadPluginRequest request)
     {
         var userRole = await GetCurrentUserRoleAsync();
-        if (userRole < UserRoles.Admin)
+        if (userRole is null or < UserRoles.Admin)
         {
             return Forbid();
         }

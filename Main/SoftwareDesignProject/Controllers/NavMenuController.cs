@@ -113,6 +113,26 @@ public class NavMenuController : Controller
             FavoriteItems = [..favoriteItems]
         });
     }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> Search([FromQuery] string queryValue)
+    {
+        var userRole = await GetCurrentUserRoleAsync();
+        var plugins = await _pluginService.SearchPlugin(queryValue, userRole);
+
+        List<NavItem> navItems = [];
+        navItems.AddRange(plugins.Select(plugin => new NavItem()
+        {
+            PluginId = plugin.PluginId,
+            Text = plugin.Name!,
+            Category = plugin.Category!,
+            Href = $"dynamicDLL/{plugin.PluginId}",
+            Icon = Icons.Material.Filled.List,
+            IsPremium = plugin.IsPremium ?? false
+        }));
+
+        return Ok(navItems);
+    }
     
     private Guid? GetCurrentUserId()
     {

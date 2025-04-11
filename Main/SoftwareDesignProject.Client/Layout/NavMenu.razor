@@ -68,12 +68,16 @@
             _navItemsDictionary = data.NavItems.GroupBy(item => item.Category.Trim())
                 .ToDictionary(group => group.Key, group => group.ToList());
             
-            if (data.FavoriteItems.Count != 0)
+            if (data.FavoriteItems.Count() != 0)
             {
-                _favoriteItemsIds = data.FavoriteItems;
+                _favoriteItemsIds = [..data.FavoriteItems];
                 _navItemsDictionary["My Favorites"] = data.NavItems.Where(
                     item => item.PluginId != null
                             && data.FavoriteItems.Contains(item.PluginId.Value)).ToList();
+            }
+            else
+            {
+                _navItemsDictionary["My Favorites"] = [];
             }
         }
     }

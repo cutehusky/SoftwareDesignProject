@@ -26,15 +26,9 @@ public class PluginService : IPluginService
     }
 
     public async Task<PaginationList<PluginDTO>> GetList(int page, int pageSize, string sortBy,
-        SortDirection order, string search, UserRoles? userRole)
+        SortDirection order, string search)
     {
         var query = await _pluginRepository.GetAll(page, pageSize, sortBy, order, search);
-
-        if (userRole < UserRoles.Premium)
-        {
-            query.Items = query.Items.Where(p => p.IsPremium == false).ToList();
-        }
-
         return query;
     }
 
@@ -322,6 +316,16 @@ public class PluginService : IPluginService
             throw new FileNotFoundException("Fail to get Client Plugin File");
         }
         return res;
+    }
+
+    public async Task<List<PluginDTO>> SearchPlugin(string queryValue, UserRoles ? userRole)
+    {
+        var plugins =  await _pluginRepository.SearchPlugin(queryValue);
+        if (userRole is null or < UserRoles.Premium)
+        {
+            plugins = plugins.Where(p => p.IsPremium == false).ToList();
+        }
+        return plugins;
     }
 
     private static async Task<Guid?> GetClientPluginUid(IFormFile file)

@@ -1,5 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
 @using SoftwareDesignProject.Client.Components
+@using SoftwareDesignProject.Client.Services
 @inherits LayoutComponentBase
 @inject IDialogService DialogService
 @inject AuthenticationStateProvider AuthProvider
@@ -15,11 +16,13 @@
 </div>
 
 <MudLayout>
-    <MudAppBar Elevation="1" Style="backdrop-filter: blur(2px);">
+    <MudAppBar Elevation="0" Style="backdrop-filter: blur(2px);">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudText Typo="Typo.h5" Class="ml-3">IT TOOLS</MudText>
         <MudSpacer />
-
+        
+        <SearchBar/>
+        
         @if (_authState?.User?.Identity?.IsAuthenticated == true)
         {
             // If user is normal role, have upgrade button here
@@ -56,6 +59,8 @@
 </div>
 
 @code {
+    private string _searchText = string.Empty;
+    
     private CustomAuthStateProvider CustomAuthStateProvider => (CustomAuthStateProvider)AuthProvider;
     private AuthenticationState _authState;
     [CascadingParameter]
@@ -122,8 +127,8 @@
     {
         Black = "#110e2d",
         AppbarText = "#424242",
-        AppbarBackground = "rgba(255,255,255, 0.5)",
-        DrawerBackground = "rgba(255,255,255, 0.5)",
+        AppbarBackground = "rgba(255,255,255, 1)",
+        DrawerBackground = "rgba(255,255,255, 0.75)",
         GrayLight = "#e8e8e8",
         GrayLighter = "#f9f9f9",
     };
@@ -135,8 +140,8 @@
         Background = "#1a1a27",
         BackgroundGray = "#151521",
         AppbarText = "#92929f",
-        AppbarBackground = "rgba(26,26,39, 0.5)",
-        DrawerBackground = "rgba(26,26,39, 0.5)",
+        AppbarBackground = "rgba(26,26,39, 1)",
+        DrawerBackground = "rgba(26,26,39, 0.75)",
         ActionDefault = "#74718e",
         ActionDisabled = "#9999994d",
         ActionDisabledBackground = "#605f6d4d",

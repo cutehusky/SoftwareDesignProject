@@ -9,4 +9,5 @@ public interface IPluginRepository: IRepository<PluginDTO>
     
     public Task<bool> StarPlugin(Guid pluginId, Guid userId);
     public Task<bool> UnstarPlugin(Guid pluginId, Guid userId);
+    public Task<List<PluginDTO>> SearchPlugin(string queryValue);
 }

@@ -13,11 +13,12 @@ builder.Services.AddScoped<IDynamicPageLoader>(sp =>
     new DynamicPageLoader(sp.GetService<HttpClient>()!,
         "/api/plugin/{0}",
         "api/plugins/{0}.dll",
-        "api/plugins/check?id={0}"));
+        "api/plugins/getPlugin?id={0}"));
 builder.Services.AddScoped<INavMenuLoader>(sp =>
     new NavMenuLoader(sp.GetService<HttpClient>()!,
         "api/navMenu/getList",
-        "api/navMenu/getHomeList"));
+        "api/navMenu/getHomeList",
+        "api/navMenu/search"));
 builder.Services.AddScoped<IPluginService>(sp =>
     new PluginService(sp.GetService<HttpClient>()!,
         "api/plugins/getList?page={0}&pageSize={1}&sortBy={2}&order={3}&search={4}",

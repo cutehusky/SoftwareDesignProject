@@ -1,6 +1,8 @@
 ﻿using System.Net;
+using System.Net.Http.Json;
 using System.Reflection;
 using ClientPluginTemplate;
+using CommonDTO;
 using SoftwareDesignProject.Client.Models;
 
 namespace SoftwareDesignProject.Client.Services;
@@ -11,17 +13,17 @@ public class DynamicPageLoader: IDynamicPageLoader
     private HttpClient _httpClient;
     private string _apiEndpoint;
     private string _downloadEndpoint;
-    private string _checkEndpoint;
+    private string _getDetailEndpoint;
     
     public DynamicPageLoader(HttpClient httpClient,
         string apiEndpoint,
         string downloadEndpoint,
-        string checkEndpoint)
+        string getDetailEndpoint)
     {
         _httpClient = httpClient;
         _apiEndpoint = apiEndpoint;
         _downloadEndpoint = downloadEndpoint;
-        _checkEndpoint = checkEndpoint;
+        _getDetailEndpoint = getDetailEndpoint;
     }
 
     private string GetApiEndPoint(string id)
@@ -34,25 +36,26 @@ public class DynamicPageLoader: IDynamicPageLoader
         return string.Format(_downloadEndpoint, id);
     }
     
-    private string GetCheckEndPoint(string id)
+    private string GetDetailEndPoint(string id)
     {
-        return string.Format(_checkEndpoint, id);
+        return string.Format(_getDetailEndpoint, id);
     }
     
-    private async Task<HttpStatusCode> CheckPlugin(string id)
+    private async Task<PluginDTO> GetPlugin(string id)
     {
-        var response = await _httpClient.GetAsync(GetCheckEndPoint(id));
-        return response.StatusCode;
+        Console.WriteLine($"Getting Plugin in Server: " + GetDetailEndPoint(id));
+        var response = await _httpClient.GetAsync(GetDetailEndPoint(id));
+        if (!response.IsSuccessStatusCode)
+            throw new HttpRequestException("Plugin is not valid", null, response.StatusCode);
+        var plugin = await response.Content.ReadFromJsonAsync<PluginDTO>();
+        if (plugin == null)
+            throw new HttpRequestException("Plugin is not valid", null, HttpStatusCode.BadRequest);
+        return plugin;
     }
 
     public async Task<DynamicPage?> LoadDynamicAssembly(string pluginId)
     {
-        var statusCode = await CheckPlugin(pluginId);
-        if (statusCode != HttpStatusCode.OK)
-        {
-            Console.WriteLine($"Plugin {pluginId} is not valid: {statusCode}");
-            throw new HttpRequestException("Plugin is not valid", null, statusCode);
-        }
+        var plugin = await GetPlugin(pluginId);
         Console.WriteLine($"Downloading DLL in Server: " + pluginId);
         var dllBytes = await _httpClient.GetByteArrayAsync(GetDownloadEndPoint(pluginId));
         var assembly = Assembly.Load(dllBytes);
@@ -71,6 +74,7 @@ public class DynamicPageLoader: IDynamicPageLoader
         if (entryPoint != null)
             return new DynamicPage()
             {
+                Plugin = plugin,
                 PluginAssembly = Assembly.Load(dllBytes),
                 EntryPoint = entryPoint
             };

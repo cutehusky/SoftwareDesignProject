@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 
+namespace SoftwareDesignProject.Client.Services;
+
 public class CustomAuthStateProvider : AuthenticationStateProvider
 {
     private readonly IJSRuntime _jsRuntime;

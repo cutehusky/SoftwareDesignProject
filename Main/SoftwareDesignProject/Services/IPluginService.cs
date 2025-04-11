@@ -6,7 +6,7 @@ namespace SoftwareDesignProject.Services;
 public interface IPluginService
 {
     public Task<PaginationList<PluginDTO>> GetList(int page, int pageSize,
-        string sortBy, SortDirection order, string search, UserRoles? userRole);
+        string sortBy, SortDirection order, string search);
 
     public Task<List<PluginDTO>> GetActiveList(UserRoles? userRole);
 
@@ -28,4 +28,6 @@ public interface IPluginService
     public Task UnstarPlugin(Guid pluginId, Guid userId);
     
     public Task<FileStream> GetClientPluginFile(string fileName);
+    
+    public Task<List<PluginDTO>> SearchPlugin(string queryValue, UserRoles? userRole);
 }

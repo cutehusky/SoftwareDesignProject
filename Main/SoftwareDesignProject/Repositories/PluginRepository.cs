@@ -62,7 +62,7 @@ public class PluginRepository: IPluginRepository
     {
         return await _dbContext.UserPlugins
             .Where(userPlugin => userPlugin.UserId == id)
-            .OrderByDescending(plugin => plugin.UpdatedAt)
+            .OrderByDescending(userPlugin => userPlugin.UpdatedAt)
             .Select(userPlugin => userPlugin.PluginId)
             .ToListAsync();
     }
@@ -90,6 +90,18 @@ public class PluginRepository: IPluginRepository
             return true;
         _dbContext.UserPlugins.Remove(userPlugin);
         return await _dbContext.SaveChangesAsync() > 0;
+    }
+
+    public async Task<List<PluginDTO>> SearchPlugin(string queryValue)
+    {
+        queryValue = queryValue.ToLower();
+        var res  = await _dbContext.Plugins
+            .Where(plugin => plugin.Name.ToLower().StartsWith(queryValue) 
+                             || plugin.Name.ToLower().Contains(queryValue))
+            .OrderBy((plugin => plugin.Name.ToLower().StartsWith(queryValue) ? 0 : 1))
+            .Select(plugin => new PluginDTOMapper().ConvertTo(plugin))
+            .ToListAsync();
+        return res;
     }
 
     public async Task<PluginDTO?> GetById(Guid id)

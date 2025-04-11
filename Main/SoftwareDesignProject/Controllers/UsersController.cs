@@ -12,7 +12,7 @@ namespace SoftwareDesignProject.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
-    private static readonly SemaphoreSlim _semaphore = new(1, 1);
+    private static readonly SemaphoreSlim UserSemaphore = new(1, 1);
 
     public UsersController(IUserService userService)
     {
@@ -27,6 +27,12 @@ public class UsersController : ControllerBase
         [FromQuery] string order = "",
         [FromQuery] string search = "")
     {
+        var userRole = await GetCurrentUserRoleAsync();
+        if (userRole is null or < UserRoles.Admin)
+        {
+            return Forbid();
+        }
+        
         page = Math.Max(0, page);
         pageSize = Math.Max(1, pageSize);
 
@@ -51,11 +57,11 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> UpdateRole([FromBody] UserDTO dto)
     {
         var userRole = await GetCurrentUserRoleAsync();
-        if (userRole < UserRoles.Admin)
+        if (userRole is null or < UserRoles.Admin)
         {
             return Forbid();
         }
-        if (!await _semaphore.WaitAsync(TimeSpan.FromSeconds(10)))
+        if (!await UserSemaphore.WaitAsync(TimeSpan.FromSeconds(10)))
             return StatusCode(503, "Service unavailable");
 
         try
@@ -69,7 +75,7 @@ public class UsersController : ControllerBase
         }
         finally
         {
-            _semaphore.Release();
+            UserSemaphore.Release();
         }
     }
 
@@ -78,7 +84,7 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> Delete(Guid id)
     {
         var userRole = await GetCurrentUserRoleAsync();
-        if (userRole < UserRoles.Admin)
+        if (userRole is null or < UserRoles.Admin)
         {
             return Forbid();
         }
@@ -98,7 +104,7 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> Create([FromBody] UserDTO user)
     {
         var userRole = await GetCurrentUserRoleAsync();
-        if (userRole < UserRoles.Admin)
+        if (userRole is null or < UserRoles.Admin)
         {
             return Forbid();
         }
@@ -123,7 +129,7 @@ public class UsersController : ControllerBase
     [HttpPut("upgrade")]
     public async Task<IActionResult> Upgrade([FromBody] Guid id)
     {
-        if (!await _semaphore.WaitAsync(TimeSpan.FromSeconds(10)))
+        if (!await UserSemaphore.WaitAsync(TimeSpan.FromSeconds(10)))
             return StatusCode(503, "Service unavailable");
         try
         {
@@ -136,7 +142,7 @@ public class UsersController : ControllerBase
         }
         finally
         {
-            _semaphore.Release();
+            UserSemaphore.Release();
         }
     }
 

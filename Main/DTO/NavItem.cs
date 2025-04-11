@@ -9,4 +9,8 @@ public class NavItem
     public required string Category { get; init; }
 
     public bool IsPremium { get; init; } = false;
+    public override string ToString()
+    {
+        return Text;
+    }
 }

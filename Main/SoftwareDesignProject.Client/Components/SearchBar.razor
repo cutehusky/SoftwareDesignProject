@@ -1,0 +1,73 @@
+﻿@using CommonDTO
+@using SoftwareDesignProject.Client.Services
+@inject  IServiceProvider ServiceProvider
+@inject NavigationManager NavigationManager
+
+<MudAutocomplete
+    T="NavItem"
+    @bind-Value="CurrentNavItem"
+    @ref="_searchBar"
+    Style="margin: 10px; width: 300px;"
+    Lines="1"
+    Underline="false"
+    SearchFunc="SearchText"
+    Adornment="Adornment.Start"
+    ToStringFunc="item => item?.ToString()"
+    CoerceText="true"
+    AdornmentIcon="@Icons.Material.Filled.Search"
+    Placeholder="Search..."
+    Immediate="true">
+    <ItemTemplate>
+        <MudListItem T="NavItem" OnClick="() => OnSelect(context)">
+            <div class="d-flex align-center">
+                <MudIcon Icon="@context.Icon" Class="me-3"/>
+                @context.Text
+            </div>
+        </MudListItem>
+    </ItemTemplate>
+</MudAutocomplete>
+
+@code {
+    private MudAutocomplete<NavItem> _searchBar = null!;
+    private NavItem? _currentNavItem;
+
+    private NavItem? CurrentNavItem
+    {
+        get => _currentNavItem;
+        set
+        {
+            if (value == null)
+            {
+                return;
+            }
+            NavigationManager.NavigateTo(value.Href);
+        }
+    }
+
+    private INavMenuLoader NavMenuLoader { get; set; } = null!;
+    private IEnumerable<NavItem> NavItems { get; set; } = new List<NavItem>();
+    
+    protected override void OnInitialized()
+    {
+        if (OperatingSystem.IsBrowser())
+        {
+            NavMenuLoader = ServiceProvider.GetService<INavMenuLoader>()!;
+        }
+    }
+
+    private async Task<IEnumerable<NavItem>?> SearchText(string? searchText, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            return new List<NavItem>();
+        }
+        NavItems = await NavMenuLoader.Search(searchText) ?? [];
+        return NavItems;
+    }
+
+    private async Task OnSelect(NavItem item)
+    {
+        CurrentNavItem = item;
+        await _searchBar.CloseMenuAsync();
+    }
+}
