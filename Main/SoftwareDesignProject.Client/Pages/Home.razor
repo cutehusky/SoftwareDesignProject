@@ -1,9 +1,11 @@
 ﻿@page "/Home"
 @page "/"
+@using System.ComponentModel
 @using CommonDTO
 @using Microsoft.AspNetCore.Components.Authorization
 @using SoftwareDesignProject.Client.Services
 @using SoftwareDesignProject.Client.Components
+@using SoftwareDesignProject.Client.Layout
 @inject IServiceProvider ServiceProvider
 @inject AuthenticationStateProvider AuthStateProvider
 
@@ -48,13 +50,12 @@ else
     }
     
     private bool _isLoading = true;
+    private IComponentRefreshService ComponentRefreshService {get; set;} = null!;
     private IEnumerable<HomeItem> Plugins { get; set; } = [];
 
     private List<HomeItem> FavoritePlugins { get; set; } = [];
 
     private HashSet<Guid> FavoritePluginIds { get; set; } = [];
-
-    //private UserRoles? _currentUserRole;
     
     private bool _isAuthorized;
 
@@ -63,16 +64,14 @@ else
         if (OperatingSystem.IsBrowser())
         {
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-            //_currentUserRole = GetUserRole(authState.User);
             _isAuthorized = authState.User.Identity?.IsAuthenticated == true;
-            var navLoader = ServiceProvider.GetService<INavMenuLoader>();
-            if (navLoader != null)
-            {
-                var data = await navLoader.GetHomeItem();
-                Plugins = data?.PluginItems ?? [];
-                FavoritePluginIds = data?.FavoriteItems ?? [];
-                FavoritePlugins = Plugins.Where((item => FavoritePluginIds.Contains(item.PluginId))).ToList();
-            }
+            var navLoader = ServiceProvider.GetService<INavMenuLoader>()!;
+            ComponentRefreshService = ServiceProvider.GetService<IComponentRefreshService>()!;
+            
+            var data = await navLoader.GetHomeItem();
+            Plugins = data?.PluginItems ?? [];
+            FavoritePluginIds = data?.FavoriteItems ?? [];
+            FavoritePlugins = Plugins.Where((item => FavoritePluginIds.Contains(item.PluginId))).ToList();
             _isLoading = false;
         }
     }
@@ -94,6 +93,11 @@ else
             var plugin = Plugins.FirstOrDefault(p => p.PluginId == pluginId);
             if (plugin != null)
                 FavoritePlugins.Remove(plugin);
+            ComponentRefreshService.NotifyStateChanged(this,
+                new NavMenu.PluginEventArgs {
+                    PluginId = pluginId, 
+                    Action = CollectionChangeAction.Remove
+                });
         }
         else
         {
@@ -111,6 +115,11 @@ else
             var plugin = Plugins.FirstOrDefault(p => p.PluginId == pluginId);
             if (plugin != null)
                 FavoritePlugins.Insert(0, plugin);
+            ComponentRefreshService.NotifyStateChanged(this,
+                new NavMenu.PluginEventArgs {
+                    PluginId = pluginId, 
+                    Action = CollectionChangeAction.Add
+                });
         }
 
         StateHasChanged();

@@ -1,10 +1,9 @@
 ﻿using CommonDTO;
-using SoftwareDesignProject.Client.Models;
 
-namespace SoftwareDesignProject.Client;
+namespace SoftwareDesignProject.Client.Services;
 
 public interface INavMenuLoader
 {
-    public Task<List<NavItem>?> GetNavItem();
+    public Task<NavData?> GetNavItem();
     public Task<HomeData?> GetHomeItem();
 }

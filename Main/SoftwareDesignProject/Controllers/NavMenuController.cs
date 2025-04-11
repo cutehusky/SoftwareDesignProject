@@ -40,13 +40,13 @@ public class NavMenuController : Controller
         var userId = GetCurrentUserId();
         IEnumerable<Guid> favoriteItems;
         if (userId != null)
-            favoriteItems = await _pluginService.GetStarredPluginUserById(Guid.Parse(User.FindFirst(ClaimTypes.Upn)?.Value ?? string.Empty));
+            favoriteItems = await _pluginService.GetStarredPluginUserById(userId.Value);
         else 
             favoriteItems = [];
 
         return Ok(new HomeData()
         {
-            PluginItems = pluginItems.ToList(),
+            PluginItems = pluginItems,
             FavoriteItems = [..favoriteItems]
         });
     }
@@ -59,19 +59,19 @@ public class NavMenuController : Controller
         var plugins = await _pluginService.GetActiveList(userRole);
         var isAdmin = userRole == UserRoles.Admin;
 
-        var list = new List<NavItem>
+        List<NavItem> navItems = new()
         {
-            new() {
+            new () {
                 Text = "Home",
                 Href = "home",
                 Icon = Icons.Material.Filled.Home,
                 Category = ""
             }
         };
-
+        
         if (isAdmin)
         {
-            list.AddRange(new[]
+            navItems.AddRange(new[]
             {
                 new NavItem
                 {
@@ -89,17 +89,29 @@ public class NavMenuController : Controller
                 }
             });
         }
-
-        list.AddRange(plugins.Select(plugin => new NavItem()
+        
+        navItems.AddRange(plugins.Select(plugin => new NavItem()
         {
+            PluginId = plugin.PluginId,
             Text = plugin.Name!,
             Category = plugin.Category!,
             Href = $"dynamicDLL/{plugin.PluginId}",
             Icon = Icons.Material.Filled.List,
-            IsPremium = plugin.IsPremium ?? false // Fix for CS0266 and CS8629
+            IsPremium = plugin.IsPremium ?? false
         }));
+        
+        var userId = GetCurrentUserId();
+        IEnumerable<Guid> favoriteItems;
+        if (userId != null)
+            favoriteItems = await _pluginService.GetStarredPluginUserById(userId.Value);
+        else 
+            favoriteItems = [];
 
-        return Ok(list);
+        return Ok(new NavData()
+        {
+            NavItems = navItems,
+            FavoriteItems = [..favoriteItems]
+        });
     }
     
     private Guid? GetCurrentUserId()

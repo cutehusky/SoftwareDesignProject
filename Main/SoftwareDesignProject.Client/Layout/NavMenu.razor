@@ -1,14 +1,14 @@
-﻿@using CommonDTO
-@using SoftwareDesignProject.Client.Components
+﻿@using System.ComponentModel
+@using CommonDTO
 @using SoftwareDesignProject.Client.Pages
 @using SoftwareDesignProject.Client.Services
 @inject IServiceProvider ServiceProvider
 @implements IDisposable
 
 <MudNavMenu Style="padding-top: 10px;">
-    @foreach (var category in _navItems)
+    @foreach (var category in NavItems)
     {
-        @if (category.Item1 != "")
+        @if (category.Item1 != "" && category.Item2.Count > 0)
         {
             <MudNavGroup Title="@category.Item1" Expanded="true">
                 @foreach (var item in category.Item2)
@@ -35,7 +35,17 @@
     private IComponentRefreshService? ComponentRefreshService { get; set; }
     private INavMenuLoader NavMenuLoader { get; set; } = null!;
     
-    private List<(string, List<NavItem>)> _navItems = [];
+    private Dictionary<string, List<NavItem>> _navItemsDictionary = new();
+    private IEnumerable<NavItem> _navItemsList = null!;
+    private List<(string, List<NavItem>)> NavItems => _navItemsDictionary
+        .OrderBy(kv => kv.Key switch {
+            "" => 0,
+            "Admin" => 1,
+            "My Favorites" => 2,
+            _ => 3
+        }).ThenBy(kv=> kv.Key)
+        .Select(kv=> (kv.Key, kv.Value)).ToList();
+    private HashSet<Guid> _favoriteItemsIds = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -51,32 +61,61 @@
 
     private async Task Load()
     {
-        var items = await NavMenuLoader.GetNavItem();
-        var dictionary = new Dictionary<string, List<NavItem>>();
-        if (items != null)
+        var data = await NavMenuLoader.GetNavItem();
+        if (data != null)
         {
-            foreach (var item in items)
+            _navItemsList = data.NavItems;
+            _navItemsDictionary = data.NavItems.GroupBy(item => item.Category.Trim())
+                .ToDictionary(group => group.Key, group => group.ToList());
+            
+            if (data.FavoriteItems.Count != 0)
             {
-                if (dictionary.TryGetValue(item.Category.Trim(), out var list))
-                {
-                    list.Add(item);
-                }
-                else
-                {
-                    dictionary.Add(item.Category.Trim(), [item]);
-                }
+                _favoriteItemsIds = data.FavoriteItems;
+                _navItemsDictionary["My Favorites"] = data.NavItems.Where(
+                    item => item.PluginId != null
+                            && data.FavoriteItems.Contains(item.PluginId.Value)).ToList();
             }
-            _navItems = dictionary.Select(kv=> (kv.Key, kv.Value)).ToList();
         }
     }
 
     private async void Update(object sender, EventArgs? e)
     {
-        if (sender is not UserManagement)
+        if (sender is UserManagement) 
+            return;
+        if (sender is Home)
         {
-            await Load();
-            StateHasChanged();
+            if (e is not PluginEventArgs pluginIdEventArgs)
+                return;
+            if (pluginIdEventArgs.PluginId == Guid.Empty) 
+                return;
+            switch (pluginIdEventArgs.Action)
+            {
+                case CollectionChangeAction.Remove:
+                    _favoriteItemsIds.Remove(pluginIdEventArgs.PluginId);
+                    var item = _navItemsList.FirstOrDefault(navItem => navItem.PluginId == pluginIdEventArgs.PluginId);
+                    if (item != null)
+                        _navItemsDictionary["My Favorites"].Remove(item);
+                    StateHasChanged();
+                    break;
+                case CollectionChangeAction.Add:
+                    _favoriteItemsIds.Add(pluginIdEventArgs.PluginId);
+                    var newItem = _navItemsList.FirstOrDefault(navItem => navItem.PluginId == pluginIdEventArgs.PluginId);
+                    if (newItem != null)
+                        _navItemsDictionary["My Favorites"].Insert(0, newItem);
+                    StateHasChanged();
+                    break;
+            }
+            return;
         }
+        
+        await Load();
+        StateHasChanged();
+    }
+
+    public class PluginEventArgs: EventArgs
+    {
+        public Guid PluginId { get; set; }
+        public CollectionChangeAction Action { get; set; }
     }
 
     public void Dispose()

@@ -37,6 +37,7 @@ builder.Services.AddScoped<IUserService>(sp => new UserService(
     upgradeEndpoint: "/api/users/upgrade",
     refreshTokenEndpoint: "/api/auth/refresh-token"
 ));
+builder.Services.AddSingleton<IFormatChecker, FormatChecker>();
 
 builder.Services.AddTransient<CustomAuthorizationMessageHandler>();
 

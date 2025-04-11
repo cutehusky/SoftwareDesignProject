@@ -1,6 +1,5 @@
 ﻿using System.Net.Http.Json;
 using CommonDTO;
-using SoftwareDesignProject.Client.Models;
 
 namespace SoftwareDesignProject.Client.Services;
 
@@ -19,9 +18,9 @@ public class NavMenuLoader: INavMenuLoader
         _homeItemEndpoint = homeItemEndpoint;
     }
     
-    public async Task<List<NavItem>?> GetNavItem()
+    public async Task<NavData?> GetNavItem()
     {
-        var res = await _httpClient.GetFromJsonAsync<List<NavItem>>(_navItemEndpoint);
+        var res = await _httpClient.GetFromJsonAsync<NavData>(_navItemEndpoint);
         return res;
     }
 
