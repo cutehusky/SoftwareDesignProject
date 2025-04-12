@@ -1,11 +1,11 @@
 ﻿@using MudBlazor
 @using System.Globalization
 
-<MudPaper Elevation="4" Class="pa-4 ma-4">
+<MudPaper Style="backdrop-filter: blur(5px); opacity: 0.75; " Class="pa-3 mb-4">
     <MudStack Spacing="3">
 
         <!-- Unit Converter Section -->
-        <MudText Typo="Typo.h3">Unit Converter</MudText>
+        <MudText Typo="Typo.h5" Style="margin: 20px">Unit Converter</MudText>
         <MudGrid>
             <MudItem xs="6">
                 <MudNumericField Label="Value" @bind-Value="_inputValue" Immediate="true" 
@@ -81,7 +81,7 @@
         <!-- Result -->
         @if (_downloadTime != null)
         {
-            <MudTypography Variant="H6">Estimated Time: @_downloadTime</MudTypography>
+            <MudText Typo="Typo.h6">Estimated Time: @_downloadTime</MudText>
         }
 
     </MudStack>

@@ -1,19 +1,22 @@
 ﻿@using Microsoft.JSInterop
 @using MudBlazor
 
-<MudPaper Elevation="4" Class="pa-4 d-flex flex-column align-center">
-    <MudText Typo="Typo.h3">Generate Password</MudText>
+<MudPaper Style="backdrop-filter: blur(5px); opacity: 0.75; " Class="pa-3 mb-4">
+    <MudText Typo="Typo.h5" Style="margin: 20px">Generate Password</MudText>
 
-    <MudStack Row="true" Gap="2" Class="mt-3">
-        <MudTextField ReadOnly="true" Variant="Variant.Filled" @bind-Value="_password" />
-        <MudButton OnClick="CopyToClipboard" Variant="Variant.Outlined" Color="Color.Secondary">
-            Copy
+    <MudStack AlignItems="AlignItems.Center">
+        <MudStack Row="true" Gap="2" Class="mt-3">
+            <MudTextField ReadOnly="true" Variant="Variant.Filled" @bind-Value="_password" />
+            <MudButton OnClick="CopyToClipboard" Variant="Variant.Outlined" Color="Color.Secondary">
+                Copy
+            </MudButton>
+        </MudStack>
+
+        <MudButton OnClick="GeneratePassword" Variant="Variant.Filled" Color="Color.Primary" Class="mt-3">
+            Generate
         </MudButton>
     </MudStack>
 
-    <MudButton OnClick="GeneratePassword" Variant="Variant.Filled" Color="Color.Primary" Class="mt-3">
-        Generate
-    </MudButton>
 </MudPaper>
 
 @code {
