@@ -6,47 +6,111 @@
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthStateProvider
 
-<MudDialog>
+<MudDialog MaxWidth="MaxWidth.Small" FullWidth="true">
     <DialogContent>
-        <MudTextField Label="Username" @bind-Value="_username" Variant="Variant.Outlined" Adornment="Adornment.Start">
-        </MudTextField>
+        <MudCard Elevation="0">
+            <MudCardContent>
+                <div class="d-flex flex-column align-center mb-4">
+                    <MudIcon Icon="@Icons.Custom.Brands.Steam" Size="Size.Large" Color="Color.Primary" Class="mb-2" />
+                    <MudText Typo="Typo.h5" Class="mb-4">Welcome Back!</MudText>
+                </div>
 
-        <MudTextField Label="Password" @bind-Value="_password" Variant="Variant.Outlined" Adornment="Adornment.Start" Type="password" InputType="InputType.Password">
-        </MudTextField>
+                <MudForm @ref="_form" @onsubmit="Login" Class="mb-4">
+                    <MudTextField Label="Username"
+                    @bind-Value="_username"
+                    Variant="Variant.Outlined"
+                    AdornmentIcon="@Icons.Material.Filled.Person"
+                    Adornment="Adornment.Start"
+                    Required="true"
+                    RequiredError="Username is required"
+                    Class="mb-4">
+                    </MudTextField>
+
+                    <MudTextField Label="Password"
+                    @bind-Value="_password"
+                    Variant="Variant.Outlined"
+                    AdornmentIcon="@Icons.Material.Filled.Lock"
+                    Adornment="Adornment.Start"
+                    InputType="InputType.Password"
+                    Required="true"
+                    RequiredError="Password is required"
+                    Class="mb-4">
+                    </MudTextField>
+
+                    <MudButton ButtonType="ButtonType.Submit"
+                    Variant="Variant.Filled"
+                    Color="Color.Primary"
+                    FullWidth="true"
+                    EndIcon="@Icons.Material.Filled.ArrowForward"
+                    Disabled="@_isProcessing"
+                    Class="mt-4">
+                        @(_isProcessing ? "Signing In..." : "Sign In")
+                    </MudButton>
+                </MudForm>
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <MudAlert Severity="Severity.Error" Class="mb-2">@_errorMessage</MudAlert>
+                }
+            </MudCardContent>
+        </MudCard>
     </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Login" Variant="Variant.Filled" FullWidth="true">Sign In</MudButton>
-    </DialogActions>
 </MudDialog>
 
 @code {
-    [Inject] 
+    [Inject]
     private IDialogService DialogService { get; set; } = null!;
+
+    private MudForm _form;
     private string _username = string.Empty;
     private string _password = string.Empty;
+    private string _errorMessage = string.Empty;
+    private bool _isProcessing = false;
 
     private async Task Login()
     {
-        var response = await HttpClient.PostAsJsonAsync("api/auth/signin", new LoginRequest()
-        {
-            Username = _username,
-            Password = _password
-        });
+        _errorMessage = string.Empty;
+        _isProcessing = true;
 
-        if (response.IsSuccessStatusCode)
+        await _form.Validate();
+
+        if (!_form.IsValid)
         {
-            var result = await response.Content.ReadFromJsonAsync<JwtResponse>();
-            var authStateProvider = (CustomAuthStateProvider)AuthStateProvider;
-            await authStateProvider.Login(result!.Token);
-            await DialogService.ShowMessageBox("Success", "Logged in successfully");
-            NavigationManager.NavigateTo("/", forceLoad: true);
-            StateHasChanged();
+            _isProcessing = false;
+            return;
         }
-        else
+
+        try
         {
-            Console.WriteLine("Failed to login: {0}", response.StatusCode);
-            await DialogService.ShowMessageBox("Error", "Failed to login");
-            StateHasChanged();
+            var response = await HttpClient.PostAsJsonAsync("api/auth/signin", new LoginRequest()
+                {
+                    Username = _username,
+                    Password = _password
+                });
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<JwtResponse>();
+                var authStateProvider = (CustomAuthStateProvider)AuthStateProvider;
+                await authStateProvider.Login(result!.Token);
+                NavigationManager.NavigateTo("/", forceLoad: true);
+            }
+            else
+            {
+                _errorMessage = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(_errorMessage))
+                {
+                    _errorMessage = $"Login failed: {response.StatusCode}";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isProcessing = false;
         }
     }
 }

@@ -1,60 +1,143 @@
 ﻿@using CommonDTO
-
 @inject HttpClient HttpClient
 @inject NavigationManager NavigationManager
 
-<MudDialog>
+<MudDialog MaxWidth="MaxWidth.Small" FullWidth="true">
     <DialogContent>
-        <MudTextField Label="Username" @bind-Value="_username" Variant="Variant.Outlined" Adornment="Adornment.Start">
-        </MudTextField>
+        <MudCard Elevation="0">
+            <MudCardContent>
+                <div class="d-flex flex-column align-center mb-4">
+                    <MudIcon Icon="@Icons.Custom.Brands.Steam" Size="Size.Large" Color="Color.Primary" Class="mb-2" />
+                    <MudText Typo="Typo.h5" Class="mb-4">Create Account</MudText>
+                </div>
 
-        <MudTextField Label="Password" @bind-Value="_password" Variant="Variant.Outlined" Adornment="Adornment.Start" Type="password" InputType="InputType.Password">
-        </MudTextField>
+                <MudForm @ref="_form" @onsubmit="HandleSignUp" Class="mb-4">
+                    <MudTextField Label="Username"
+                                  @bind-Value="_username"
+                                  Variant="Variant.Outlined"
+                                  AdornmentIcon="@Icons.Material.Filled.Person"
+                                  Adornment="Adornment.Start"
+                                  Required="true"
+                                  RequiredError="Username is required"
+                                  Class="mb-4">
+                    </MudTextField>
 
-        <MudTextField Label="Confirm Password" @bind-Value="_confirmPassword" Variant="Variant.Outlined" Adornment="Adornment.Start" Type="password" InputType="InputType.Password" >
-        </MudTextField>
+                    <MudTextField Label="Password"
+                                  @bind-Value="_password"
+                                  Variant="Variant.Outlined"
+                                  AdornmentIcon="@Icons.Material.Filled.Lock"
+                                  Adornment="Adornment.Start"
+                                  InputType="InputType.Password"
+                                  Required="true"
+                                  RequiredError="Password is required"
+                                  Validation="@(new Func<string, IEnumerable<string>>(ValidatePassword))"
+                                  Class="mb-4">
+                    </MudTextField>
+
+                    <MudTextField Label="Confirm Password"
+                                  @bind-Value="_confirmPassword"
+                                  Variant="Variant.Outlined"
+                                  AdornmentIcon="@Icons.Material.Filled.Lock"
+                                  Adornment="Adornment.Start"
+                                  InputType="InputType.Password"
+                                  Required="true"
+                                  RequiredError="Please confirm your password"
+                                  Validation="@(new Func<string, IEnumerable<string>>(ValidateConfirmPassword))"
+                                  Class="mb-4">
+                    </MudTextField>
+
+                    <MudButton ButtonType="ButtonType.Submit"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               EndIcon="@Icons.Material.Filled.HowToReg"
+                               Disabled="@_isProcessing"
+                               Class="mt-4">
+                        @(_isProcessing ? "Creating Account..." : "Sign Up")
+                    </MudButton>
+                </MudForm>
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <MudAlert Severity="Severity.Error" Class="mb-2">@_errorMessage</MudAlert>
+                }
+
+                <div class="d-flex justify-center align-center mt-3">
+                    <MudText Typo="Typo.body2" Class="mr-2">Already have an account?</MudText>
+                    <MudLink Href="#login" Color="Color.Primary" Underline="Underline.Hover">Sign In</MudLink>
+                </div>
+            </MudCardContent>
+        </MudCard>
     </DialogContent>
-    <DialogActions>
-            <MudButton OnClick="HandleSignUp" Variant="Variant.Outlined" FullWidth="true">Sign Up</MudButton>
-    </DialogActions>
 </MudDialog>
 
-
-
 @code {
-    [Inject] 
+    [Inject]
     private IDialogService DialogService { get; set; } = null!;
 
+    private MudForm _form;
     private string _username = string.Empty;
     private string _password = string.Empty;
     private string _confirmPassword = string.Empty;
+    private string _errorMessage = string.Empty;
+    private bool _isProcessing = false;
 
+    private IEnumerable<string> ValidatePassword(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            yield return "Password is required!";
+        if (value?.Length < 6)
+            yield return "Password must be at least 6 characters!";
+    }
+
+    private IEnumerable<string> ValidateConfirmPassword(string value)
+    {
+        if (_password != _confirmPassword)
+            yield return "Passwords do not match!";
+    }
 
     private async Task HandleSignUp()
     {
-        if (_password != _confirmPassword)
+        _errorMessage = string.Empty;
+        _isProcessing = true;
+
+        await _form.Validate();
+
+        if (!_form.IsValid)
         {
-            await DialogService.ShowMessageBox("Error", "Passwords do not match");
-            StateHasChanged();
+            _isProcessing = false;
             return;
         }
 
-        var response = await HttpClient.PostAsJsonAsync("api/auth/signup", new RegisterRequest()
+        try
         {
-            Username = _username,
-            Password = _password
-        });
+            var response = await HttpClient.PostAsJsonAsync("api/auth/signup", new RegisterRequest()
+                {
+                    Username = _username,
+                    Password = _password
+                });
 
-        if (response.IsSuccessStatusCode)
-        {
-            await DialogService.ShowMessageBox("Success", "Account created successfully");
-            StateHasChanged();
+            if (response.IsSuccessStatusCode)
+            {
+                await DialogService.ShowMessageBox("Success", "Account created successfully");
+                NavigationManager.NavigateTo("/", forceLoad: true);
+            }
+            else
+            {
+                _errorMessage = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(_errorMessage))
+                {
+                    _errorMessage = $"Registration failed: {response.StatusCode}";
+                }
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Console.WriteLine("Failed to sign up. Reason: {0}", response.StatusCode);
-            await DialogService.ShowMessageBox("Error", "Failed to create account");
-            StateHasChanged();
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isProcessing = false;
         }
     }
 }
