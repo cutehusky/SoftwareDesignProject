@@ -9,6 +9,7 @@ using System.Text;
 using SoftwareDesignProject.Repositories;
 using SoftwareDesignProject.Services.ServerPluginManagement;
 using CommonDTO;
+using SoftwareDesignProject.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -75,6 +76,8 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddScoped<AdminRequestAuthFilter>();
+builder.Services.AddScoped<GetUserInfoActionFilter>();
 builder.Services.AddAuthorization();
 
 // Register authorization policies

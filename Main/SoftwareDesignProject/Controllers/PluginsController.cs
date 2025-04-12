@@ -1,5 +1,4 @@
 ﻿using CommonDTO;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MudBlazor;
 using SoftwareDesignProject.Models.DTO;
@@ -15,48 +14,41 @@ public class PluginsController : ControllerBase
 {
     private readonly DynamicPluginManager _manager;
     private readonly IPluginService _pluginService;
-    private readonly IUserService _userService;
 
     private static readonly SemaphoreSlim PluginSemaphore = new(1, 1);
 
     public PluginsController(
         DynamicPluginManager manager,
-        IPluginService pluginService,
-        IUserService userService)
+        IPluginService pluginService)
     {
         _manager = manager;
         _pluginService = pluginService;
-        _userService = userService;
     }
 
-    [Authorize(Policy = "AdminOnly")]
-    [HttpGet("load")]
+    [ServiceFilter(typeof(AdminRequestAuthFilter))]
+    [HttpPut("reload")]
     public async Task<IActionResult> Load()
     {
-        var userRole = await GetCurrentUserRoleAsync();
-        if (userRole is null or < UserRoles.Admin)
-        {
-            return Forbid();
-        }
         await _manager.LoadAllAssemblies();
         return Ok(new { message = "Server Plugin Reloaded" });
     }
 
-    [HttpGet("getPlugin")]
-    public async Task<IActionResult> GetPlugin([FromQuery] string id)
+    [ServiceFilter(typeof(GetUserInfoActionFilter))]
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetPlugin(Guid id)
     {
-        if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out var pluginId))
+        if (id == Guid.Empty)
         {
             return BadRequest("Invalid Plugin ID.");
         }
 
-        var plugin = await _pluginService.GetPluginById(pluginId);
+        var plugin = await _pluginService.GetPluginById(id);
         if (plugin is not { IsEnabled: true })
         {
             return NotFound();
         }
 
-        var userRole = await GetCurrentUserRoleAsync();
+        var userRole = HttpContext.Items["UserRole"] as UserRoles?;
         if (plugin.IsPremium == true && userRole is null or < UserRoles.Premium)
         {
             return Forbid();
@@ -65,25 +57,19 @@ public class PluginsController : ControllerBase
         return Ok(plugin);
     }
 
-    [Authorize(Policy = "AdminOnly")]
-    [HttpPost("upgrade")]
+    [ServiceFilter(typeof(AdminRequestAuthFilter))]
+    [HttpPut("file")]
     public async Task<IActionResult> UpgradePlugin([FromForm] UpgradePluginRequest request)
     {
-        var userRole = await GetCurrentUserRoleAsync();
-        if (userRole is null or < UserRoles.Admin)
-        {
-            return Forbid();
-        }
         if (request.ClientDLL == null && request.ServerDLL == null)
         {
             return BadRequest("Client DLL or Server DLL is required.");
         }
 
-        var acquired = await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10));
-        if (!acquired)
+        if (!await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10)))
         {
-            Console.WriteLine("Semaphore is not available");
-            return BadRequest("Busy. Please try again later.");
+            Console.WriteLine("Semaphore is not available"); 
+            return StatusCode(503, "Service unavailable");
         }
 
         try
@@ -114,21 +100,14 @@ public class PluginsController : ControllerBase
         }
     }
 
-    [Authorize(Policy = "AdminOnly")]
-    [HttpPost("edit")]
+    [ServiceFilter(typeof(AdminRequestAuthFilter))]
+    [HttpPut("metadata")]
     public async Task<IActionResult> EditPlugin([FromBody] PluginDTO dto)
     {
-        var userRole = await GetCurrentUserRoleAsync();
-        Console.WriteLine(userRole);
-        if (userRole is null or < UserRoles.Admin)
-        {
-            return Forbid();
-        }
-        var acquired = await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10));
-        if (!acquired)
+        if (!await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10)))
         {
             Console.WriteLine("Semaphore is not available");
-            return BadRequest("Busy. Please try again later.");
+            return StatusCode(503, "Service unavailable");
         }
 
         try
@@ -147,26 +126,25 @@ public class PluginsController : ControllerBase
         }
     }
 
-    [Authorize(Policy = "AdminOnly")]
-    [HttpPost("remove")]
-    public async Task<IActionResult> RemovePlugin([FromBody] PluginDTO request)
+    [ServiceFilter(typeof(AdminRequestAuthFilter))]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> RemovePlugin(Guid id)
     {
-        var userRole = await GetCurrentUserRoleAsync();
-        Console.WriteLine(userRole);
-        if (userRole is null or < UserRoles.Admin)
+        if (id == Guid.Empty)
         {
-            return Forbid();
+            return BadRequest("Invalid Plugin ID.");
         }
-        var acquired = await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10));
-        if (!acquired)
+        
+        if (!await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10)))
         {
             Console.WriteLine("Semaphore is not available");
-            return BadRequest("Busy. Please try again later.");
+            return StatusCode(503, "Service unavailable");
         }
+        
         try
         {
-            Console.WriteLine("Removing plugin with name: " + request.Name);
-            await _pluginService.RemovePlugin(request.PluginId);
+            Console.WriteLine("Removing plugin with id: " + id);
+            await _pluginService.RemovePlugin(id);
             return Ok();
         }
         catch (Exception e)
@@ -180,7 +158,8 @@ public class PluginsController : ControllerBase
     }
 
 
-    [HttpGet("getList")]
+    [ServiceFilter(typeof(AdminRequestAuthFilter))]
+    [HttpGet()]
     public async Task<IActionResult> GetList(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
@@ -188,11 +167,6 @@ public class PluginsController : ControllerBase
         [FromQuery] string order = "",
         [FromQuery] string search = "")
     {
-        var userRole = await GetCurrentUserRoleAsync();
-        if (userRole is null or < UserRoles.Admin)
-        {
-            return Forbid();
-        }
         page = Math.Max(0, page);
         pageSize = Math.Max(1, pageSize);
 
@@ -212,20 +186,14 @@ public class PluginsController : ControllerBase
         return Ok(plugins);
     }
 
-    [Authorize(Policy = "AdminOnly")]
-    [HttpPost("add")]
+    [ServiceFilter(typeof(AdminRequestAuthFilter))]
+    [HttpPost()]
     public async Task<IActionResult> UploadFiles([FromForm] UploadPluginRequest request)
     {
-        var userRole = await GetCurrentUserRoleAsync();
-        if (userRole is null or < UserRoles.Admin)
-        {
-            return Forbid();
-        }
-        var acquired = await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10));
-        if (!acquired)
+        if (!await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10)))
         {
             Console.WriteLine("Semaphore is not available");
-            return BadRequest("Busy. Please try again later.");
+            return StatusCode(503, "Service unavailable");
         }
 
         try
@@ -258,7 +226,7 @@ public class PluginsController : ControllerBase
     }
 
     //[ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Client)]
-    [HttpGet("{fileName}")]
+    [HttpGet("file/{fileName}")]
     public async Task<IActionResult> Get(string fileName)
     {
         try
@@ -270,20 +238,8 @@ public class PluginsController : ControllerBase
             return NotFound("File not found");
         }
     }
-
-    private async Task<UserRoles?> GetCurrentUserRoleAsync()
-    {
-        var userId = GetCurrentUserId();
-        if (userId == null)
-        {
-            return null;
-        }
-
-        var user = await _userService.GetById(userId.Value);
-        return user?.UserRole;
-    }
     
-    [HttpPost("[action]")]
+    [HttpPost("favorite")]
     public async Task<IActionResult> StarPlugin([FromBody] PluginDTO pluginDto)
     {
         var userId = GetCurrentUserId();
@@ -305,11 +261,14 @@ public class PluginsController : ControllerBase
         return Ok();
     }
     
-    [HttpPost("[action]")]
-    public async Task<IActionResult> UnstarPlugin([FromBody] PluginDTO pluginDto)
+    [HttpDelete("favorite/{pluginId}")]
+    public async Task<IActionResult> UnstarPlugin(Guid pluginId)
     {
+        if (pluginId == Guid.Empty)
+        {
+            return BadRequest("Invalid Plugin ID.");
+        }
         var userId = GetCurrentUserId();
-        Console.WriteLine(userId);
         if (userId == null)
         {
             return Unauthorized();
@@ -317,7 +276,7 @@ public class PluginsController : ControllerBase
 
         try
         {
-            await _pluginService.UnstarPlugin(pluginDto.PluginId, userId.Value);
+            await _pluginService.UnstarPlugin(pluginId, userId.Value);
         }
         catch (Exception e)
         {

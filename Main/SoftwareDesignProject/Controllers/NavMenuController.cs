@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MudBlazor;
 using SoftwareDesignProject.Services;
-using System.Security.Claims;
 
 namespace SoftwareDesignProject.Controllers;
 
@@ -11,20 +10,18 @@ namespace SoftwareDesignProject.Controllers;
 public class NavMenuController : Controller
 {
     private readonly IPluginService _pluginService;
-    private readonly IUserService _userService;
 
     public NavMenuController(
-        IPluginService pluginService,
-        IUserService userService)
+        IPluginService pluginService)
     {
         _pluginService = pluginService;
-        _userService = userService;
     }
 
-    [HttpGet("getHomeList")]
+    [ServiceFilter(typeof(GetUserInfoActionFilter))]
+    [HttpGet("home")]
     public async Task<IActionResult> GetHomeList()
     {
-        var userRole = await GetCurrentUserRoleAsync();
+        var userRole = HttpContext.Items["UserRole"] as UserRoles?;
         var plugins = await _pluginService.GetActiveList(userRole);
 
         var pluginItems = plugins.Select(dto => new HomeItem()
@@ -36,11 +33,10 @@ public class NavMenuController : Controller
             Icon = Icons.Material.Filled.List,
             IsPremium = dto.IsPremium ?? false
         });
-        
-        var userId = GetCurrentUserId();
+
         IEnumerable<Guid> favoriteItems;
-        if (userId != null)
-            favoriteItems = await _pluginService.GetStarredPluginUserById(userId.Value);
+        if (HttpContext.Items["UserId"] is Guid userId)
+            favoriteItems = await _pluginService.GetStarredPluginUserById(userId);
         else 
             favoriteItems = [];
 
@@ -52,10 +48,11 @@ public class NavMenuController : Controller
     }
 
 
-    [HttpGet("getList")]
-    public async Task<IActionResult> GetList()
+    [ServiceFilter(typeof(GetUserInfoActionFilter))]
+    [HttpGet("nav")]
+    public async Task<IActionResult> GetNavList()
     {
-        var userRole = await GetCurrentUserRoleAsync();
+        var userRole = HttpContext.Items["UserRole"] as UserRoles?;
         var plugins = await _pluginService.GetActiveList(userRole);
         var isAdmin = userRole == UserRoles.Admin;
 
@@ -99,11 +96,10 @@ public class NavMenuController : Controller
             Icon = Icons.Material.Filled.List,
             IsPremium = plugin.IsPremium ?? false
         }));
-        
-        var userId = GetCurrentUserId();
+
         IEnumerable<Guid> favoriteItems;
-        if (userId != null)
-            favoriteItems = await _pluginService.GetStarredPluginUserById(userId.Value);
+        if (HttpContext.Items["UserId"] is Guid userId)
+            favoriteItems = await _pluginService.GetStarredPluginUserById(userId);
         else 
             favoriteItems = [];
 
@@ -114,10 +110,11 @@ public class NavMenuController : Controller
         });
     }
 
+    [ServiceFilter(typeof(GetUserInfoActionFilter))]
     [HttpGet("search")]
     public async Task<IActionResult> Search([FromQuery] string queryValue)
     {
-        var userRole = await GetCurrentUserRoleAsync();
+        var userRole = HttpContext.Items["UserRole"] as UserRoles?;
         var plugins = await _pluginService.SearchPlugin(queryValue, userRole);
 
         List<NavItem> navItems = [];
@@ -132,23 +129,5 @@ public class NavMenuController : Controller
         }));
 
         return Ok(navItems);
-    }
-    
-    private Guid? GetCurrentUserId()
-    {
-        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Upn);
-        return Guid.TryParse(userIdClaim?.Value ?? string.Empty, out var res) ? res : null;
-    }
-    
-    private async Task<UserRoles?> GetCurrentUserRoleAsync()
-    {
-        var userId = GetCurrentUserId();
-        if (userId == null)
-        {
-            return null;
-        }
-
-        var user = await _userService.GetById(userId.Value);
-        return user?.UserRole;
     }
 }

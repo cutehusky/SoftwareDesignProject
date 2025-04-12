@@ -60,19 +60,4 @@ public class AuthController : ControllerBase
         }
         return Ok(new JwtResponse { Token = newToken });
     }
-
-    [HttpGet("test-db")]
-    public async Task<IActionResult> TestDatabaseConnection([FromServices] IDbConnection dbConnection)
-    {
-        try
-        {
-            dbConnection.Open();
-            return Ok("Database connection successful!");
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"Database connection failed: {ex.Message}");
-        }
-    }
-
 }

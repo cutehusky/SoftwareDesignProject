@@ -10,10 +10,10 @@ namespace SoftwareDesignProject.Client.Services;
 public class DynamicPageLoader: IDynamicPageLoader
 {
 
-    private HttpClient _httpClient;
-    private string _apiEndpoint;
-    private string _downloadEndpoint;
-    private string _getDetailEndpoint;
+    private readonly HttpClient _httpClient;
+    private readonly string _apiEndpoint;
+    private readonly string _downloadEndpoint;
+    private readonly string _getDetailEndpoint;
     
     public DynamicPageLoader(HttpClient httpClient,
         string apiEndpoint,
@@ -28,22 +28,21 @@ public class DynamicPageLoader: IDynamicPageLoader
 
     private string GetApiEndPoint(string id)
     {
-        return string.Format(_apiEndpoint, id);
+        return $"{_apiEndpoint}/{id}";
     }
     
     private string GetDownloadEndPoint(string id)
     {
-        return string.Format(_downloadEndpoint, id);
+        return $"{_downloadEndpoint}/{id}.dll";
     }
     
     private string GetDetailEndPoint(string id)
     {
-        return string.Format(_getDetailEndpoint, id);
+        return $"{_getDetailEndpoint}/{id}";
     }
     
     private async Task<PluginDTO> GetPlugin(string id)
     {
-        Console.WriteLine($"Getting Plugin in Server: " + GetDetailEndPoint(id));
         var response = await _httpClient.GetAsync(GetDetailEndPoint(id));
         if (!response.IsSuccessStatusCode)
             throw new HttpRequestException("Plugin is not valid", null, response.StatusCode);

@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-using CommonDTO;
-using Microsoft.AspNetCore.Authorization;
+﻿using CommonDTO;
 using Microsoft.AspNetCore.Mvc;
 using MudBlazor;
 using SoftwareDesignProject.Services;
@@ -19,6 +17,7 @@ public class UsersController : ControllerBase
         _userService = userService;
     }
 
+    [ServiceFilter(typeof(AdminRequestAuthFilter))]
     [HttpGet]
     public async Task<IActionResult> GetList(
         [FromQuery] int page = 1,
@@ -27,12 +26,6 @@ public class UsersController : ControllerBase
         [FromQuery] string order = "",
         [FromQuery] string search = "")
     {
-        var userRole = await GetCurrentUserRoleAsync();
-        if (userRole is null or < UserRoles.Admin)
-        {
-            return Forbid();
-        }
-        
         page = Math.Max(0, page);
         pageSize = Math.Max(1, pageSize);
 
@@ -52,15 +45,10 @@ public class UsersController : ControllerBase
         return Ok(users);
     }
 
-    [Authorize(Policy = "AdminOnly")]
+    [ServiceFilter(typeof(AdminRequestAuthFilter))]
     [HttpPut("role")]
     public async Task<IActionResult> UpdateRole([FromBody] UserDTO dto)
     {
-        var userRole = await GetCurrentUserRoleAsync();
-        if (userRole is null or < UserRoles.Admin)
-        {
-            return Forbid();
-        }
         if (!await UserSemaphore.WaitAsync(TimeSpan.FromSeconds(10)))
             return StatusCode(503, "Service unavailable");
 
@@ -79,15 +67,10 @@ public class UsersController : ControllerBase
         }
     }
 
-    [Authorize(Policy = "AdminOnly")]
+    [ServiceFilter(typeof(AdminRequestAuthFilter))]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var userRole = await GetCurrentUserRoleAsync();
-        if (userRole is null or < UserRoles.Admin)
-        {
-            return Forbid();
-        }
         try
         {
             await _userService.Delete(id);
@@ -99,15 +82,10 @@ public class UsersController : ControllerBase
         }
     }
 
-    [Authorize(Policy = "AdminOnly")]
+    [ServiceFilter(typeof(AdminRequestAuthFilter))]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] UserDTO user)
     {
-        var userRole = await GetCurrentUserRoleAsync();
-        if (userRole is null or < UserRoles.Admin)
-        {
-            return Forbid();
-        }
         try
         {
             await _userService.Add(user);
@@ -122,13 +100,19 @@ public class UsersController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
+        // TODO: not authorized
+        if (id == Guid.Empty)
+        {
+            return BadRequest("Invalid Plugin ID.");
+        }
         var user = await _userService.GetById(id);
         return user != null ? Ok(user) : NotFound();
     }
 
-    [HttpPut("upgrade")]
+    [HttpPut("premium")]
     public async Task<IActionResult> Upgrade([FromBody] Guid id)
     {
+        // TODO: not authorized
         if (!await UserSemaphore.WaitAsync(TimeSpan.FromSeconds(10)))
             return StatusCode(503, "Service unavailable");
         try
@@ -144,22 +128,5 @@ public class UsersController : ControllerBase
         {
             UserSemaphore.Release();
         }
-    }
-
-    private async Task<UserRoles?> GetCurrentUserRoleAsync()
-    {
-        var userId = GetCurrentUserId();
-        if (userId == null)
-        {
-            return null;
-        }
-        var user = await _userService.GetById(userId.Value);
-        return user?.UserRole;
-    }
-       
-    private Guid? GetCurrentUserId()
-    {
-        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Upn);
-        return Guid.TryParse(userIdClaim?.Value ?? string.Empty, out var res) ? res : null;
     }
 }

@@ -1,9 +1,7 @@
 using CommonDTO;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
-using SoftwareDesignProject.Client;
 using SoftwareDesignProject.Client.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -11,23 +9,23 @@ builder.Services.AddScoped(_ =>
     new HttpClient { BaseAddress = new Uri("http://localhost:5037/") });
 builder.Services.AddScoped<IDynamicPageLoader>(sp =>
     new DynamicPageLoader(sp.GetService<HttpClient>()!,
-        "/api/plugin/{0}",
-        "api/plugins/{0}.dll",
-        "api/plugins/getPlugin?id={0}"));
+        "/api/plugin",
+        "api/plugins/file",
+        "api/plugins"));
 builder.Services.AddScoped<INavMenuLoader>(sp =>
     new NavMenuLoader(sp.GetService<HttpClient>()!,
-        "api/navMenu/getList",
-        "api/navMenu/getHomeList",
+        "api/navMenu/nav",
+        "api/navMenu/home",
         "api/navMenu/search"));
 builder.Services.AddScoped<IPluginService>(sp =>
     new PluginService(sp.GetService<HttpClient>()!,
-        "api/plugins/getList?page={0}&pageSize={1}&sortBy={2}&order={3}&search={4}",
-        "api/plugins/add",
-        "api/plugins/edit",
-        "api/plugins/upgrade",
-        "api/plugins/remove",
-        "api/plugins/starPlugin",
-        "api/plugins/unstarPlugin"));
+        "api/plugins",
+        "api/plugins",
+        "api/plugins/metadata",
+        "api/plugins/file",
+        "api/plugins",
+        "api/plugins/favorite",
+        "api/plugins/favorite"));
 
 builder.Services.AddScoped<IUserService>(sp => new UserService(
     sp.GetService<HttpClient>()!,
@@ -35,7 +33,7 @@ builder.Services.AddScoped<IUserService>(sp => new UserService(
     updateRoleEndpoint: "/api/users/role",
     deleteEndpoint: "/api/users",
     addEndpoint: "/api/users",
-    upgradeEndpoint: "/api/users/upgrade",
+    upgradeEndpoint: "/api/users/premium",
     refreshTokenEndpoint: "/api/auth/refresh-token"
 ));
 builder.Services.AddSingleton<IFormatChecker, FormatChecker>();

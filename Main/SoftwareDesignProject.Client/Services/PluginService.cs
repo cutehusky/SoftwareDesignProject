@@ -39,7 +39,7 @@ public class PluginService: IPluginService
 
     public async Task Edit(PluginDTO dto)
     {
-        var response = await _httpClient.PostAsJsonAsync(_editEndpoint, dto);
+        var response = await _httpClient.PutAsJsonAsync(_editEndpoint, dto);
         if (!response.IsSuccessStatusCode)
         {
             var errorMessage = await response.Content.ReadAsStringAsync();
@@ -56,7 +56,7 @@ public class PluginService: IPluginService
         if (data.ServerDLL != null)
             multipartContent.Add(GetStreamContent(data.ServerDLL), "ServerDLL", data.ServerDLL.Name);
         multipartContent.Add(new StringContent(data.PluginId.ToString()), "PluginId");
-        var response = await _httpClient.PostAsync(_upgradeEndpoint, multipartContent);
+        var response = await _httpClient.PutAsync(_upgradeEndpoint, multipartContent);
         if (!response.IsSuccessStatusCode)
         {
             var errorMessage = await response.Content.ReadAsStringAsync();
@@ -68,8 +68,7 @@ public class PluginService: IPluginService
     private string GetListEndPoint(int page, int pageSize, string sortBy, 
         SortDirection order, string search = "")
     {
-        return string.Format(_getListEndpoint, page, pageSize, sortBy,
-            order.ToString().ToLower(), search);
+        return $"{_getListEndpoint}?page={page}&pageSize={pageSize}&sortBy={sortBy}&order={order.ToString().ToLower()}&search={search}";
     }
 
     public async Task<PaginationList<PluginDTO>> GetList(int page, int pageSize, 
@@ -88,10 +87,7 @@ public class PluginService: IPluginService
 
     public async Task Remove(Guid id)
     {
-        var response = await _httpClient.PostAsJsonAsync(_removeEndpoint, new PluginDTO()
-        {
-            PluginId = id
-        });
+        var response = await _httpClient.DeleteAsync($"{_removeEndpoint}/{id}");
         if (!response.IsSuccessStatusCode)
         {
             var errorMessage = await response.Content.ReadAsStringAsync();
@@ -116,10 +112,7 @@ public class PluginService: IPluginService
 
     public async Task UnstarPlugin(Guid pluginId)
     {
-        var response = await _httpClient.PostAsJsonAsync(_unstarEndpoint, new PluginDTO()
-        {
-            PluginId = pluginId
-        });
+        var response = await _httpClient.DeleteAsync($"{_unstarEndpoint}/{pluginId}");
         if (!response.IsSuccessStatusCode)
         {
             var errorMessage = await response.Content.ReadAsStringAsync();
