@@ -44,11 +44,9 @@
     {
         var userId = _authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Upn)?.Value;
         var token = await CustomAuthStateProvider.GetToken();
-        Console.WriteLine(token);
 
         try
         {
-            Console.WriteLine($"UserId: {userId}");
             if (Guid.TryParse(userId, out var userGuid))
             {
                 await UserService.Upgrade(userGuid);
@@ -69,7 +67,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"An error occurred: {ex.Message}");
+            Console.WriteLine(ex);
         }
     }
 

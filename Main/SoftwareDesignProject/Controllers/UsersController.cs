@@ -11,10 +11,12 @@ public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
     private static readonly SemaphoreSlim UserSemaphore = new(1, 1);
+    private readonly ILogger<UsersController> _logger;
 
-    public UsersController(IUserService userService)
+    public UsersController(IUserService userService, ILogger<UsersController> logger)
     {
         _userService = userService;
+        _logger = logger;
     }
 
     [ServiceFilter(typeof(AdminRequestAuthFilter))]
@@ -39,7 +41,7 @@ public class UsersController : ControllerBase
             sortDirection = SortDirection.Descending;
         }
 
-        Console.WriteLine("Getting user list with page: " + page + " and pageSize: " + pageSize +
+        _logger.LogTrace("Getting user list with page: " + page + " and pageSize: " + pageSize +
                           " and sortBy: " + sortBy + " and order: " + sortDirection);
         var users = await _userService.GetList(page, pageSize, sortBy, sortDirection, search);
         return Ok(users);
@@ -50,16 +52,27 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> UpdateRole([FromBody] UserDTO dto)
     {
         if (!await UserSemaphore.WaitAsync(TimeSpan.FromSeconds(10)))
+        {
+            _logger.LogError("UserSemaphore is not available");
             return StatusCode(503, "Service unavailable");
+        }
 
         try
         {
+            _logger.LogInformation("Updating user role with id: " + dto.UserId);
             await _userService.UpdateUserRole(dto);
+            _logger.LogInformation($"User {dto.UserId} role updated successfully");
             return Ok();
         }
         catch (KeyNotFoundException ex)
         {
+            _logger.LogError(ex.Message);
             return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to update user role: " + ex.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
         }
         finally
         {
@@ -71,14 +84,27 @@ public class UsersController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
+        if (id == Guid.Empty)
+        {
+            return BadRequest("Invalid User ID.");
+        }
+        
         try
         {
+            _logger.LogInformation("Deleting user with ID: " + id);
             await _userService.Delete(id);
+            _logger.LogInformation($"User {id} deleted successfully");
             return Ok();
         }
         catch (KeyNotFoundException ex)
         {
+            _logger.LogError(ex.Message);
             return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to delete user: " + ex.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
         }
     }
 
@@ -88,12 +114,25 @@ public class UsersController : ControllerBase
     {
         try
         {
+            _logger.LogInformation("Creating new user");
             await _userService.Add(user);
+            _logger.LogInformation($"User {user.UserId} created successfully");
             return CreatedAtAction(nameof(GetById), new { id = user.UserId }, user);
+        }
+        catch (ArgumentNullException ex)
+        {
+            _logger.LogError(ex.Message);
+            return BadRequest(ex.Message);
         }
         catch (InvalidOperationException ex)
         {
+            _logger.LogError(ex.Message);
             return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to create user: " + ex.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
         }
     }
 
@@ -117,12 +156,20 @@ public class UsersController : ControllerBase
             return StatusCode(503, "Service unavailable");
         try
         {
+            _logger.LogInformation("Upgrading premium for user with ID: " + id);
             await _userService.Upgrade(id);
+            _logger.LogInformation($"User {id} upgraded to premium successfully");
             return Ok();
         }
         catch (KeyNotFoundException ex)
         {
+            _logger.LogError(ex.Message);
             return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to upgrade user to premium: " + ex.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
         }
         finally
         {

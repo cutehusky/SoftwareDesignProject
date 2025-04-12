@@ -14,23 +14,46 @@ public class PluginsController : ControllerBase
 {
     private readonly DynamicPluginManager _manager;
     private readonly IPluginService _pluginService;
+    private readonly ILogger<PluginsController> _logger;
 
     private static readonly SemaphoreSlim PluginSemaphore = new(1, 1);
 
     public PluginsController(
+        ILogger<PluginsController> logger,
         DynamicPluginManager manager,
         IPluginService pluginService)
     {
         _manager = manager;
         _pluginService = pluginService;
+        _logger = logger;
     }
 
     [ServiceFilter(typeof(AdminRequestAuthFilter))]
     [HttpPut("reload")]
     public async Task<IActionResult> Load()
     {
-        await _manager.LoadAllAssemblies();
-        return Ok(new { message = "Server Plugin Reloaded" });
+        if (!await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10)))
+        {
+            _logger.LogError("Semaphore is not available");
+            return StatusCode(503, "Service unavailable");
+        } 
+        
+        try
+        {
+            _logger.LogInformation("Reloading server plugins");
+            await _manager.LoadAllAssemblies();
+            _logger.LogInformation("Server plugins reloaded successfully");
+            return Ok(new { message = "Server Plugin Reloaded" });
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to reload server plugins: {Message}", e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+        }
+        finally
+        {
+            PluginSemaphore.Release();
+        }
     }
 
     [ServiceFilter(typeof(GetUserInfoActionFilter))]
@@ -39,7 +62,7 @@ public class PluginsController : ControllerBase
     {
         if (id == Guid.Empty)
         {
-            return BadRequest("Invalid Plugin ID.");
+            return BadRequest($"Invalid Plugin ID: {id}");
         }
 
         var plugin = await _pluginService.GetPluginById(id);
@@ -68,30 +91,30 @@ public class PluginsController : ControllerBase
 
         if (!await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10)))
         {
-            Console.WriteLine("Semaphore is not available"); 
+            _logger.LogError("Semaphore is not available"); 
             return StatusCode(503, "Service unavailable");
         }
 
         try
         {
-            Console.WriteLine("Upgrading plugin with name: " + request.PluginId);
+            _logger.LogInformation($"Upgrading plugin with id: {request.PluginId}");
             await _pluginService.UpgradePlugin(request.PluginId, request.ClientDLL, request.ServerDLL);
+            _logger.LogInformation($"Plugin {request.PluginId} upgraded successfully");
             return Ok();
         }
         catch (InvalidDataException e)
         {
-            return BadRequest(e.Message);
-        }
-        catch (InvalidOperationException e)
-        {
+            _logger.LogError(e.Message);
             return BadRequest(e.Message);
         }
         catch (IOException e)
         {
+            _logger.LogError(e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
         }
         catch (Exception e)
         {
+            _logger.LogError(e, "Failed to upgrade plugins: {Message}", e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
         }
         finally
@@ -106,19 +129,26 @@ public class PluginsController : ControllerBase
     {
         if (!await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10)))
         {
-            Console.WriteLine("Semaphore is not available");
+            _logger.LogError("Semaphore is not available");
             return StatusCode(503, "Service unavailable");
         }
 
         try
         {
-            Console.WriteLine("Editing plugin with name: " + dto.Name);
+            _logger.LogInformation($"Editing plugin with id: {dto.PluginId}");
             await _pluginService.EditPlugin(dto);
+            _logger.LogInformation($"Plugin {dto.PluginId} edited successfully");
             return Ok();
         }
-        catch (Exception ex)
+        catch (InvalidOperationException e)
         {
-            return BadRequest("Error: " + ex.Message);
+            _logger.LogError(e.Message);
+            return BadRequest(e.Message);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Failed to edit plugin: {Message}", e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
         }
         finally
         {
@@ -137,19 +167,26 @@ public class PluginsController : ControllerBase
         
         if (!await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10)))
         {
-            Console.WriteLine("Semaphore is not available");
+            _logger.LogError("Semaphore is not available");
             return StatusCode(503, "Service unavailable");
         }
         
         try
         {
-            Console.WriteLine("Removing plugin with id: " + id);
+            _logger.LogInformation($"Removing plugin with id: {id}");
             await _pluginService.RemovePlugin(id);
+            _logger.LogInformation($"Plugin {id} removed successfully");
             return Ok();
+        }
+        catch (InvalidOperationException e)
+        {
+            _logger.LogError(e.Message);
+            return BadRequest(e.Message);
         }
         catch (Exception e)
         {
-            return BadRequest(e.Message);
+            _logger.LogError(e, "Failed to remove plugin: {Message}", e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
         }
         finally
         {
@@ -180,7 +217,7 @@ public class PluginsController : ControllerBase
             sortDirection = SortDirection.Descending;
         }
 
-        Console.WriteLine("Getting plugin list with page: " + page + " and pageSize: " + pageSize +
+        _logger.LogTrace("Getting plugin list with page: " + page + " and pageSize: " + pageSize +
                           " and sortBy: " + sortBy + " and order: " + sortDirection);
         var plugins = await _pluginService.GetList(page, pageSize, sortBy, sortDirection, search);
         return Ok(plugins);
@@ -192,31 +229,36 @@ public class PluginsController : ControllerBase
     {
         if (!await PluginSemaphore.WaitAsync(TimeSpan.FromSeconds(10)))
         {
-            Console.WriteLine("Semaphore is not available");
+            _logger.LogInformation("Semaphore is not available");
             return StatusCode(503, "Service unavailable");
         }
 
         try
         {
-            Console.WriteLine("Installing plugin with name: " + request.Name);
+            _logger.LogInformation($"Installing plugin with name: {request.Name}");
             await _pluginService.AddPlugin(request.Name, request.Description,
                 request.Category, request.IsPremium, request.ClientDLL, request.ServerDLL);
+            _logger.LogInformation($"Plugin {request.Name} installed successfully");
             return Ok();
         }
         catch (InvalidDataException e)
         {
+            _logger.LogError(e.Message);
             return BadRequest(e.Message);
         }
         catch (InvalidOperationException e)
         {
+            _logger.LogError(e.Message);
             return BadRequest(e.Message);
         }
         catch (IOException e)
         {
+            _logger.LogError(e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
         }
         catch (Exception e)
         {
+            _logger.LogError(e, "Failed to install plugin: {Message}", e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
         }
         finally
@@ -252,10 +294,15 @@ public class PluginsController : ControllerBase
         {
             await _pluginService.StarPlugin(pluginDto.PluginId, userId.Value);
         }
+        catch (InvalidOperationException e)
+        {
+            _logger.LogError(e.Message);
+            return BadRequest(e.Message);
+        }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            return BadRequest("Failed to star plugin.");
+            _logger.LogError("Failed to star plugin: {Message}", e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
         }
 
         return Ok();
@@ -277,11 +324,16 @@ public class PluginsController : ControllerBase
         try
         {
             await _pluginService.UnstarPlugin(pluginId, userId.Value);
+        } 
+        catch (InvalidOperationException e)
+        {
+            _logger.LogError(e.Message);
+            return BadRequest(e.Message);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            return BadRequest("Failed to unstar plugin.");
+            _logger.LogError("Failed to unstar plugin: {Message}", e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
         }
 
         return Ok();

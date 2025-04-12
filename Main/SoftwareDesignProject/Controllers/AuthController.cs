@@ -10,21 +10,28 @@ namespace SoftwareDesignProject.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, ILogger<AuthController> logger)
     {
         _authService = authService;
+        _logger = logger;
     }
 
     [HttpPost("signin")]
     public async Task<IActionResult> SignIn([FromBody] LoginRequest request)
     {
-        Console.WriteLine("Sign in request received");
+        _logger.LogInformation("Sign in request received for user: {Username}", request.Username);
+        
         var token = await _authService.AuthenticateAsync(request.Username, request.Password);
 
         if (token == null)
+        {
+            _logger.LogWarning("Invalid credentials for user: {Username}", request.Username);
             return Unauthorized(new { message = "Invalid credentials" });
+        }
 
+        _logger.LogInformation("User {Username} signed in successfully", request.Username);
         return Ok(new JwtResponse { Token = token });
     }
 
@@ -40,9 +47,11 @@ public class AuthController : ControllerBase
 
         if (!success)
         {
+            _logger.LogWarning("Failed to create user {Username}", request.Username);
             return BadRequest(new { message = "Username already exists" });
         }
 
+        _logger.LogInformation("User {Username} created successfully", request.Username);
         return Ok(new { message = "Account created successfully" });
     }
 

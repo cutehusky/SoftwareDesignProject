@@ -10,6 +10,7 @@ using SoftwareDesignProject.Repositories;
 using SoftwareDesignProject.Services.ServerPluginManagement;
 using CommonDTO;
 using SoftwareDesignProject.Controllers;
+using SoftwareDesignProject.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -113,6 +114,8 @@ app.UseAntiforgery();
 // Add authentication and authorization middleware here 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<RequestLoggingMiddleware>();
 
 // Maps assets and endpoints
 app.MapStaticAssets();

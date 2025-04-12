@@ -43,7 +43,6 @@ public class PluginService: IPluginService
         if (!response.IsSuccessStatusCode)
         {
             var errorMessage = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Error: {response.StatusCode}, Message: {errorMessage}");
             throw new HttpRequestException($"Error: {response.StatusCode}, Message: {errorMessage}");
         }
     }
@@ -60,7 +59,6 @@ public class PluginService: IPluginService
         if (!response.IsSuccessStatusCode)
         {
             var errorMessage = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Error: {response.StatusCode}, Message: {errorMessage}");
             throw new HttpRequestException($"Error: {response.StatusCode}, Message: {errorMessage}");
         }
     }
@@ -79,7 +77,6 @@ public class PluginService: IPluginService
             GetListEndPoint(page, pageSize, sortBy, order, search), cancellationToken);
         if (res == null)
         {
-            Console.WriteLine("Error: No data received from server");
             throw new HttpRequestException("Error: No data received from server");
         }
         return res;
@@ -91,7 +88,6 @@ public class PluginService: IPluginService
         if (!response.IsSuccessStatusCode)
         {
             var errorMessage = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Error: {response.StatusCode}, Message: {errorMessage}");
             throw new HttpRequestException($"Error: {response.StatusCode}, Message: {errorMessage}");
         }
     }
@@ -105,7 +101,6 @@ public class PluginService: IPluginService
         if (!response.IsSuccessStatusCode)
         {
             var errorMessage = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Error: {response.StatusCode}, Message: {errorMessage}");
             throw new HttpRequestException($"Error: {response.StatusCode}, Message: {errorMessage}", null, response.StatusCode);
         }
     }
@@ -116,7 +111,6 @@ public class PluginService: IPluginService
         if (!response.IsSuccessStatusCode)
         {
             var errorMessage = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Error: {response.StatusCode}, Message: {errorMessage}");
             throw new HttpRequestException($"Error: {response.StatusCode}, Message: {errorMessage}", null, response.StatusCode);
         }
     }
@@ -136,7 +130,6 @@ public class PluginService: IPluginService
         if (!response.IsSuccessStatusCode)
         {
             var errorMessage = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Error: {response.StatusCode}, Message: {errorMessage}");
             throw new HttpRequestException($"Error: {response.StatusCode}, Message: {errorMessage}");
         }
     }

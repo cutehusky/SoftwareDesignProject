@@ -11,11 +11,13 @@ public class AuthService : IAuthService
 {
     private readonly IConfiguration _config;
     private readonly IUserRepository _userRepository;
+    private readonly ILogger<AuthService> _logger;
 
-    public AuthService(IConfiguration config, IUserRepository userRepository)
+    public AuthService(IConfiguration config, IUserRepository userRepository, ILogger<AuthService> logger)
     {
         _config = config;
         _userRepository = userRepository;
+        _logger = logger;
     }
 
     public async Task<string?> AuthenticateAsync(string username, string password)
@@ -48,10 +50,11 @@ public class AuthService : IAuthService
     public async Task<string?> RefreshToken(string oldToken)
     {
         var user = await GetUserByToken(oldToken);
-        Console.WriteLine("User from token: " + user?.Username);
+        
+        _logger.LogDebug("User  {Username} from token: {token}", user?.Username, oldToken);
         if (user == null) return null;
         var newToken = GenerateJwtToken(user);
-        Console.WriteLine("New token: " + newToken);
+        _logger.LogDebug("New token {newToken} generated for user: {Username} ", newToken, user.Username);
         return newToken;
     }
 

@@ -61,7 +61,6 @@ public class DynamicPageLoader: IDynamicPageLoader
         Type? entryPoint = null;
         foreach (var type in assembly.GetExportedTypes())
         {
-            Console.WriteLine(type.FullName);
             if ((typeof(IConfig)).IsAssignableFrom(type) && type.IsClass)
             {
                 IConfig config = (IConfig) Activator.CreateInstance(type)!;

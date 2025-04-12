@@ -10,11 +10,13 @@ namespace SoftwareDesignProject.Controllers;
 public class NavMenuController : Controller
 {
     private readonly IPluginService _pluginService;
+    private readonly ILogger<NavMenuController> _logger;
 
     public NavMenuController(
-        IPluginService pluginService)
+        IPluginService pluginService, ILogger<NavMenuController> logger)
     {
         _pluginService = pluginService;
+        _logger = logger;
     }
 
     [ServiceFilter(typeof(GetUserInfoActionFilter))]

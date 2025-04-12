@@ -15,13 +15,16 @@ public class PluginService : IPluginService
     private readonly DynamicPluginManager _pluginManager;
     private readonly string _clientUploadPath = "ClientPlugins";
     private readonly string _serverUploadPath = "BackendPlugins";
+    private readonly ILogger<PluginService> _logger;
 
     public PluginService(IPluginRepository pluginRepository, 
         IFileStorage fileStorage,
-        DynamicPluginManager pluginManager)
+        DynamicPluginManager pluginManager, 
+        ILogger<PluginService> logger)
     {
         _pluginRepository = pluginRepository;
         _pluginManager = pluginManager;
+        _logger = logger;
         _fileStorage = fileStorage;
     }
 
@@ -47,6 +50,7 @@ public class PluginService : IPluginService
 
     private async Task Rollback()
     {
+        _logger.LogWarning("Rolling back changes");
         while (_rollbackActions.Count > 0)
         {
             var action = _rollbackActions.Pop();
@@ -56,7 +60,7 @@ public class PluginService : IPluginService
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                _logger.LogError("Rollback action failed: {message}", e.Message);
             }
         }
     }
@@ -69,12 +73,10 @@ public class PluginService : IPluginService
         IFormFile clientDLL,
         IFormFile? serverDLL)
     {
-
         var clientUid = await GetClientPluginUid(clientDLL);
         if (clientUid == null)
         {
-            Console.WriteLine("Fail to load Client DLL");
-            throw new InvalidDataException("Fail to load Client DLL");
+            throw new InvalidDataException("Failed to load Client DLL");
         }
 
         Guid? serverUid = null;
@@ -83,13 +85,11 @@ public class PluginService : IPluginService
             serverUid = await GetServerPluginUid(serverDLL);
             if (serverUid == null)
             {
-                Console.WriteLine("Fail to load Server DLL");
-                throw new InvalidDataException("Fail to load Server DLL");
+                throw new InvalidDataException("Failed to load Server DLL");
             }
 
             if (serverUid != clientUid)
             {
-                Console.WriteLine("Server and client dll must have same id");
                 throw new InvalidDataException("Server and client dll must have same id");
             }
         }
@@ -105,30 +105,28 @@ public class PluginService : IPluginService
 
         if (!res)
         {
-            Console.WriteLine("Fail to insert to database");
-            throw new InvalidOperationException("Fail to insert to database");
+            throw new InvalidOperationException("Failed to insert to database");
         }
 
         _rollbackActions.Push(async () =>
         {
             if (!await _pluginRepository.Remove((Guid)clientUid))
             {
-                Console.WriteLine("Fail to delete from database");
+                throw new InvalidOperationException("Failed to delete from database");
             }
         });
 
         if (!await _fileStorage.SaveFileAsync(clientDLL, clientUid + ".dll", _clientUploadPath))
         {
             await Rollback();
-            Console.WriteLine("Fail to save Client Plugin");
-            throw new IOException("Fail to save Client Plugin");
+            throw new IOException("Failed to save Client Plugin");
         }
 
         _rollbackActions.Push(async () =>
         {
             if (!await _fileStorage.RemoveFile(clientUid + ".dll", _clientUploadPath))
             {
-                Console.WriteLine("Fail to delete Client Plugin");
+                throw new IOException("Failed to delete Client Plugin");
             }
         });
 
@@ -137,12 +135,10 @@ public class PluginService : IPluginService
             if (!await _fileStorage.SaveFileAsync(serverDLL, serverUid + ".dll", _serverUploadPath))
             {
                 await Rollback();
-                Console.WriteLine("Fail to save Client Plugin");
-                throw new IOException("Fail to save Client Plugin");
+                throw new IOException("Failed to save Client Plugin");
             }
             await _pluginManager.LoadAllAssemblies();
         }
-        Console.WriteLine("Plugin added successfully");
     }
 
     public async Task EditPlugin(PluginDTO dto)
@@ -150,7 +146,7 @@ public class PluginService : IPluginService
         var res = await _pluginRepository.Update(dto);
         if (!res)
         {
-            throw new InvalidOperationException("Fail to update in database");
+            throw new InvalidOperationException("Failed to update in database");
         }
 
         if (dto.IsEnabled != null
@@ -168,7 +164,6 @@ public class PluginService : IPluginService
             await _pluginManager.LoadAllAssemblies();
             return;
         }
-        Console.WriteLine("Plugin edited successfully");
     }
 
     public async Task RemovePlugin(Guid id)
@@ -176,15 +171,13 @@ public class PluginService : IPluginService
         var res = await _pluginRepository.Remove(id);
         if (!res)
         {
-            Console.WriteLine("Fail to delete from database");
-            throw new InvalidOperationException("Fail to delete from database");
+            throw new InvalidOperationException("Failed to delete from database");
         }
 
         await _fileStorage.RemoveFile(id + ".dll", _clientUploadPath);
         await _fileStorage.RemoveFile(id + ".dll", _serverUploadPath);
         if (_pluginManager.CheckLoadedPlugin(id.ToString()))
             await _pluginManager.LoadAllAssemblies();
-        Console.WriteLine("Plugin removed successfully");
     }
 
     public Task<PluginDTO?> GetPluginById(Guid id)
@@ -201,13 +194,11 @@ public class PluginService : IPluginService
             clientUid = GetClientPluginUid(clientDll).Result;
             if (clientUid == null)
             {
-                Console.WriteLine("Fail to load Client DLL");
-                throw new InvalidDataException("Fail to load Client DLL");
+                throw new InvalidDataException("Failed to load Client DLL");
             }
 
             if (pluginId != clientUid)
             {
-                Console.WriteLine("Plugin ID and Client DLL ID must be same");
                 throw new InvalidDataException("Plugin ID and Client DLL ID must be same");
             }
         }
@@ -218,13 +209,11 @@ public class PluginService : IPluginService
             serverUid = GetServerPluginUid(serverDll).Result;
             if (serverUid == null)
             {
-                Console.WriteLine("Fail to load Server DLL");
-                throw new InvalidDataException("Fail to load Server DLL");
+                throw new InvalidDataException("Failed to load Server DLL");
             }
 
             if (serverUid != pluginId)
             {
-                Console.WriteLine("Plugin ID and Server DLL ID must be same");
                 throw new InvalidDataException("Plugin ID and Server DLL ID must be same");
             }
         }
@@ -236,19 +225,18 @@ public class PluginService : IPluginService
             {
                 if (!await _fileStorage.RemoveFile(pluginId + ".dll", _clientUploadPath))
                 {
-                    Console.WriteLine("Fail to delete Client Plugin");
+                    throw new IOException("Failed to delete Client Plugin");
                 }
                 if (!await _fileStorage.RestoreFile(pluginId + ".dll", _clientUploadPath))
                 {
-                    Console.WriteLine("Fail to restore Client Plugin");
+                    throw new IOException("Failed to restore Client Plugin");
                 }
             });
 
             if (!await _fileStorage.SaveFileAsync(clientDll, clientUid + ".dll", _clientUploadPath))
             {
                 await Rollback();
-                Console.WriteLine("Fail to save Client Plugin");
-                throw new IOException("Fail to save Client Plugin");
+                throw new IOException("Failed to save Client Plugin");
             }
         }
 
@@ -259,11 +247,11 @@ public class PluginService : IPluginService
             {
                 if (!await _fileStorage.RemoveFile(pluginId + ".dll", _serverUploadPath))
                 {
-                    Console.WriteLine("Fail to delete Server Plugin");
+                    throw new IOException("Failed to delete Server Plugin");
                 }
                 if (!await _fileStorage.RestoreFile(pluginId + ".dll", _serverUploadPath))
                 {
-                    Console.WriteLine("Fail to restore Server Plugin");
+                    throw new IOException("Failed to restore Server Plugin");
                 }
                 await _pluginManager.LoadAllAssemblies();
             });
@@ -271,15 +259,13 @@ public class PluginService : IPluginService
             if (!await _fileStorage.SaveFileAsync(serverDll, serverUid + ".dll", _serverUploadPath))
             {
                 await Rollback();
-                Console.WriteLine("Fail to save Client Plugin");
-                throw new IOException("Fail to save Client Plugin");
+                throw new IOException("Failed to save Client Plugin");
             }
             await _pluginManager.LoadAllAssemblies();
         }
 
         await _fileStorage.RemoveBackup(pluginId + ".dll", _clientUploadPath);
         await _fileStorage.RemoveBackup(pluginId + ".dll", _serverUploadPath);
-        Console.WriteLine("Plugin upgraded successfully");
     }
 
     public Task<List<Guid>> GetStarredPluginUserById(Guid id)
@@ -292,8 +278,7 @@ public class PluginService : IPluginService
         var res = await _pluginRepository.StarPlugin(pluginId, userId);
         if (!res)
         {
-            Console.WriteLine("Fail to star plugin");
-            throw new InvalidOperationException("Fail to star plugin");
+            throw new InvalidOperationException("Failed to star plugin");
         }
     }
 
@@ -302,8 +287,7 @@ public class PluginService : IPluginService
         var res = await _pluginRepository.UnstarPlugin(pluginId, userId);
         if (!res)
         {
-            Console.WriteLine("Fail to unstar plugin");
-            throw new InvalidOperationException("Fail to unstar plugin");
+            throw new InvalidOperationException("Failed to unstar plugin");
         }
     }
 
@@ -312,8 +296,7 @@ public class PluginService : IPluginService
         var res = await _fileStorage.GetFile(fileName, _clientUploadPath);
         if (res == null)
         {
-            Console.WriteLine("Fail to get Client Plugin File");
-            throw new FileNotFoundException("Fail to get Client Plugin File");
+            throw new FileNotFoundException("Failed to get Client Plugin File");
         }
         return res;
     }
