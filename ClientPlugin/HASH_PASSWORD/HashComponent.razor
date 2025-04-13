@@ -17,9 +17,12 @@
 
 <MudDivider DividerType="DividerType.Middle" Class="my-6"/>
 
-<MudAlert Severity="Severity.Error" Class="mb-3" Style="@AlertStyle">
+@if (!string.IsNullOrEmpty(_alertText))
+{
+<MudAlert Severity="Severity.Error" Class="mb-3">
     @_alertText
 </MudAlert>
+}
 
 <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
     <MudTextField class="my-6" @bind-Value="_outputBcryptHash" Label="Hashed" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
@@ -35,8 +38,6 @@
     private string _outputBcryptHash = "";
     private bool _showCopyToolTip = false;
     
-    private bool _showAlert = false;
-    private string AlertStyle => _showAlert ? "display: block;" : "display: none;";
     private string _alertText = "";
     
     private async Task CopyToClipboard(string textToCopy)
@@ -89,14 +90,12 @@
     {
         _outputBcryptHash = responseData.hashed;
         _showCopyToolTip = true;
-        _showAlert = false;
         _alertText = "";
     }
 
     private void SetError(string error)
     {
         _alertText = error;
-        _showAlert = true;
         _showCopyToolTip = false;
         _outputBcryptHash = "";
     }

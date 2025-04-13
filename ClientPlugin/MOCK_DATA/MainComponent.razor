@@ -28,7 +28,7 @@
 
     <div class="d-flex flex-grow-1 gap-4 justify-center align-start">
         <MudTextField Lines="10" class="my-3" AutoGrow="true" @bind-Value="_result" Label="Mock Data" Variant="Variant.Outlined" ReadOnly="true"></MudTextField>
-        <MudTooltip ShowOnClick="false" ShowOnFocus="true" ShowOnHover="false" Text="Copied">
+        <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyTooltip" ShowOnHover="false" Text="Copied">
             <MudIconButton class="my-4" Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_result)"/>
         </MudTooltip>
     </div>
@@ -40,6 +40,7 @@
     private string _result = string.Empty;
     private string _alertText = string.Empty;
     private bool _scrollTo = false;
+    private bool _showCopyTooltip = false;
     
     private void Generate()
     {
@@ -50,6 +51,7 @@
             _alertText = string.Empty;
             _result = token.ToString();
             _scrollTo = true;
+            _showCopyTooltip = true;
             StateHasChanged();
         }
         catch (Exception ex)
@@ -58,6 +60,7 @@
             _alertText = "Invalid JSON format.";
             _result = "";
             _scrollTo = true;
+            _showCopyTooltip = false;
             StateHasChanged();
         }
     }

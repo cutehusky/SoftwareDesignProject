@@ -1,0 +1,134 @@
+﻿@using System.Net
+@using Microsoft.JSInterop
+@using MudBlazor
+@inject  IJSRuntime JS
+
+<MudPaper Style="backdrop-filter: blur(5px); opacity: 0.75; "   Class="pa-3 mb-4">
+    <MudText Typo="Typo.h5" Style="margin: 20px">IPv4 Address Converter</MudText>
+    <div class="my-6 d-flex flex-grow-1 gap-4 justify-center align-center">
+        <MudTextField Lines="1" class="my-3" @bind-Value="_ipv4" Label="IPv4" Variant="Variant.Outlined"></MudTextField>
+        <MudButton Color="Color.Inherit" Variant="Variant.Outlined" Size="Size.Large" OnClick="Get">Get</MudButton>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_alertText))
+    {
+    <MudAlert Severity="Severity.Error" Class="mb-3">
+        @_alertText
+    </MudAlert>
+    }
+    
+    <MudDivider DividerType="DividerType.Middle" Class="my-6"/>
+
+    <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
+        <MudTextField class="my-3" @bind-Value="_dec" Label="Dec" Variant="Variant.Outlined" ReadOnly="true" Lines="1"></MudTextField>
+        <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
+            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_dec)" />
+        </MudTooltip>
+    </div>
+    
+    <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
+        <MudTextField class="my-3" @bind-Value="_hex" Label="Hex" Variant="Variant.Outlined" ReadOnly="true" Lines="1"></MudTextField>
+        <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
+            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_hex)" />
+        </MudTooltip>
+    </div>
+
+    <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
+        <MudTextField class="my-3" @bind-Value="_bin" Label="Bin" Variant="Variant.Outlined" ReadOnly="true" Lines="1"></MudTextField>
+        <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
+            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_bin)" />
+        </MudTooltip>
+    </div>
+    
+    <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
+        <MudTextField class="my-3" @bind-Value="_ipv6Full" Label="IPv6" Variant="Variant.Outlined" ReadOnly="true" Lines="1"></MudTextField>
+        <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
+            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_ipv6Full)" />
+        </MudTooltip>
+    </div>
+    
+    <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
+        <MudTextField class="my-3" @bind-Value="_ipv6Short" Label="IPv6 (Short)" Variant="Variant.Outlined" ReadOnly="true" Lines="1"></MudTextField>
+        <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
+            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_ipv6Short)" />
+        </MudTooltip>
+    </div>
+</MudPaper>
+
+@code
+{
+    private string _ipv4 = string.Empty;
+    private string _alertText = string.Empty;
+    private bool _showCopyToolTip;
+    
+    private string _dec = string.Empty;
+    private string _hex = string.Empty;
+    private string _bin = string.Empty;
+    private string _ipv6Full = string.Empty;
+    private string _ipv6Short = string.Empty;
+
+    private void Get()
+    {
+        try {
+            var ip = IPAddress.Parse(_ipv4);
+            var ipv6 = ip.MapToIPv6();
+            
+            _dec = GetDecimal(ip.GetAddressBytes());
+            _hex = GetHex(ip.GetAddressBytes());
+            _bin = GetBinary(ip.GetAddressBytes());
+            _ipv6Full = ExpandIPv6(ipv6);
+            _ipv6Short = ipv6.ToString();
+            
+            _alertText = "";
+            _showCopyToolTip = true;
+        }
+        catch (FormatException)
+        {
+            _showCopyToolTip = false;
+            _alertText = "Invalid IPv4 format.";
+        }
+        catch (Exception ex)
+        {
+            _showCopyToolTip = false;
+            _alertText = "An unexpected error occurred: " + ex.Message;
+        }
+    }
+   
+    static string ExpandIPv6(IPAddress ip)
+    {
+        var bytes = ip.GetAddressBytes();
+
+        var blocks = new string[8];
+        for (var i = 0; i < 8; i++)
+        {
+            var segment = BitConverter.ToUInt16(bytes, i * 2);
+            blocks[i] = segment.ToString("x4");
+        }
+        return string.Join(":", blocks);
+    }
+    
+    static string GetDecimal(byte[] bytes)
+    {
+        if (BitConverter.IsLittleEndian)
+            Array.Reverse(bytes);
+        return BitConverter.ToUInt32(bytes, 0).ToString();
+    }
+    
+    static string GetHex(byte[] bytes)
+    {
+        if (BitConverter.IsLittleEndian)
+            Array.Reverse(bytes);
+        return BitConverter.ToUInt32(bytes, 0).ToString("X2");
+    }
+    
+    static string GetBinary(byte[] bytes)
+    {
+        return string.Join("", bytes.Select(b => Convert.ToString(b, 2).PadLeft(8, '0')));
+    }  
+    
+    private async Task CopyToClipboard(string textToCopy)
+    {
+        if (textToCopy.Length > 0)
+            await JS.InvokeVoidAsync("copyToClipboard", textToCopy);
+    }
+}

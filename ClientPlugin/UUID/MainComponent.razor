@@ -33,7 +33,7 @@
     
     <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
         <MudTextField class="my-3" @bind-Value="_uuid" Label="UUID" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
-        <MudTooltip ShowOnClick="false" ShowOnFocus="true" ShowOnHover="false" Text="Copied" >
+        <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyTooltip" ShowOnHover="false" Text="Copied" >
             <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_uuid)" />
         </MudTooltip>
     </div>
@@ -53,6 +53,7 @@
     private UUIDType _selectedType = UUIDType.UUIDv4;
     private string _uuid = string.Empty;
     private string _alertText = string.Empty;
+    private bool _showCopyTooltip = false;
 
     protected override void OnInitialized()
     {
@@ -68,19 +69,24 @@
         {
             case UUIDType.UUIDv4:
                 _uuid = GenerateUUIDv4();
+                _showCopyTooltip = true;
                 break;
             case UUIDType.UUIDv5:
                 try
                 {
                     _uuid = GenerateUUIDv5(_uuidNamespace, _data);
+                    _showCopyTooltip = true;
                 }
                 catch (InvalidDataException e)
                 {
+                    _uuid = string.Empty;
+                    _showCopyTooltip = false;
                     _alertText = e.Message;
                 }
                 break;
             case UUIDType.UUIDv7: 
                 _uuid = GenerateUUIDv7();
+                _showCopyTooltip = true;
                 break;
         }
     }
