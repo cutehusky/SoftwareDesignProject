@@ -64,7 +64,7 @@ public class UsersController : ControllerBase
             _logger.LogInformation($"User {dto.UserId} role updated successfully");
             return Ok();
         }
-        catch (KeyNotFoundException ex)
+        catch (InvalidOperationException ex)
         {
             _logger.LogError(ex.Message);
             return NotFound(ex.Message);
@@ -119,7 +119,7 @@ public class UsersController : ControllerBase
             _logger.LogInformation($"User {user.UserId} created successfully");
             return CreatedAtAction(nameof(GetById), new { id = user.UserId }, user);
         }
-        catch (ArgumentNullException ex)
+        catch (InvalidDataException ex)
         {
             _logger.LogError(ex.Message);
             return BadRequest(ex.Message);
@@ -142,7 +142,7 @@ public class UsersController : ControllerBase
         // TODO: not authorized
         if (id == Guid.Empty)
         {
-            return BadRequest("Invalid Plugin ID.");
+            return BadRequest("Invalid User ID.");
         }
         var user = await _userService.GetById(id);
         return user != null ? Ok(user) : NotFound();

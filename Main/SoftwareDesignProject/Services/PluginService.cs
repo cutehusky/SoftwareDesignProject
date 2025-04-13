@@ -16,16 +16,19 @@ public class PluginService : IPluginService
     private readonly string _clientUploadPath = "ClientPlugins";
     private readonly string _serverUploadPath = "BackendPlugins";
     private readonly ILogger<PluginService> _logger;
+    private readonly IFormatChecker _formatChecker;
 
     public PluginService(IPluginRepository pluginRepository, 
         IFileStorage fileStorage,
         DynamicPluginManager pluginManager, 
-        ILogger<PluginService> logger)
+        ILogger<PluginService> logger,
+        IFormatChecker formatChecker)
     {
         _pluginRepository = pluginRepository;
         _pluginManager = pluginManager;
         _logger = logger;
         _fileStorage = fileStorage;
+        _formatChecker = formatChecker;
     }
 
     public async Task<PaginationList<PluginDTO>> GetList(int page, int pageSize, string sortBy,
@@ -70,19 +73,34 @@ public class PluginService : IPluginService
         string description,
         string category,
         bool isPremium,
-        IFormFile clientDLL,
-        IFormFile? serverDLL)
+        IFormFile clientDll,
+        IFormFile? serverDll)
     {
-        var clientUid = await GetClientPluginUid(clientDLL);
+        if (!_formatChecker.IsValidPluginName(name))
+        {
+            throw new InvalidDataException("Invalid plugin name");
+        }
+        
+        if (!_formatChecker.IsValidPluginDescription(description))
+        {
+            throw new InvalidDataException("Invalid plugin description");
+        }
+        
+        if (!_formatChecker.IsValidPluginCategory(category))
+        {
+            throw new InvalidDataException("Invalid plugin category");
+        }
+        
+        var clientUid = await GetClientPluginUid(clientDll);
         if (clientUid == null)
         {
             throw new InvalidDataException("Failed to load Client DLL");
         }
 
         Guid? serverUid = null;
-        if (serverDLL != null)
+        if (serverDll != null)
         {
-            serverUid = await GetServerPluginUid(serverDLL);
+            serverUid = await GetServerPluginUid(serverDll);
             if (serverUid == null)
             {
                 throw new InvalidDataException("Failed to load Server DLL");
@@ -116,7 +134,7 @@ public class PluginService : IPluginService
             }
         });
 
-        if (!await _fileStorage.SaveFileAsync(clientDLL, clientUid + ".dll", _clientUploadPath))
+        if (!await _fileStorage.SaveFileAsync(clientDll, clientUid + ".dll", _clientUploadPath))
         {
             await Rollback();
             throw new IOException("Failed to save Client Plugin");
@@ -130,9 +148,9 @@ public class PluginService : IPluginService
             }
         });
 
-        if (serverDLL != null)
+        if (serverDll != null)
         {
-            if (!await _fileStorage.SaveFileAsync(serverDLL, serverUid + ".dll", _serverUploadPath))
+            if (!await _fileStorage.SaveFileAsync(serverDll, serverUid + ".dll", _serverUploadPath))
             {
                 await Rollback();
                 throw new IOException("Failed to save Client Plugin");
@@ -143,6 +161,21 @@ public class PluginService : IPluginService
 
     public async Task EditPlugin(PluginDTO dto)
     {
+        if (dto.Name != null && !_formatChecker.IsValidPluginName(dto.Name))
+        {
+            throw new InvalidDataException("Invalid plugin name");
+        }
+        
+        if (dto.Description != null && !_formatChecker.IsValidPluginDescription(dto.Description))
+        {
+            throw new InvalidDataException("Invalid plugin description");
+        }
+        
+        if (dto.Category != null && !_formatChecker.IsValidPluginCategory(dto.Category))
+        {
+            throw new InvalidDataException("Invalid plugin category");
+        }
+        
         var res = await _pluginRepository.Update(dto);
         if (!res)
         {
@@ -188,6 +221,12 @@ public class PluginService : IPluginService
     public async Task UpgradePlugin(Guid pluginId,
         IFormFile? clientDll, IFormFile? serverDll)
     {
+        var plugin = await _pluginRepository.GetById(pluginId);
+        if (plugin == null)
+        {
+            throw new KeyNotFoundException("Plugin not found");
+        }
+        
         Guid? clientUid = null;
         if (clientDll != null)
         {

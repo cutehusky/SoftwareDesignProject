@@ -12,18 +12,22 @@ public class AuthService : IAuthService
     private readonly IConfiguration _config;
     private readonly IUserRepository _userRepository;
     private readonly ILogger<AuthService> _logger;
+    private readonly IPasswordHasher _passwordHasher;
+    private readonly IFormatChecker _formatChecker;
 
-    public AuthService(IConfiguration config, IUserRepository userRepository, ILogger<AuthService> logger)
+    public AuthService(IConfiguration config, IUserRepository userRepository, ILogger<AuthService> logger, IPasswordHasher passwordHasher, IFormatChecker formatChecker)
     {
         _config = config;
         _userRepository = userRepository;
         _logger = logger;
+        _passwordHasher = passwordHasher;
+        _formatChecker = formatChecker;
     }
 
     public async Task<string?> AuthenticateAsync(string username, string password)
     {
         var user = await _userRepository.GetUserByUsernameAsync(username);
-        if (user != null && BCrypt.Net.BCrypt.Verify(password, user.Password))
+        if (user != null && _passwordHasher.VerifyPassword(user.Password!, password))
         {
             return GenerateJwtToken(user);
         }
@@ -32,19 +36,35 @@ public class AuthService : IAuthService
 
 
 
-    public async Task<bool> RegisterAsync(string username, string password, UserRoles role = UserRoles.Normal)
+    public async Task RegisterAsync(string username, string password, UserRoles role)
     {
+        if (!_formatChecker.IsValidUsername(username))
+        {
+            throw new InvalidDataException("Invalid username format");
+        }
+        
+        if (!_formatChecker.IsValidPassword(password))
+        {
+            throw new InvalidDataException("Invalid password format");
+        }
+        
         var existingUser = await _userRepository.GetUserByUsernameAsync(username);
-        if (existingUser != null) return false;
+        if (existingUser != null) 
+        {
+            throw new InvalidDataException($"User {username} already exists");
+        }
 
         var newUser = new UserDTO
         {
             Username = username,
-            Password = BCrypt.Net.BCrypt.HashPassword(password),
+            Password = _passwordHasher.HashPassword(password),
             UserRole = role
         };
 
-        return await _userRepository.Add(newUser);
+        if (!await _userRepository.Add(newUser))
+        {
+            throw new InvalidOperationException("Failed to create user");
+        }
     }
 
     public async Task<string?> RefreshToken(string oldToken)

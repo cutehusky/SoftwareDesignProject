@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace SoftwareDesignProject.Client.Services;
+namespace SoftwareDesignProject.Services;
 
 public class FormatChecker: IFormatChecker
 {

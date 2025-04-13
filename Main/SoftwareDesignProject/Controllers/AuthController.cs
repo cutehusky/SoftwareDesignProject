@@ -43,16 +43,28 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = "Username and password are required" });
         }
 
-        var success = await _authService.RegisterAsync(request.Username, request.Password, UserRoles.Normal);
-
-        if (!success)
+        try
         {
-            _logger.LogWarning("Failed to create user {Username}", request.Username);
-            return BadRequest(new { message = "Username already exists" });
+            _logger.LogInformation("User registration request received for: {Username}", request.Username);
+            await _authService.RegisterAsync(request.Username, request.Password, UserRoles.Normal);
+            _logger.LogInformation("User {Username} created successfully", request.Username);
+            return Ok(new { message = "Account created successfully" });
         }
-
-        _logger.LogInformation("User {Username} created successfully", request.Username);
-        return Ok(new { message = "Account created successfully" });
+        catch (InvalidDataException ex)
+        {
+            _logger.LogError(ex.Message);
+            return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex.Message);
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("User registration failed: {Message}", ex.Message);
+            return StatusCode(500, "Internal server error");
+        }
     }
 
     [HttpPut("refresh-token")]
