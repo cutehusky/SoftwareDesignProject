@@ -1,0 +1,71 @@
+﻿@using Microsoft.JSInterop
+@inject IJSRuntime JS
+@using MudBlazor
+@using Newtonsoft.Json
+
+<MudText Typo="Typo.h5" Style="margin: 20px">Json to XML</MudText>
+<div class="my-6 d-flex flex-grow-1 gap-4 justify-center align-center">
+    <MudTextField Lines="10" AutoGrow="true" class="my-3" @bind-Value="_jsonInput" Label="Json" Variant="Variant.Outlined"></MudTextField>
+    <MudButton Class="my-3" Color="Color.Inherit" Variant="Variant.Outlined" Size="Size.Large" OnClick="GetXml">Get</MudButton>
+</div>
+
+@if (!string.IsNullOrEmpty(_alertText))
+{
+    <MudAlert Severity="Severity.Error" Class="mb-3">
+        @_alertText
+    </MudAlert>
+}
+
+<MudDivider DividerType="DividerType.Middle" Class="my-6"/>
+
+<div class="d-flex flex-grow-1 gap-4 justify-center align-start">
+    <MudTextField class="my-3" @bind-Value="_xmlOutput" Label="XML" Variant="Variant.Outlined" ReadOnly="true" Lines="10" AutoGrow="true"></MudTextField>
+    <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
+        <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_xmlOutput)" />
+    </MudTooltip>
+</div>
+
+@code
+{
+    private string _alertText = string.Empty;
+    private bool _showCopyToolTip;
+    
+    private string _jsonInput = string.Empty;
+    private string _xmlOutput = string.Empty;
+    
+    private void GetXml()
+    {
+        try {
+            _xmlOutput = FromJsonToXml(_jsonInput);
+            _alertText = "";
+            _showCopyToolTip = true;
+        }
+        catch (FormatException ex)
+        {
+            _showCopyToolTip = false;
+            _alertText = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _showCopyToolTip = false;
+            _alertText = "An unexpected error occurred: " + ex.Message;
+        }
+    }
+    
+    private async Task CopyToClipboard(string textToCopy)
+    {
+        if (textToCopy.Length > 0)
+            await JS.InvokeVoidAsync("copyToClipboard", textToCopy);
+    }
+    
+    public static string FromJsonToXml(string input)
+    {
+        var doc = JsonConvert.DeserializeXmlNode(input, "root");
+        if (doc == null)
+        {
+            throw new FormatException("Invalid Json format");
+        }
+        string xml = doc.OuterXml;
+        return xml;
+    }
+}

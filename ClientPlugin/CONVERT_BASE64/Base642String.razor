@@ -1,0 +1,82 @@
+﻿@using System.Text
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+@using MudBlazor
+
+<MudText Typo="Typo.h5" Style="margin: 20px">Base64 to String</MudText>
+<MudTextField Lines="10" AutoGrow="true" class="my-3" @bind-Value="_base64Input" Label="Base64" Variant="Variant.Outlined"></MudTextField>
+<div class="my-6 d-flex flex-grow-1 gap-4 justify-center align-center">
+    <MudSwitch @bind-value="_urlOutputSafe" Label="URL Safe"/>
+    <MudButton Class="my-3" Color="Color.Inherit" Variant="Variant.Outlined" Size="Size.Large" OnClick="GetRaw">Get</MudButton>
+</div>
+
+@if (!string.IsNullOrEmpty(_alertText))
+{
+    <MudAlert Severity="Severity.Error" Class="mb-3">
+        @_alertText
+    </MudAlert>
+}
+
+<MudDivider DividerType="DividerType.Middle" Class="my-6"/>
+
+<div class="d-flex flex-grow-1 gap-4 justify-center align-start">
+    <MudTextField class="my-3" @bind-Value="_rawOutput" Label="Raw" Variant="Variant.Outlined" ReadOnly="true" Lines="10" AutoGrow="true"></MudTextField>
+    <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
+        <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_rawOutput)" />
+    </MudTooltip>
+</div>
+
+@code
+{
+    private string _alertText = string.Empty;
+    private bool _showCopyToolTip;
+    
+    private string _base64Input = string.Empty;
+    private string _rawOutput = string.Empty;
+    private bool _urlOutputSafe = false;
+    
+    private void GetRaw()
+    {
+        try {
+            _rawOutput = _urlOutputSafe ? FromUrlSafeBase64(_base64Input) : FromBase64(_base64Input);
+            _alertText = "";
+            _showCopyToolTip = true;
+        }
+        catch (FormatException ex)
+        {
+            _showCopyToolTip = false;
+            _alertText = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _showCopyToolTip = false;
+            _alertText = "An unexpected error occurred: " + ex.Message;
+        }
+    }
+    
+    private async Task CopyToClipboard(string textToCopy)
+    {
+        if (textToCopy.Length > 0)
+            await JS.InvokeVoidAsync("copyToClipboard", textToCopy);
+    }
+   
+    
+    public static string FromBase64(string input)
+    {
+        var bytes = Convert.FromBase64String(input);
+        return Encoding.UTF8.GetString(bytes);
+    }
+
+    public static string FromUrlSafeBase64(string input)
+    {
+        string base64 = input.Replace('-', '+').Replace('_', '/');
+        switch (base64.Length % 4)
+        {
+            case 1: throw new FormatException("Invalid base64 string");
+            case 2: base64 += "=="; break;
+            case 3: base64 += "="; break;
+        }
+        var bytes = Convert.FromBase64String(base64);
+        return Encoding.UTF8.GetString(bytes);
+    }
+}
