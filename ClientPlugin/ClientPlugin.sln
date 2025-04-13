@@ -43,6 +43,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "STRING_SPACE", "STRING_SPAC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RANDOM_TOKEN", "RANDOM_TOKEN\RANDOM_TOKEN.csproj", "{994D0E08-485D-4F3B-9EE1-1850B43936D4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MOCK_DATA", "MOCK_DATA\MOCK_DATA.csproj", "{C334C5E7-C251-4ACA-9632-8C9DB06ADBF0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -129,6 +131,10 @@ Global
 		{994D0E08-485D-4F3B-9EE1-1850B43936D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{994D0E08-485D-4F3B-9EE1-1850B43936D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{994D0E08-485D-4F3B-9EE1-1850B43936D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C334C5E7-C251-4ACA-9632-8C9DB06ADBF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C334C5E7-C251-4ACA-9632-8C9DB06ADBF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C334C5E7-C251-4ACA-9632-8C9DB06ADBF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C334C5E7-C251-4ACA-9632-8C9DB06ADBF0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,281 @@
+﻿@using System.Text.RegularExpressions
+@using Bogus
+@using Bogus.DataSets
+@using Microsoft.JSInterop
+@using MudBlazor
+@inject  IJSRuntime JS
+@using Newtonsoft.Json.Linq
+
+<MudPaper Style="backdrop-filter: blur(5px); opacity: 0.75; "   Class="pa-3 mb-4">
+    <MudText Typo="Typo.h5" Style="margin: 20px">Mock Data</MudText>
+    
+    <MudTextField Lines="10" class="my-3" AutoGrow="true" @bind-Value="_json" Label="Structure" Variant="Variant.Outlined"></MudTextField>
+    
+    <MudButton Color="Color.Inherit" Variant="Variant.Outlined" Size="Size.Large" OnClick="Generate">Generate</MudButton>
+    
+    <MudDivider DividerType="DividerType.Middle" Class="my-6"/>
+</MudPaper>
+
+<MudPaper id="target" Style="backdrop-filter: blur(5px); opacity: 0.75; " Class="pa-3">
+    <MudText Typo="Typo.h5" Style="margin: 20px">Result</MudText>
+    
+    @if (!string.IsNullOrEmpty(_alertText))
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-3">
+            @_alertText
+        </MudAlert>
+    }
+
+    <div class="d-flex flex-grow-1 gap-4 justify-center align-start">
+        <MudTextField Lines="10" class="my-3" AutoGrow="true" @bind-Value="_result" Label="Mock Data" Variant="Variant.Outlined" ReadOnly="true"></MudTextField>
+        <MudTooltip ShowOnClick="false" ShowOnFocus="true" ShowOnHover="false" Text="Copied">
+            <MudIconButton class="my-4" Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_result)"/>
+        </MudTooltip>
+    </div>
+</MudPaper>
+
+
+@code {
+    private string _json = string.Empty;
+    private string _result = string.Empty;
+    private string _alertText = string.Empty;
+    private bool _scrollTo = false;
+    
+    private void Generate()
+    {
+        try
+        {
+            var token = JToken.Parse(_json);
+            ReplacePlaceholders(token);
+            _alertText = string.Empty;
+            _result = token.ToString();
+            _scrollTo = true;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Unexpected error: {ex.Message}");
+            _alertText = "Invalid JSON format.";
+            _result = "";
+            _scrollTo = true;
+            StateHasChanged();
+        }
+    }
+    
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_scrollTo)
+        {
+            _scrollTo = false;
+            await ScrollToTarget();
+        }
+    }
+    
+    private async Task ScrollToTarget()
+    {
+        await JS.InvokeVoidAsync("scrollToElement", "target");
+    }
+    
+    private async Task CopyToClipboard(string textToCopy)
+    {
+        if (textToCopy.Length > 0)
+            await JS.InvokeVoidAsync("copyToClipboard", textToCopy);
+    }
+    
+    static void ReplacePlaceholders(JToken token)
+    {
+        if (token.Type == JTokenType.Object)
+        {
+            foreach (var prop in token.Children<JProperty>())
+            {
+                ReplacePlaceholders(prop.Value);
+            }
+        }
+        else if (token.Type == JTokenType.Array)
+        {
+            foreach (var item in token.Children())
+            {
+                ReplacePlaceholders(item);
+            }
+        }
+        else if (token.Type == JTokenType.String)
+        {
+            var faker = new Faker();
+            string val = token.Value<string>()!;
+
+            var arrayMatch = Regex.Match(val, @"^@array\((.*),\s*(\d+)\)$", RegexOptions.Singleline);
+            if (arrayMatch.Success)
+            {
+                string innerJson = arrayMatch.Groups[1].Value;
+                int count = int.Parse(arrayMatch.Groups[2].Value);
+
+                var template = JToken.Parse(innerJson);
+                var arr = new JArray();
+
+                for (int i = 0; i < count; i++)
+                {
+                    var item = template.DeepClone();
+                    ReplacePlaceholders(item);
+                    arr.Add(item);
+                }
+
+                token.Replace(arr);
+                return;
+            }
+
+            string result = string.Empty;
+            switch (val)
+            {
+                case "@datetime":
+                    DateTime randomDate = DateTime.Now.AddDays(-new Random().Next(0, 365));
+                    result = randomDate.ToString("yyyy-MM-ddTHH:mm:ss");
+                    break;
+                    
+                case "@uuid":
+                    result = Guid.NewGuid().ToString();
+                    break;
+                    
+                case "@name":
+                    result = faker.Name.FullName();
+                    break;
+                case "@first":
+                    result = faker.Name.FirstName();
+                    break;
+                case "@last":
+                    result = faker.Name.LastName();
+                    break;
+                case "@job":
+                    result = faker.Name.JobTitle();
+                    break;
+                case "@jobDescription":
+                    result = faker.Name.JobDescriptor();
+                    break;
+                case "@jobArea":
+                    result = faker.Name.JobArea();
+                    break;
+                case "@jobType":
+                    result = faker.Name.JobType();
+                    break;
+                    
+                case "@address":
+                    result = faker.Address.FullAddress();
+                    break;
+                case "@county":
+                    result = faker.Address.County();
+                    break;
+                case "@state":
+                    result = faker.Address.State();
+                    break;
+                case "@city":
+                    result = faker.Address.City();
+                    break;
+                case "@street":
+                    result = faker.Address.StreetAddress();
+                    break;
+                case "@region":
+                    result = faker.Address.County();
+                    break;
+                case "@direction":
+                    result = faker.Address.Direction();
+                    break;
+                case "@zip":
+                case "@postal":
+                    result = faker.Address.ZipCode();
+                    break;
+                    
+                case "@mobile":
+                case "@phone":
+                    result = faker.Phone.PhoneNumber("###-###-####");
+                    break;
+                    
+                case "@avatar":
+                    result = faker.Internet.Avatar();
+                    break;
+                case "@userAgent":
+                    result = faker.Internet.UserAgent();
+                    break;
+                case "@mac":
+                    result = faker.Internet.Mac();
+                    break;
+                case "@ipv6":
+                    result = faker.Internet.Ipv6();
+                    break;
+                case "@username":
+                    result = faker.Internet.UserName();
+                    break;
+                case "@password":
+                    result = faker.Internet.Password(8);
+                    break;
+                case "@email":
+                    result = faker.Internet.Email();
+                    break;
+                case "@ip":
+                    result = faker.Internet.Ip();
+                    break;
+                case "@wechat":
+                    result = faker.Internet.UserName();
+                    break;
+                case "@url":
+                    result = faker.Internet.Url();
+                    break;
+                case "@urlAbsolute":
+                    result = faker.Internet.UrlWithPath();
+                    break;
+                case "@domain":
+                    result = faker.Internet.DomainName();
+                    break;
+                case "@protocol":
+                    result = faker.Internet.Protocol();
+                    break;
+                case "@tld":
+                    result = faker.Internet.DomainSuffix();
+                    break;
+                    
+                case "@image":
+                    result = faker.Image.PicsumUrl();
+                    break;
+                    
+                case "@color":
+                case "@hex":
+                    result = faker.Internet.Color();
+                    break;
+                case "@rgb":
+                    result = faker.Internet.Color(0,0,0,false, ColorFormat.Rgb);
+                    break;
+                    
+                case "@word":
+                    result = faker.Lorem.Word();
+                    break;
+
+                case "@words":
+                    result = faker.Lorem.Words(10).ToString()!;
+                    break;
+
+                case "@title":
+                    result = faker.Lorem.Sentence(5);
+                    break;
+
+                case "@sentence":
+                    result = faker.Lorem.Sentence();
+                    break;
+                    
+                case "@sentences":
+                    result = faker.Lorem.Sentences();
+                    break;
+
+                case "@paragraph":
+                    result = faker.Lorem.Paragraph();
+                    break;
+                
+                case "@paragraphs":
+                    result = faker.Lorem.Paragraphs();
+                    break;
+                case "@text":
+                    result = faker.Lorem.Text();
+                    break;
+            }
+            ((JValue)token).Value = result;
+        }
+    }
+}

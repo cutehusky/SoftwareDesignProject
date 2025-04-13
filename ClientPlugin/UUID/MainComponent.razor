@@ -27,7 +27,7 @@
         </MudAlert>
     }
 
-    <MudButton Color="Color.Inherit" Variant="Variant.Outlined" Size="Size.Large" OnClick="() => GenerateUUID(_selectedType)">Generate</MudButton>
+    <MudButton Color="Color.Inherit" Variant="Variant.Outlined" Size="Size.Large" OnClick="GenerateUUID">Generate</MudButton>
     
     <MudDivider DividerType="DividerType.Middle" Class="my-6"/>
     
@@ -58,13 +58,13 @@
     {
         _selectedType = UUIDType.UUIDv4;
         _uuidNamespace = GenerateUUIDv4();
-        GenerateUUID(_selectedType);
+        GenerateUUID();
     }
     
-    private void GenerateUUID(UUIDType selectedType)
+    private void GenerateUUID()
     {
         _alertText = string.Empty;
-        switch (selectedType)
+        switch (_selectedType)
         {
             case UUIDType.UUIDv4:
                 _uuid = GenerateUUIDv4();
@@ -85,12 +85,12 @@
         }
     }
     
-    private string GenerateUUIDv4()
+    private static string GenerateUUIDv4()
     {
         return Uuid.NewRandom().ToString();
     }
     
-    private string GenerateUUIDv5(string uuidNamespace, string data)
+    private static string GenerateUUIDv5(string uuidNamespace, string data)
     {
         if (Guid.TryParse(uuidNamespace, out var uid))
         {
@@ -99,7 +99,7 @@
         throw new InvalidDataException("Invalid namespace format (must be a valid UUID)");
     }
     
-    private string GenerateUUIDv7()
+    private static string GenerateUUIDv7()
     {
         return Uuid.NewSequential().ToString();
     }
