@@ -1,4 +1,4 @@
-﻿namespace SoftwareDesignProject.Client.Services;
+﻿namespace CommonDTO;
 
 public interface IFormatChecker
 {
