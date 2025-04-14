@@ -16,15 +16,18 @@ public class DynamicPluginManager: IHostedService
     private readonly IServiceCollection _dynamicServiceCollection = new ServiceCollection();
     private readonly IServiceProvider _serviceProvider;
     private IServiceProvider _dynamicServiceProvider = null!;
+    private readonly ILogger<DynamicPluginManager> _logger;
 
     public DynamicPluginManager(
         ApplicationPartManager partManager,
         IServiceProvider serviceProvider,
         IHostEnvironment env, 
-        IActionDescriptorChangeProvider changeProvider)
+        IActionDescriptorChangeProvider changeProvider, 
+        ILogger<DynamicPluginManager> logger)
     {
         _partManager = partManager;
         _serviceProvider = serviceProvider;
+        _logger = logger;
         _changeProvider = (changeProvider as ActionDescriptorChangeProvider)!;
         _pluginPath = Path.Combine(env.ContentRootPath, "Root/BackendPlugins");
         if (!Directory.Exists(_pluginPath))
@@ -52,7 +55,8 @@ public class DynamicPluginManager: IHostedService
         IPluginRepository pluginRepository,
         string path)
     {
-        var dllBytes = File.ReadAllBytes(path);
+        _logger.LogInformation("Loading assembly: {0}", path);
+        var dllBytes = await File.ReadAllBytesAsync(path);
         var assembly = Assembly.Load(dllBytes);
         var pluginId = "";
         foreach (var type in assembly.GetTypes())
@@ -64,26 +68,26 @@ public class DynamicPluginManager: IHostedService
             
             if (!Guid.TryParse(pluginId, out var result))
             {
-                Console.WriteLine("Invalid plugin ID: {0}", pluginId);
+                _logger.LogError("Invalid plugin ID: {0}", pluginId);
                 return;
             }
             
             if (CheckLoadedPlugin(pluginId))
             {
-                Console.WriteLine("Plugin already loaded: {0}", pluginId);
+                _logger.LogWarning("Plugin already loaded: {0}", pluginId);
                 return;
             }
             
             var plugin = await pluginRepository.GetById(result);
             if (plugin == null)
             {
-                Console.WriteLine("Plugin not registered in database: {0}", pluginId);
+                _logger.LogWarning("Plugin not registered in database: {0}", pluginId);
                 return;
             }
             
             if (!(bool)plugin.IsEnabled!)
             {
-                Console.WriteLine("Plugin is disabled: {0}", pluginId);
+                _logger.LogWarning("Plugin is disabled: {0}", pluginId);
                 return;
             }
             
@@ -103,7 +107,7 @@ public class DynamicPluginManager: IHostedService
             return;
         _partManager.ApplicationParts.Add(new AssemblyPart(assembly));
         _loadedPlugin.Add(pluginId);
-        Console.WriteLine("Loaded assembly: {0}", assembly.FullName);
+        _logger.LogInformation("Loaded assembly: {0}", assembly.FullName);
     }
 
     public bool CheckLoadedPlugin(string uid)

@@ -42,7 +42,6 @@ public class UserService : IUserService
             GetListEndPoint(page, pageSize, sortBy, order, search), cancellationToken);
         if (res == null)
         {
-            Console.WriteLine("Error: No data received from server");
             throw new HttpRequestException("Error: No data received from server");
         }
         return res;

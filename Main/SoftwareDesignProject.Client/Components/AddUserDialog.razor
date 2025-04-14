@@ -82,6 +82,7 @@
         }
         catch (Exception ex)
         {
+            Console.WriteLine(ex);
             _errorMessage = $"Fail to add user. Reason:{ex.Message}";
             StateHasChanged();
         }

@@ -136,7 +136,6 @@ else
 
     private async void Delete(Guid id)
     {
-        Console.WriteLine($"deleting : {id}");
         try
         {
             await PluginService.Remove(id);

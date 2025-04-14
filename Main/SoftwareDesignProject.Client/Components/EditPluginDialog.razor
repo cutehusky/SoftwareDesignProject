@@ -98,6 +98,7 @@
         }
         catch (Exception e)
         {
+            Console.WriteLine(e);
             _errorMessage = $"Fail to update plugin. Reason: {e.Message}";
             StateHasChanged();
         }

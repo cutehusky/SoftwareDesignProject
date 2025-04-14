@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace SoftwareDesignProject.Client.Services;
+namespace CommonDTO;
 
 public class FormatChecker: IFormatChecker
 {
@@ -24,8 +24,11 @@ public class FormatChecker: IFormatChecker
         // contains at least one uppercase letter, 
         // one lowercase letter, and one digit, 
         // and one special character (? < > ! @ # $ % ^ & * ( ) _ + - = { } [ ] ; : ' " , . / < >)
-        const string passwordRegex = """^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}[\]:;'",.<>?])[A-Za-z\d!@#$%^&*()_+{}[\]:;'",.<>?]{8,}$""";
-        return Regex.IsMatch(password, passwordRegex);
+        //const string passwordRegex = """^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}[\]:;'",.<>?])[A-Za-z\d!@#$%^&*()_+{}[\]:;'",.<>?]{8,}$""";
+        //return Regex.IsMatch(password, passwordRegex);
+        
+        // development password policy
+        return password.Length >= 4;
     }
 
     public bool IsValidPluginName(string name)

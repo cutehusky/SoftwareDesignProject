@@ -7,7 +7,7 @@
 <MudPaper Style="backdrop-filter: blur(5px); opacity: 0.75; "   Class="pa-3 mb-4">
     <MudText Typo="Typo.h5" Style="margin: 20px">Hashing String</MudText>
 
-    <MudTextField Class="my-6" @bind-Value="_inputHash" Label="Input" Variant="Variant.Outlined" Lines="10"></MudTextField>
+    <MudTextField Class="my-6" @bind-Value="_inputHash" Label="Input" Variant="Variant.Outlined" AutoGrow="true" Lines="10"></MudTextField>
 
     <div class="my-6 d-flex flex-grow-1 gap-4 justify-center align-center">
         <MudSelect T="string" Variant="Variant.Outlined" Label="Select Type" @bind-SelectedValues="_selectedType">
@@ -22,64 +22,67 @@
 
 <MudPaper id="target" Style="backdrop-filter: blur(5px); opacity: 0.75; " Class="pa-3">
     <MudText Typo="Typo.h5" Style="margin: 20px">Result</MudText>
-    
-    <MudAlert Severity="Severity.Error" Class="mb-3" Style="@AlertStyle">
-        @_alertText
-    </MudAlert>
 
-    <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
-        <MudTextField class="my-3" @bind-Value="_outputMD5Hash" Label="MD5" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
+    @if (!string.IsNullOrEmpty(_alertText))
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-3">
+            @_alertText
+        </MudAlert>
+    }
+
+    <div class="d-flex flex-grow-1 gap-4 justify-center align-start">
+        <MudTextField class="my-3" @bind-Value="_outputMD5Hash" Label="MD5" Variant="Variant.Outlined" AutoGrow="true" ReadOnly="true" ></MudTextField>
         <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
-            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputMD5Hash)" />
+            <MudIconButton class="my-4" Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputMD5Hash)" />
         </MudTooltip>
     </div>
 
-    <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
-        <MudTextField class="my-3" @bind-Value="_outputSHA1Hash" Label="SHA1" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
+    <div class="d-flex flex-grow-1 gap-4 justify-center align-start">
+        <MudTextField class="my-3" @bind-Value="_outputSHA1Hash" Label="SHA1" Variant="Variant.Outlined" AutoGrow="true" ReadOnly="true" ></MudTextField>
         <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
-            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA1Hash)"/>
+            <MudIconButton class="my-4" Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA1Hash)"/>
         </MudTooltip>
     </div>
 
-    <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
-        <MudTextField class="my-3" @bind-Value="_outputSHA256Hash" Label="SHA256" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
+    <div class="d-flex flex-grow-1 gap-4 justify-center align-start">
+        <MudTextField class="my-3" @bind-Value="_outputSHA256Hash" Label="SHA256" Variant="Variant.Outlined" AutoGrow="true" ReadOnly="true" ></MudTextField>
         <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
-            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA256Hash)"/>
+            <MudIconButton class="my-4" Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA256Hash)"/>
         </MudTooltip>
     </div>
 
-    <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
-        <MudTextField class="my-3" @bind-Value="_outputSHA384Hash" Label="SHA384" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
+    <div class="d-flex flex-grow-1 gap-4 justify-center align-start">
+        <MudTextField class="my-3" @bind-Value="_outputSHA384Hash" Label="SHA384" Variant="Variant.Outlined" AutoGrow="true" ReadOnly="true" ></MudTextField>
         <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
-            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA384Hash)"/>
+            <MudIconButton class="my-4" Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA384Hash)"/>
         </MudTooltip>
     </div>
 
-    <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
-        <MudTextField class="my-3" @bind-Value="_outputSHA512Hash" Label="SHA512" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
+    <div class="d-flex flex-grow-1 gap-4 justify-center align-start">
+        <MudTextField class="my-3" @bind-Value="_outputSHA512Hash" Label="SHA512" Variant="Variant.Outlined" AutoGrow="true" ReadOnly="true" ></MudTextField>
         <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
-            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA512Hash)"/>
+            <MudIconButton class="my-4" Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA512Hash)"/>
         </MudTooltip>
     </div>
 
-    <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
-        <MudTextField class="my-3" @bind-Value="_outputSHA3_256Hash" Label="SHA3-256" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
+    <div class="d-flex flex-grow-1 gap-4 justify-center align-start">
+        <MudTextField class="my-3" @bind-Value="_outputSHA3_256Hash" Label="SHA3-256" Variant="Variant.Outlined" AutoGrow="true" ReadOnly="true" ></MudTextField>
         <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
-            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA3_256Hash)"/>
+            <MudIconButton class="my-4" Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA3_256Hash)"/>
         </MudTooltip>
     </div>
 
-    <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
-        <MudTextField class="my-3" @bind-Value="_outputSHA3_384Hash" Label="SHA3-384" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
+    <div class="d-flex flex-grow-1 gap-4 justify-center align-start">
+        <MudTextField class="my-3" @bind-Value="_outputSHA3_384Hash" Label="SHA3-384" Variant="Variant.Outlined" AutoGrow="true" ReadOnly="true" ></MudTextField>
         <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
-            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA3_384Hash)"/>
+            <MudIconButton class="my-4" Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA3_384Hash)"/>
         </MudTooltip>
     </div>
 
-    <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
-        <MudTextField class="my-3" @bind-Value="_outputSHA3_512Hash" Label="SHA3-512" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
+    <div class="d-flex flex-grow-1 gap-4 justify-center align-start">
+        <MudTextField AutoGrow="true" class="my-3" @bind-Value="_outputSHA3_512Hash" Label="SHA3-512" Variant="Variant.Outlined" ReadOnly="true" ></MudTextField>
         <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
-            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA3_512Hash)"/>
+            <MudIconButton class="my-4" Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_outputSHA3_512Hash)"/>
         </MudTooltip>
     </div>
 </MudPaper>
@@ -98,9 +101,7 @@
     private string _outputSHA3_256Hash = "";
     private string _outputSHA3_384Hash = "";
     private string _outputSHA3_512Hash = "";
-    private bool _showAlert = false;
     private bool _showCopyToolTip = false;
-    private string AlertStyle => _showAlert ? "display: block;" : "display: none;";
     private string _alertText = "";
     private bool _scrollTo = false;
     
@@ -182,7 +183,6 @@
         _outputSHA3_256Hash = responseData.hashSHA3_256;
         _outputSHA3_384Hash = responseData.hashSHA3_384;
         _outputSHA3_512Hash = responseData.hashSHA3_512;
-        _showAlert = false;
         _showCopyToolTip = true;
         _alertText = "";
     }
@@ -190,7 +190,6 @@
     private void SetError(string error)
     {
         _alertText = error;
-        _showAlert = true;
         _showCopyToolTip = false;
         _outputMD5Hash = "";
         _outputSHA1Hash = "";

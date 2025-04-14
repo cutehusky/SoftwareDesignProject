@@ -1,0 +1,118 @@
+﻿@using Microsoft.JSInterop
+@using MudBlazor
+@using UUIDNext
+@inject IJSRuntime JS
+
+<MudPaper Style="backdrop-filter: blur(5px); opacity: 0.75; "   Class="pa-3 mb-4">
+    <MudText Typo="Typo.h5" Style="margin: 20px">UUID</MudText>
+    <MudSelect Class="my-3" @bind-Value="_selectedType" T="UUIDType" 
+               Variant="Variant.Outlined" Label="Version">
+        <MudSelectItem Value="UUIDType.UUIDv4">UUIDv4</MudSelectItem>
+        <MudSelectItem Value="UUIDType.UUIDv5">UUIDv5</MudSelectItem>
+        <MudSelectItem Value="UUIDType.UUIDv7">UUIDv7</MudSelectItem>
+    </MudSelect>
+    
+    @if (_selectedType == UUIDType.UUIDv5)
+    {
+        <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
+            <MudTextField class="my-3" @bind-Value="_uuidNamespace" Label="Namespace" Variant="Variant.Outlined" Lines="1"></MudTextField>
+            <MudIconButton Icon="@Icons.Material.Filled.Refresh" aria-label="copy" OnClick="() => _uuidNamespace = GenerateUUIDv4()" />
+        </div>
+        <MudTextField class="my-3" @bind-Value="_data" Label="Data" Variant="Variant.Outlined" Lines="1"></MudTextField>
+    }
+    @if (!string.IsNullOrEmpty(_alertText))
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-3">
+            @_alertText
+        </MudAlert>
+    }
+
+    <MudButton Color="Color.Inherit" Variant="Variant.Outlined" Size="Size.Large" OnClick="GenerateUUID">Generate</MudButton>
+    
+    <MudDivider DividerType="DividerType.Middle" Class="my-6"/>
+    
+    <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
+        <MudTextField class="my-3" @bind-Value="_uuid" Label="UUID" Variant="Variant.Outlined" Lines="1" ReadOnly="true" ></MudTextField>
+        <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyTooltip" ShowOnHover="false" Text="Copied" >
+            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_uuid)" />
+        </MudTooltip>
+    </div>
+</MudPaper>
+@code
+{
+    enum UUIDType
+    {
+        UUIDv4,
+        UUIDv5,
+        UUIDv7
+    }
+    
+    private string _uuidNamespace = string.Empty;
+    private string _data = string.Empty;
+    
+    private UUIDType _selectedType = UUIDType.UUIDv4;
+    private string _uuid = string.Empty;
+    private string _alertText = string.Empty;
+    private bool _showCopyTooltip = false;
+
+    protected override void OnInitialized()
+    {
+        _selectedType = UUIDType.UUIDv4;
+        _uuidNamespace = GenerateUUIDv4();
+        GenerateUUID();
+    }
+    
+    private void GenerateUUID()
+    {
+        _alertText = string.Empty;
+        switch (_selectedType)
+        {
+            case UUIDType.UUIDv4:
+                _uuid = GenerateUUIDv4();
+                _showCopyTooltip = true;
+                break;
+            case UUIDType.UUIDv5:
+                try
+                {
+                    _uuid = GenerateUUIDv5(_uuidNamespace, _data);
+                    _showCopyTooltip = true;
+                }
+                catch (InvalidDataException e)
+                {
+                    _uuid = string.Empty;
+                    _showCopyTooltip = false;
+                    _alertText = e.Message;
+                }
+                break;
+            case UUIDType.UUIDv7: 
+                _uuid = GenerateUUIDv7();
+                _showCopyTooltip = true;
+                break;
+        }
+    }
+    
+    private static string GenerateUUIDv4()
+    {
+        return Uuid.NewRandom().ToString();
+    }
+    
+    private static string GenerateUUIDv5(string uuidNamespace, string data)
+    {
+        if (Guid.TryParse(uuidNamespace, out var uid))
+        {
+            return Uuid.NewNameBased(uid, data).ToString();
+        }
+        throw new InvalidDataException("Invalid namespace format (must be a valid UUID)");
+    }
+    
+    private static string GenerateUUIDv7()
+    {
+        return Uuid.NewSequential().ToString();
+    }
+
+    private async Task CopyToClipboard(string textToCopy)
+    {
+        if (textToCopy.Length > 0)
+            await JS.InvokeVoidAsync("copyToClipboard", textToCopy);
+    }
+}

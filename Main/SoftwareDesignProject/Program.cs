@@ -10,12 +10,14 @@ using SoftwareDesignProject.Repositories;
 using SoftwareDesignProject.Services.ServerPluginManagement;
 using CommonDTO;
 using SoftwareDesignProject.Controllers;
+using SoftwareDesignProject.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<AppDbContext>();
 
+builder.Services.AddSingleton<IFormatChecker, FormatChecker>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPluginRepository, PluginRepository>();
@@ -114,6 +116,8 @@ app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseMiddleware<RequestLoggingMiddleware>();
+
 // Maps assets and endpoints
 app.MapStaticAssets();
 app.MapControllers();
@@ -124,11 +128,17 @@ app.MapRazorComponents<App>()
 
 app.MapDynamicControllerRoute<DynamicRouteTransformer>("api/plugin/{id}/{controller}/{action}");
 
-// In Program.cs or a seed data class
 using (var scope = app.Services.CreateScope())
 {
     var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
-    await authService.RegisterAsync("admin", "admin", UserRoles.Admin);
+    try
+    {
+        await authService.RegisterAsync("admin", "admin", UserRoles.Admin);
+    }
+    catch (Exception _)
+    {
+        // ignored
+    }
 }
 
 app.MapFallbackToFile("index.html");

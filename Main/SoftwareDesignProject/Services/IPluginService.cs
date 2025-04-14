@@ -12,7 +12,7 @@ public interface IPluginService
 
     public Task AddPlugin(string name, string description,
         string category, bool isPremium,
-        IFormFile clientDLL, IFormFile? serverDLL);
+        IFormFile clientDll, IFormFile? serverDll);
 
     public Task EditPlugin(PluginDTO dto);
 

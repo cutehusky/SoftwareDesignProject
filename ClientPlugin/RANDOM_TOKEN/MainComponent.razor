@@ -1,0 +1,80 @@
+﻿@using System.Text
+@using Microsoft.JSInterop
+@using MudBlazor
+@inject IJSRuntime JS
+
+<MudPaper Style="backdrop-filter: blur(5px); opacity: 0.75; "   Class="pa-3 mb-4">
+    <MudText Typo="Typo.h5" Style="margin: 20px">Random Token</MudText>
+
+    <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
+        <MudSwitch @bind-value="_useUppercase" Label="Uppercase (ABC...)"></MudSwitch>
+        <MudSwitch @bind-value="_useLowercase" Label="Lowercase (abc...)"></MudSwitch>
+    </div>
+    
+    <div class="d-flex flex-grow-1 gap-4 justify-center align-center">
+        <MudSwitch Color="Color.Inherit" @bind-value="_useNumbers" Label="Numbers (123...)"></MudSwitch>
+        <MudSwitch Color="Color.Inherit" @bind-value="_useSymbols" Label="Symbols (!-;#$...)"></MudSwitch>
+    </div>
+    
+    <MudSlider Step="1" Min="1" Max="512" @bind-value="_length">Length: @_length</MudSlider>
+
+    <MudButton Color="Color.Inherit" Variant="Variant.Outlined" Size="Size.Large" OnClick="() => _randomToken = GenerateToken()">Generate</MudButton>
+    
+    <MudDivider DividerType="DividerType.Middle" Class="my-6"/>
+    
+    <div class="d-flex flex-grow-1 gap-4 justify-center align-start">
+        <MudTextField class="my-3" @bind-Value="_randomToken" AutoGrow Label="Random Token" Variant="Variant.Outlined" ReadOnly="true" ></MudTextField>
+        <MudTooltip ShowOnClick="false" ShowOnFocus="true" ShowOnHover="false" Text="Copied" >
+            <MudIconButton class="my-4" Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_randomToken)" />
+        </MudTooltip>
+    </div>
+</MudPaper>
+
+@code
+{
+    private string _randomToken = string.Empty;
+    
+    private bool _useUppercase = true;
+    private bool _useLowercase = true;
+    private bool _useNumbers = false;
+    private bool _useSymbols = false;
+    
+    private double _length = 20;
+
+    protected override void OnInitialized()
+    {
+        _useUppercase = true;
+        _useLowercase = true;
+        _useNumbers = false;
+        _useSymbols = false;
+        _length = 20;
+        _randomToken = GenerateToken();
+    }
+    
+    
+    private async Task CopyToClipboard(string textToCopy)
+    {
+        if (textToCopy.Length > 0)
+            await JS.InvokeVoidAsync("copyToClipboard", textToCopy);
+    }
+
+    private string GenerateToken()
+    {
+        StringBuilder token = new StringBuilder();
+        Random random = new Random();
+        string chars = string.Empty;
+        if (_useUppercase)
+            chars += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        if (_useLowercase)
+            chars += "abcdefghijklmnopqrstuvwxyz";
+        if (_useNumbers)
+            chars += "0123456789";
+        if (_useSymbols)
+            chars += "!@#$%^&*()_+[]{}|;:,.<>?";
+        for (var i = 0; i < (int) _length; i++)
+        {
+            token.Append(chars[random.Next(0, chars.Length)]);
+        }
+        return token.ToString();
+    }
+}

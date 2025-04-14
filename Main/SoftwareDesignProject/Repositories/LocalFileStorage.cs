@@ -3,17 +3,21 @@
 public class LocalFileStorage: IFileStorage
 {
     private readonly string _basePath;
-    public LocalFileStorage(IHostEnvironment hostEnvironment)
+    private readonly ILogger<LocalFileStorage> _logger;
+    public LocalFileStorage(IHostEnvironment hostEnvironment,
+        ILogger<LocalFileStorage> logger)
     {
         _basePath = Path.Combine(hostEnvironment.ContentRootPath, "Root");
+        _logger = logger;
+        _logger.LogInformation("Base path of File Storage: " + _basePath);
     }
     
     public async Task<bool> SaveFileAsync(IFormFile file, string fileName, string path)
     {
-        Console.WriteLine(file.Name);
-        Console.WriteLine(file.Length);
-
         var filePath = Path.Combine(_basePath, path, fileName);
+        
+        _logger.LogTrace("Saving file: " + fileName + " to path: " + filePath);
+        
         try
         {
             if (!Directory.Exists(path))
@@ -23,6 +27,7 @@ public class LocalFileStorage: IFileStorage
         }
         catch (Exception e)
         {
+            _logger.LogError("Error saving file: " + e.Message);
             return false;
         }
         return true;
@@ -31,8 +36,15 @@ public class LocalFileStorage: IFileStorage
     public async Task<bool> RemoveFile(string fileName, string path)
     {
         var filePath = Path.Combine(_basePath, path, fileName);
+        
+        _logger.LogTrace("Removing file: " + fileName + " from path: " + filePath);
+
         if (!File.Exists(filePath))
+        {
+            _logger.LogWarning("Failed to remove (target file not exist): " + filePath);
             return true;
+        }
+
         try
         {
             File.Delete(filePath);
@@ -40,6 +52,7 @@ public class LocalFileStorage: IFileStorage
         }
         catch (Exception e)
         {
+            _logger.LogError("Error removing file: " + e.Message);
             return false;
         }
     }
@@ -49,64 +62,92 @@ public class LocalFileStorage: IFileStorage
         var filePath = Path.Combine(_basePath, path, fileName);
         var backupDir = Path.Combine(_basePath, path, "backup");
         var backupPath = Path.Combine(_basePath, path, "backup", fileName);
+        
         if (!Directory.Exists(backupDir))
             Directory.CreateDirectory(backupDir);
+
+        _logger.LogTrace("Backing up file: " + fileName + " to path: " + backupPath);
+        
         if (!File.Exists(filePath))
+        {
+            _logger.LogWarning("Failed to backup (target file not exist): " + filePath);
             return false;
+        }
+
         try
         {
             File.Copy(filePath, backupPath, true);
+            return true;
         }
         catch (Exception e)
         {
+            _logger.LogError("Error backing up file: " + e.Message);
             return false;
         }
-        return true;
     }
 
     public async Task<bool> RestoreFile(string fileName, string path)
     {
         var filePath = Path.Combine(_basePath, path, fileName);
         var backupPath = Path.Combine(_basePath, path, "backup", fileName);
+        
+        _logger.LogTrace("Restoring file: " + fileName + " from path: " + backupPath);
+        
         if (!File.Exists(backupPath))
+        {
+            _logger.LogWarning("Failed to restore (backup file not exist): " + backupPath);
             return false;
+        }
+
         try
         {
             File.Copy(backupPath, filePath, true);
             File.Delete(backupPath);
+            return true;
         }
         catch (Exception e)
         {
+            _logger.LogError("Error restoring file: " + e.Message);
             return false;
         }
-        return true;
     }
 
     public async Task<bool> RemoveBackup(string fileName, string path)
     {
         var backupPath = Path.Combine(_basePath, path, "backup", fileName);
+        
+        _logger.LogTrace("Removing backup file: " + fileName + " from path: " + backupPath);
+        
         if (!File.Exists(backupPath))
+        {
+            _logger.LogWarning("Failed to remove backup (backup file not exist): " + backupPath);
             return false;
+        }
+
         try
         {
             File.Delete(backupPath);
+            return true;
         }
         catch (Exception e)
         {
+            _logger.LogError("Error removing backup file: " + e.Message);
             return false;
         }
-        return true;
     }
 
     public async Task<FileStream?> GetFile(string fileName, string path)
     {
         var filePath = Path.Combine(_basePath, path, fileName);
-        Console.WriteLine("Getting file: " + filePath);
+        
+        _logger.LogTrace("Getting file: " + fileName + " from path: " + filePath);
+        
         if (!File.Exists(filePath))
         {
-            Console.WriteLine("File not found: " + filePath);
+            _logger.LogWarning("Failed to get file (file not exist): " + filePath);
             return null;
         }
+        
         // add caching here to optimize performance
         return new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
     }

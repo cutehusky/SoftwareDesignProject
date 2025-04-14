@@ -106,6 +106,7 @@
         }
         catch (Exception e)
         {
+            Console.WriteLine(e);
             _errorMessage = $"Fail to install plugin. Reason: {e.Message}";
             StateHasChanged();
         }

@@ -7,10 +7,12 @@ namespace SoftwareDesignProject.Services.ServerPluginManagement;
 public class DynamicRouteTransformer : DynamicRouteValueTransformer
 {
     private readonly DynamicPluginManager _pluginPluginManager;
+    private ILogger<DynamicRouteTransformer> _logger;
 
-    public DynamicRouteTransformer(DynamicPluginManager pluginPluginManager)
+    public DynamicRouteTransformer(DynamicPluginManager pluginPluginManager, ILogger<DynamicRouteTransformer> logger)
     {
         _pluginPluginManager = pluginPluginManager;
+        _logger = logger;
     }
 
     public override ValueTask<RouteValueDictionary> TransformAsync(HttpContext httpContext, RouteValueDictionary values)
@@ -19,9 +21,7 @@ public class DynamicRouteTransformer : DynamicRouteValueTransformer
         string? actionName = values["action"]?.ToString();
         string? id = values["id"]?.ToString();
         
-        Console.WriteLine("Controller name: " + controllerName);
-        Console.WriteLine("Action name: " + actionName);
-        Console.WriteLine("ID: " + id);
+        _logger.LogTrace($"Plugin {id} API using controller: " + controllerName + " action: " + actionName);
 
         if (string.IsNullOrEmpty(controllerName) 
             || string.IsNullOrEmpty(actionName) 
@@ -39,7 +39,7 @@ public class DynamicRouteTransformer : DynamicRouteValueTransformer
             throw new AmbiguousActionException("More than 1 controller matched");
         
         values["namespace"] = controller[0].Namespace;
-        Console.WriteLine("Using controller: " + controller[0].FullName);
+        _logger.LogTrace($"Plugin {id} API using controller: " + controller[0].FullName);
         return new ValueTask<RouteValueDictionary>(values);
     }
 

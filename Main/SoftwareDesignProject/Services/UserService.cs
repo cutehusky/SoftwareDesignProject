@@ -8,11 +8,13 @@ public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly IFormatChecker _formatChecker;
 
-    public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher)
+    public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher, IFormatChecker formatChecker)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
+        _formatChecker = formatChecker;
     }
 
     public async Task<PaginationList<UserDTO>> GetList(int page, int pageSize, string sortBy, SortDirection order, string search)
@@ -23,9 +25,6 @@ public class UserService : IUserService
 
     public async Task UpdateUserRole(UserDTO dto)
     {
-        var user = await _userRepository.GetById(dto.UserId);
-        if (user == null) throw new KeyNotFoundException("User not found");
-
         var sucesss = await _userRepository.Update(dto);
         if (!sucesss) throw new InvalidOperationException("Failed to update user role");
     }
@@ -38,9 +37,20 @@ public class UserService : IUserService
 
     public async Task Add(UserDTO user)
     {
-        if (user.Password == null)
+        if (user.Username == null || !_formatChecker.IsValidUsername(user.Username))
         {
-            throw new ArgumentNullException(nameof(user.Password), "Password cannot be null");
+            throw new InvalidDataException("Invalid username format");
+        }
+        
+        if (user.Password == null || !_formatChecker.IsValidPassword(user.Password))
+        {
+            throw new InvalidDataException("Invalid password format");
+        }
+        
+        var existingUser = await _userRepository.GetUserByUsernameAsync(user.Username);
+        if (existingUser != null) 
+        {
+            throw new InvalidDataException($"User {user.Username} already exists");
         }
 
         var hashedPassword = _passwordHasher.HashPassword(user.Password);
