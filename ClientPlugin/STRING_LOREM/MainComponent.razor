@@ -1,40 +1,59 @@
-﻿@using System.Net.Http.Json
-@using MudBlazor
-@inject HttpClient HttpClient
-<MudPaper Style="backdrop-filter: blur(5px); opacity: 0.75; "   Class="pa-3 mb-4">
-    <MudText Typo="Typo.h5" Style="margin: 20px">Generate Lorem Ispum</MudText>
+﻿@using MudBlazor
+@using System.Text
 
-    <MudNumericField @bind-Value="_inputLength"></MudNumericField>
-    <MudButton Variant="Variant.Filled" OnClick="Lorem" Height="50px">Generate</MudButton>
-    <MudTextField @bind-Value="_outputLorem" Label="Lorem ispum..." Variant="Variant.Outlined" Width="50%" Lines="10" ReadOnly="true" ></MudTextField>
+<MudPaper Style="backdrop-filter: blur(5px); opacity: 0.75;" Class="pa-3 mb-4">
+    <MudText Typo="Typo.h5" Style="margin: 20px">Generate Lorem Ipsum</MudText>
+
+    <MudNumericField @bind-Value="_inputLength" Label="Number of Words" Variant="Variant.Filled" />
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GenerateLorem" Height="50px" Class="mt-2">Generate</MudButton>
+    <MudTextField @bind-Value="_outputLorem" Label="Lorem ipsum..." Variant="Variant.Outlined" Width="50%" Lines="10" ReadOnly="true" Class="mt-2" />
 </MudPaper>
-@code
-{
+
+@code {
     private int _inputLength;
-    private string _outputLorem = String.Empty;
+    private string _outputLorem = string.Empty;
 
-    private async void Lorem()
+    /// <summary>
+    /// Generates Lorem Ipsum text based on the number of words entered.
+    /// </summary>
+    private void GenerateLorem()
     {
-        Console.WriteLine(_inputLength);
-        Console.WriteLine(Config.apiEndPoint);
+        _outputLorem = GenerateLoremIpsum(_inputLength);
+    }
 
-        var response = await HttpClient.PostAsJsonAsync(
-            Config.apiEndPoint + "/StringLorem/lorem", new StringLoremRequest()
+    // Array of lorem ipsum words.
+    private readonly string[] LoremWords =
+    {
+        "lorem", "ipsum", "dolor", "sit", "amet", "consectetur", "adipiscing", "elit",
+        "sed", "do", "eiusmod", "tempor", "incididunt", "ut", "labore", "et", "dolore",
+        "magna", "aliqua"
+    };
+
+    /// <summary>
+    /// Generates a Lorem Ipsum string with the specified number of words.
+    /// </summary>
+    /// <param name="length">The number of words to generate.</param>
+    /// <returns>A Lorem Ipsum string.</returns>
+    private string GenerateLoremIpsum(int length)
+    {
+        if (length <= 0)
+        {
+            return string.Empty;
+        }
+
+        var random = new Random();
+        var sb = new StringBuilder();
+
+        for (int i = 0; i < length; i++)
+        {
+            if (i > 0)
             {
-                value = _inputLength.ToString(),
-                type = "lorem"
-            });
+                sb.Append(" ");
+            }
+            string word = LoremWords[random.Next(LoremWords.Length)];
+            sb.Append(word);
+        }
 
-        if (response.IsSuccessStatusCode)
-        {
-            var responseData = await response.Content.ReadFromJsonAsync<StringLoremResponse>();
-            Console.WriteLine("Response: " + responseData);
-            _outputLorem = responseData.value;
-            StateHasChanged();
-        }
-        else
-        {
-            Console.WriteLine("Error: " + response.StatusCode);
-        }
+        return sb.ToString();
     }
 }
