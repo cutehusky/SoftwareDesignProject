@@ -1,0 +1,116 @@
+﻿@using System.Net.Http.Json
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+@using MudBlazor
+@inject HttpClient HttpClient
+
+<MudText Typo="Typo.h5" Style="margin: 20px">Decrypt</MudText>
+<MudTextField Lines="10" AutoGrow="true" class="my-3" @bind-Value="_input" Label="Encrypted" Variant="Variant.Outlined"></MudTextField>
+<MudTextField Lines="1" class="my-3" @bind-Value="_key" Label="Key" Variant="Variant.Outlined"></MudTextField>
+<div class="my-6 d-flex flex-grow-1 gap-4 justify-center align-center">
+    <MudSelect T="string" Variant="Variant.Outlined" Label="Select Type" @bind-SelectedValues="_selectedType">
+        <MudSelectItem Value="AES"></MudSelectItem>
+        <MudSelectItem Value="TripleDES"></MudSelectItem>
+    </MudSelect>
+    <MudButton Class="my-3" Color="Color.Inherit" Variant="Variant.Outlined" Size="Size.Large" OnClick="Decrypt">Get</MudButton>
+</div>
+
+@if (!string.IsNullOrEmpty(_alertText))
+{
+    <MudAlert Severity="Severity.Error" Class="mb-3">
+        @_alertText
+    </MudAlert>
+}
+
+<MudDivider DividerType="DividerType.Middle" Class="my-6"/>
+
+<div class="d-flex flex-grow-1 gap-4 justify-center align-start">
+    <MudTextField class="my-3" @bind-Value="_output" Label="Raw" Variant="Variant.Outlined" ReadOnly="true" Lines="10" AutoGrow="true"></MudTextField>
+    <MudTooltip ShowOnClick="false" ShowOnFocus="_showCopyToolTip" ShowOnHover="false" Text="Copied" >
+        <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" aria-label="copy" OnClick="() => CopyToClipboard(_output)" />
+    </MudTooltip>
+</div>
+
+@code
+{
+    private string _alertText = string.Empty;
+    private bool _showCopyToolTip;
+    
+    private const string AES = "AES";
+    private const string TripleDES = "TripleDES";
+    private IEnumerable<string> _selectedType = new List<string>() { AES };
+    
+    private string _key = string.Empty;
+    private string _input = string.Empty;
+    private string _output = string.Empty;
+    
+    private async void Decrypt()
+    {
+        try {
+            if (_input.Length == 0 || _key.Length == 0)
+            {
+                _alertText = "Please enter a value and key to decrypt.";
+                _output = string.Empty;
+                _showCopyToolTip = false;
+                StateHasChanged();
+                return;
+            }
+            
+            
+            var selectedType = "";
+            foreach (var type in _selectedType)
+            {
+                selectedType = type; 
+                break; // only 1 selection
+            }
+
+            var response = await HttpClient.PostAsJsonAsync(
+                Config.apiEndPoint + "/Encrypt/Decrypt", new EncryptRequest()
+                {
+                    Data = _input,
+                    Key = _key,
+                    Type = selectedType
+                });
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseData = await response.Content.ReadFromJsonAsync<EncryptResponse>();
+                if (responseData != null)
+                {
+                    _output = responseData.Result;
+                    _alertText = "";
+                    _showCopyToolTip = true;
+                    StateHasChanged();
+                }
+                else
+                {
+                    _output = string.Empty;
+                    _alertText = "Error: No data received from server.";
+                    _showCopyToolTip = true;
+                    StateHasChanged();
+                }
+            }
+            else
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                _alertText = "Error: " + errorMessage;
+                _output = string.Empty;
+                _showCopyToolTip = false;
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            _showCopyToolTip = false;
+            _output = string.Empty;
+            _alertText = "An unexpected error occurred: " + ex.Message;
+            StateHasChanged();
+        }
+    }
+    
+    private async Task CopyToClipboard(string textToCopy)
+    {
+        if (textToCopy.Length > 0)
+            await JS.InvokeVoidAsync("copyToClipboard", textToCopy);
+    }
+}

@@ -25,3 +25,19 @@ Content-Type: application/json
 
 ###
 
+POST http://localhost:5037/api/plugin/7c22a439-fe40-4935-934b-e93804484289/Encrypt/Encrypt
+Content-Type: application/json
+
+{
+  "data": "hello",
+  "key": "123"
+}
+
+### 
+POST http://localhost:5037/api/plugin/7c22a439-fe40-4935-934b-e93804484289/Encrypt/Decrypt
+Content-Type: application/json
+
+{
+  "data": "xMB9BMm4QXiXAAfTcMmm1A==",
+  "key": "123"
+}
