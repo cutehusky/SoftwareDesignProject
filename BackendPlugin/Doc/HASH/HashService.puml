@@ -1,0 +1,17 @@
+@startuml
+class HashService {
+    + ConvertToMD5(input:string, converter:Func<byte[], string>) : string
+    + ConvertToSha3_256(input:string, converter:Func<byte[], string>) : string
+    + ConvertToSha3_384(input:string, converter:Func<byte[], string>) : string
+    + ConvertToSha3_512(input:string, converter:Func<byte[], string>) : string
+    + ConvertToSha2_256(input:string, converter:Func<byte[], string>) : string
+    + ConvertToSha2_384(input:string, converter:Func<byte[], string>) : string
+    + ConvertToSha2_512(input:string, converter:Func<byte[], string>) : string
+    + ConvertToSha1(input:string, converter:Func<byte[], string>) : string
+    + HashString(hash:HashAlgorithm, input:string, converter:Func<byte[], string>) : string
+    + {static} BytesToBinString(byteArray:byte[]) : string
+    + {static} BytesToBase64URL(byteArray:byte[]) : string
+    + {static} BytesToBase64(byteArray:byte[]) : string
+    + {static} BytesToHexString(byteArray:byte[]) : string
+}
+@enduml

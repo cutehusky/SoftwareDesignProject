@@ -1,0 +1,7 @@
+@startuml
+class SourceDNSController {
+    + SourceDNSController(sp:IDynamicServiceProvider)
+    + <<async>> LookUp(request:Request) : Task<IActionResult>
+}
+ControllerBase <|-- SourceDNSController
+@enduml

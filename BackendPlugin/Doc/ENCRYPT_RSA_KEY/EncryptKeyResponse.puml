@@ -1,0 +1,6 @@
+@startuml
+class EncryptKeyResponse {
+    + PublicKey : string <<get>> <<set>>
+    + PrivateKey : string <<get>> <<set>>
+}
+@enduml

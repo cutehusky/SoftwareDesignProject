@@ -1,0 +1,5 @@
+@startuml
+class Response {
+    + value : string <<get>> <<set>>
+}
+@enduml

@@ -6,5 +6,7 @@ interface IFileStorage {
     + RestoreFile(fileName:string, path:string) : Task<bool>
     + RemoveBackup(fileName:string, path:string) : Task<bool>
     + GetFile(fileName:string, path:string) : Task<FileStream?>
+    + GetFiles(path:string, searchPattern:string) : List<string>
+    + GetFileBytes(fileName:string, path:string) : Task<byte[]>
 }
 @enduml

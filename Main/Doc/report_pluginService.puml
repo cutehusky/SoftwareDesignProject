@@ -1,0 +1,12 @@
+@startuml
+!include ./Services/IPluginService.puml
+!include ./Services/PluginService.puml
+!include ./Repositories/IRepository.puml
+!include ./Repositories/IPluginRepository.puml
+!include ./DTO/PluginDTO.puml
+!include ./Repositories/IFileStorage.puml
+PluginService "1" -- "1" IPluginRepository : "use"
+PluginService "1" -- "1..*" DynamicPluginManager: "use"
+PluginService "1" -- "1..*" IFileStorage: "use"
+IPluginService "1" -- "1..*" PluginDTO: "use" 
+@enduml

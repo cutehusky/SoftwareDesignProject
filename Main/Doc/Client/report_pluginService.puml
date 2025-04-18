@@ -1,0 +1,4 @@
+@startuml
+!include .\\Services\IPluginService.puml
+!include .\\Services\PluginService.puml
+@enduml

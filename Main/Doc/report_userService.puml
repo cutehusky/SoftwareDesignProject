@@ -1,0 +1,14 @@
+@startuml
+!include ./Services/IUserService.puml
+!include ./Services/UserService.puml
+!include ./Repositories/IRepository.puml
+!include ./Repositories/IUserRepository.puml
+!include ./DTO/UserDTO.puml
+!include ./Services/IPasswordHasher.puml
+
+IUserService "1" -- "1..*" UserDTO: "use" 
+UserService "1" -- "1" IUserRepository : "use"
+IUserRepository "1" -- "1..*" UserDTO: "use" 
+UserService "1" -- "1..*" IPasswordHasher: "use"
+
+@enduml

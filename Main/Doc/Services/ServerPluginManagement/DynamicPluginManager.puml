@@ -1,6 +1,6 @@
 @startuml
 class DynamicPluginManager {
-    + DynamicPluginManager(partManager:ApplicationPartManager, serviceProvider:IServiceProvider, env:IHostEnvironment, changeProvider:IActionDescriptorChangeProvider, logger:ILogger<DynamicPluginManager>)
+    + DynamicPluginManager(partManager:ApplicationPartManager, serviceProvider:IServiceProvider, changeProvider:IActionDescriptorChangeProvider, logger:ILogger<DynamicPluginManager>, fileStorage:IFileStorage)
     + <<async>> LoadAllAssemblies() : Task
     + CheckLoadedPlugin(uid:string) : bool
     + GetServiceProvider() : IServiceProvider

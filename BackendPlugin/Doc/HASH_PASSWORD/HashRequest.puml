@@ -1,0 +1,10 @@
+@startuml
+class HashRequest {
+    + value : string <<get>> <<set>>
+    + costFactor : int <<get>> <<set>>
+}
+class VerifyRequest {
+    + value : string <<get>> <<set>>
+    + hashed : string <<get>> <<set>>
+}
+@enduml

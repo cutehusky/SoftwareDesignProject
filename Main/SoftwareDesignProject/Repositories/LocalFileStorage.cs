@@ -151,4 +151,44 @@ public class LocalFileStorage: IFileStorage
         // add caching here to optimize performance
         return new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
     }
+
+    public List<string> GetFiles(string path,  string searchPattern = "*")
+    {
+        var directoryPath = Path.Combine(_basePath, path);
+        _logger.LogTrace("Getting files from path: " + directoryPath);
+        if (!Directory.Exists(directoryPath))
+        {
+            _logger.LogWarning("Failed to get files (directory not exist): " + directoryPath);
+            return new List<string>();
+        }
+        try
+        {
+            return Directory.GetFiles(directoryPath, searchPattern).Select(filePath => Path.GetFileName(filePath)!).ToList();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Error getting files: " + e.Message);
+            return new List<string>();
+        }
+    }
+
+    public async Task<byte[]> GetFileBytes(string fileName, string path)
+    {
+        var filePath = Path.Combine(_basePath, path, fileName);
+        _logger.LogTrace("Getting file bytes: " + fileName + " from path: " + filePath);
+        if (!File.Exists(filePath))
+        {
+            _logger.LogWarning("Failed to get file bytes (file not exist): " + filePath);
+            return [];
+        }
+        try
+        {
+            return await File.ReadAllBytesAsync(filePath);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Error getting file bytes: " + e.Message);
+            return [];
+        }
+    }
 }

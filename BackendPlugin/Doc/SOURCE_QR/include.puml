@@ -1,0 +1,10 @@
+@startuml
+!include Config.puml
+!include SourceQRController.puml
+!include Request.puml
+!include Response.puml
+!include Service.puml
+SourceQrController "1" -- "1" Service : "use"
+SourceQrController  --  Request : "use"
+SourceQrController  --  Response : "use"
+@enduml

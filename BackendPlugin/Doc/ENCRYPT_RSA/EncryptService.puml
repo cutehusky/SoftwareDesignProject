@@ -1,0 +1,8 @@
+@startuml
+class EncryptService {
+    + Encrypt_XML(plainText:string, publicKey:string) : string
+    + Decrypt_XML(cipherText:string, privateKey:string) : string
+    + Encrypt_PEM(plainText:string, publicKey:string) : string
+    + Decrypt_PEM(cipherText:string, privateKey:string) : string
+}
+@enduml

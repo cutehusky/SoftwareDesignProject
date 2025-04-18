@@ -9,7 +9,6 @@ namespace SoftwareDesignProject.Services.ServerPluginManagement;
 public class DynamicPluginManager: IHostedService
 {
     private readonly ApplicationPartManager _partManager;
-    private readonly string _pluginPath;
     private readonly ActionDescriptorChangeProvider _changeProvider;
     private readonly HashSet<string> _loadedPlugin = new();
     private readonly Dictionary<string, List<Type>> _controllerCollection = new();
@@ -17,21 +16,20 @@ public class DynamicPluginManager: IHostedService
     private readonly IServiceProvider _serviceProvider;
     private IServiceProvider _dynamicServiceProvider = null!;
     private readonly ILogger<DynamicPluginManager> _logger;
+    private readonly IFileStorage _fileStorage;
+    private readonly string _pluginPath = "BackendPlugins";
 
     public DynamicPluginManager(
         ApplicationPartManager partManager,
         IServiceProvider serviceProvider,
-        IHostEnvironment env, 
         IActionDescriptorChangeProvider changeProvider, 
-        ILogger<DynamicPluginManager> logger)
+        ILogger<DynamicPluginManager> logger, IFileStorage fileStorage)
     {
         _partManager = partManager;
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _fileStorage = fileStorage;
         _changeProvider = (changeProvider as ActionDescriptorChangeProvider)!;
-        _pluginPath = Path.Combine(env.ContentRootPath, "Root/BackendPlugins");
-        if (!Directory.Exists(_pluginPath))
-            Directory.CreateDirectory(_pluginPath);
     }
     
     public async Task LoadAllAssemblies()
@@ -43,7 +41,8 @@ public class DynamicPluginManager: IHostedService
         _loadedPlugin.Clear();
         using var scope = _serviceProvider.CreateScope();
         var pluginRepository = scope.ServiceProvider.GetRequiredService<IPluginRepository>();
-        foreach (var dll in Directory.GetFiles(_pluginPath, "*.dll"))
+        var files = _fileStorage.GetFiles(_pluginPath, "*.dll");
+        foreach (var dll in files)
         {
             await LoadAssembly(pluginRepository, dll);
         }
@@ -53,10 +52,10 @@ public class DynamicPluginManager: IHostedService
 
     private async Task LoadAssembly(
         IPluginRepository pluginRepository,
-        string path)
+        string name)
     {
-        _logger.LogInformation("Loading assembly: {0}", path);
-        var dllBytes = await File.ReadAllBytesAsync(path);
+        _logger.LogInformation("Loading assembly: {0}", name);
+        var dllBytes = await _fileStorage.GetFileBytes(name, _pluginPath);
         var assembly = Assembly.Load(dllBytes);
         var pluginId = "";
         foreach (var type in assembly.GetTypes())

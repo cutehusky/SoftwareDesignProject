@@ -1,0 +1,6 @@
+@startuml
+class Request {
+    + value : string <<get>> <<set>>
+    + type : string <<get>> <<set>>
+}
+@enduml

@@ -1,0 +1,21 @@
+@startuml C4_Elements
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(personAlias, "User", "Normal / Premium user use tool of system.")
+Person(personAdminAlias, "Admin", " Manage system.")
+
+
+System_Boundary(c1, "IT Tools") {
+    Container(blazor, "Single Page Web Application", "C#, Blazor WebAssembly", "User-facing application for users to use tool of system and for admin to manage system.")
+    Container(asp_server, "API Server", "C#, ASP.NET Core 9 MVC", "Backend server that handles business logic and communication with the database.")
+    ContainerDb(db, "Database", "PostgreSQL", "Stores user and tool data")
+}
+
+Rel(personAlias,blazor, "Uses tool of system")
+Rel(personAdminAlias,blazor, "Manage system")
+
+Rel_Left(asp_server, db, "Reads from and writes to", "Entity Framework")
+Rel(blazor, asp_server, "Make API call to", "HTTP/REST")
+
+@enduml

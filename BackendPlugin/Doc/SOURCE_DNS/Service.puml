@@ -1,0 +1,5 @@
+@startuml
+class Service {
+    + <<async>> ResolveDns(value:string) : Task<List<string>>
+}
+@enduml

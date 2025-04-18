@@ -1,0 +1,10 @@
+@startuml
+!include Config.puml
+!include EncryptController.puml
+!include EncryptRequest.puml
+!include EncryptResponse.puml
+!include EncryptService.puml
+EncryptController "1" -- "1" EncryptService : "use"
+EncryptController  --  EncryptRequest : "use"
+EncryptController  --  EncryptResponse : "use"
+@enduml

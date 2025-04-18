@@ -5,9 +5,4 @@ class UserDTO {
     + Password : string? <<get>> <<init>>
     + UserRole : UserRoles? <<get>> <<init>>
 }
-enum UserRoles {
-    Normal,
-    Premium,
-    Admin,
-}
 @enduml

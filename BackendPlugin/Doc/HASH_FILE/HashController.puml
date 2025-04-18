@@ -1,0 +1,7 @@
+@startuml
+class HashController {
+    + HashController(sp:IDynamicServiceProvider)
+    + <<async>> Hash(file:IFormFile?, type:string) : Task<IActionResult>
+}
+ControllerBase <|-- HashController
+@enduml

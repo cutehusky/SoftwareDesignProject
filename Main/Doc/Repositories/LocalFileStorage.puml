@@ -7,6 +7,8 @@ class LocalFileStorage {
     + <<async>> RestoreFile(fileName:string, path:string) : Task<bool>
     + <<async>> RemoveBackup(fileName:string, path:string) : Task<bool>
     + <<async>> GetFile(fileName:string, path:string) : Task<FileStream?>
+    + GetFiles(path:string, searchPattern:string) : List<string>
+    + <<async>> GetFileBytes(fileName:string, path:string) : Task<byte[]>
 }
 IFileStorage <|-- LocalFileStorage
 @enduml

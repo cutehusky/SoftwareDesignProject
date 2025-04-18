@@ -1,0 +1,9 @@
+@startuml
+!include ./DTO/UserDTO.puml
+!include ./Controllers/AuthController.puml
+!include ./Services/IAuthService.puml
+!include ./Controllers/GetUserInfoActionFilter.puml
+AuthController "1" -- "1" IAuthService : "use"
+AuthController "1" -- "1..*" UserDTO: "use"
+AuthController --  GetUserInfoActionFilter: "use"
+@enduml

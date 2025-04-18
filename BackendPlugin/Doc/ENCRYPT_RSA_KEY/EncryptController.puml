@@ -1,0 +1,7 @@
+@startuml
+class EncryptController {
+    + EncryptController(sp:IDynamicServiceProvider)
+    + GenerateRSAKey(request:EncryptKeyRequest) : IActionResult
+}
+ControllerBase <|-- EncryptController
+@enduml

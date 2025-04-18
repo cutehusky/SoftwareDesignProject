@@ -1,0 +1,10 @@
+@startuml
+!include Config.puml
+!include SourceDNSController.puml
+!include Request.puml
+!include Response.puml
+!include Service.puml
+SourceDNSController "1" -- "1" Service : "use"
+SourceDNSController  --  Request : "use"
+SourceDNSController  --  Response : "use"
+@enduml

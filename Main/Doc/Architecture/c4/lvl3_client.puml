@@ -1,0 +1,79 @@
+﻿@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container(asp_server, "API Server", "C#, ASP.NET Core 9 MVC", "Backend server that handles business logic and communication with the database.")
+
+Container_Boundary(blazor, "Single Page Web Application", "C#, Blazor WebAssembly") {
+    Component(home, "HomePage", "Blazor Page", "Home page of the application, providing navigation to different tools and favorite tools.")
+    Component(dynamicDLL, "DynamicDLLPage", "Blazor Page", "Container of plugin page loading dynamically from DLL download from server.")
+    Component(pluginPage, "PluginManagementPage", "Blazor Page", "Plugin management page for admin to manage plugin.")
+    Component(userPage, "UserManagementPage", "Blazor Page", "User management page for admin to manage user.")
+    Component(navMenu, "NavMenu", "Blazor Component", "Navigation menu for the application.")
+    Component(search, "SearchBar", "Blazor Component", "Search bar for searching tools.")
+    Component(loginSignUp, "LoginSignUp", "Blazor Page", "Login and signup dialog for user.")
+        
+    Component(userService, "UserService","Interface", "Service provides user management")
+    Component(authService, "AuthService","Interface", "Service provides login/signup and refresh token")
+    Component(dynamicPageLoad, "DynamicPageLoadService","Interface", "Service provides dynamic page loading")
+    Component(pluginService, "PluginService","Interface", "Service provides tool management")
+    Component(navMenuLoadService, "NavMenuLoadService", "Interface","Service provides nav menu/home page item/search result loading")
+    Component(componentRefreshService, "ComponentRefreshService", "Interface","Service provides refreshing component")
+    
+     Container_Boundary(toolPlugin, "Tool Plugin") {
+            Component(encryptAes, "EncryptAES", "View&Service", "AES Encryption")
+            Component(encryptRsa, "EncryptRSA", "View&Service", "RSA Encryption")
+            Component(encryptRsaKey, "EncryptRSAKey", "View&Service", "RSA Key Pair Generation")
+            Component(hashString, "HashString", "View&Service", "SHA / MD5 Hashing string")
+            Component(hashFile, "HashFile", "View&Service", "SHA / MD5 Hashing file")
+            Component(hashPassword, "HashPassword", "View&Service", "Bcrypt Hashing/ Verifying password")
+            Component(sourceDNS, "SourceDNS", "View&Service", "DNS")
+            Component(sourceQR, "SourceQR", "View&Service", "QR generator")
+            Component(sourceGit, "SourceGitCheatSheet", "View&Service", "Git Cheat Sheet")
+            
+            Component(STRING_LOREM, "StringLorem", "View&Service", "Handles lorem ipsum string generation or manipulation.")
+            Component(STRING_OBSFUCATE, "StringObsfucate", "View&Service", "Performs string obfuscation for security or encoding.")
+            Component(STRING_SPACE, "StringSpace", "View&Service", "Manages spacing and formatting in strings.")
+            Component(MEASURE_TEMPERATURE, "MeasureTemperature", "View&Service", "Convert temperature unit.")
+            Component(MEASURE_CHRONOMETER, "MeasureChronometer", "View&Service", "Implements stopwatch or timing functionality.")
+            Component(MEASURE_BANDWIDTH, "MeasureBandwidth", "View&Service", "Convert internet or network bandwidth uint")
+            Component(SECURITY_PASSGEN, "SecurityPassGen", "View&Service", "Generates secure passwords.")
+            Component(SECURITY_PASSTEST, "SecurityPassTest", "View&Service", "Tests password strength.")
+            Component(SECURITY_HIDEEMAIL, "SecurityHideEmail", "View&Service", "Masks or hides email addresses for privacy.")
+            Component(WEB_URL_PARSER, "WebUrlParser", "View&Service", "Parses URLs and extracts components.")
+            Component(WEB_URL_ENCORDER, "WebUrlEncoder", "View&Service", "Encodes and decodes URL strings.")
+            Component(WEB_PORTGEN, "WebPortGen", "View&Service", "Generates random port.")
+            Component(GENERATE_UUID, "GenerateUuid", "View&Service", "Generates universally unique identifiers (UUIDs).")
+            Component(GENERATE_RANDOM_TOKEN, "GenerateRandomToken", "View&Service", "Generates random tokens.")
+            Component(GENERATE_MOCK_DATA, "GenerateMockData", "View&Service", "Creates mock data for testing or prototyping in json")
+            Component(IP_IPV4_SUBNET, "IpIpv4Subnet", "View&Service", "Calculates or analyzes IPv4 subnets.")
+            Component(IP_IPV4_ADDRESS_CONVERTER, "IpIpv4AddressConverter", "View&Service", "Converts between IPv4 address formats.")
+            Component(IP_IPV4_RANG_EXPANDER, "IpIpv4RangeExpander", "View&Service", "Expands IPv4 ranges to full lists.")
+            Component(CONVERT_BASE64, "ConvertBase64", "View&Service", "Encodes and decodes Base64 content.")
+            Component(CONVERT_XML_JSON, "ConvertXmlJson", "View&Service", "Converts between XML and JSON formats.")
+            Component(CONVERT_JWT_PARSER, "ConvertJwtParser", "View&Service", "Parses JWT tokens and displays contents.")
+        }
+ }
+
+
+Rel(home, navMenuLoadService, "Uses")
+Rel(navMenu, navMenuLoadService, "Uses")
+Rel(search, navMenuLoadService, "Uses")
+
+Rel(pluginPage, componentRefreshService, "Uses")
+Rel(home, componentRefreshService, "Uses")
+Rel(navMenu, componentRefreshService, "Uses")
+
+Rel(loginSignUp, authService, "Uses")
+Rel(dynamicDLL, dynamicPageLoad , "Uses")
+Rel(pluginPage, pluginService, "Uses")
+Rel(userPage, userService, "Uses")
+Rel(navMenuLoadService, asp_server, "Uses")
+Rel(dynamicPageLoad, asp_server, "Uses")
+Rel(pluginService, asp_server, "Uses")
+Rel(userService, asp_server, "Uses")
+Rel(authService, asp_server, "Uses")
+
+Rel(dynamicPageLoad, toolPlugin, "Load")
+@enduml

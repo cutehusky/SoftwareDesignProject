@@ -1,0 +1,10 @@
+@startuml C4_Elements
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(personAlias, "User", "Normal / Premium user use tool of system.")
+Person(personAdminAlias, "Admin", " Manage system.")
+System(systemAlias, "IT Tools", "Provides Utilities tools for developer.")
+
+Rel(personAlias, systemAlias, "Uses tool of system")
+Rel(personAdminAlias, systemAlias, "Manage system")
+@enduml

@@ -1,0 +1,7 @@
+@startuml
+interface IConfig {
+    + ID <<get>> : string
+    + EntryPoint <<get>> : Type
+    + APIEndPoint <<set>> : string
+}
+@enduml

@@ -1,0 +1,16 @@
+@startuml
+!include ./Services/IPluginService.puml
+!include ./Services/PluginService.puml
+!include ./Repositories/IRepository.puml
+!include ./Repositories/IPluginRepository.puml
+!include ./Repositories/PluginRepository.puml
+!include ./Controllers/PluginsController.puml
+!include ./Models/Entities/Plugin.puml
+!include ./DTO/PluginDTO.puml
+!include ./Repositories/IFileStorage.puml
+!include ./Repositories/LocalFileStorage.puml
+PluginsController "1" -- "1" IPluginService : "use"
+PluginsController "1" -- "1..*" PluginDTO: "use"
+IPluginRepository "1" -- "1..*" PluginDTO: "use" 
+IPluginRepository "1" -- "1..*" Plugin: "CRUD"
+@enduml

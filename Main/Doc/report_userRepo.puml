@@ -1,0 +1,9 @@
+@startuml
+!include ./Repositories/IRepository.puml
+!include ./Repositories/IUserRepository.puml
+!include ./Repositories/UserRepository.puml
+!include ./Models/Entities/User.puml
+!include ./DTO/UserDTO.puml
+IUserRepository "1" -- "1..*" UserDTO: "use" 
+UserRepository "1" -- "1..*" User: "CRUD"
+@enduml

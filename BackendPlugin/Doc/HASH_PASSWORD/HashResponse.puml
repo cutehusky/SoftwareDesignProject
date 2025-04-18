@@ -1,0 +1,8 @@
+@startuml
+class HashResponse {
+    + hashed : string <<get>> <<set>>
+}
+class VerifyResponse {
+    + ok : bool <<get>> <<set>>
+}
+@enduml

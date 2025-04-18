@@ -1,0 +1,4 @@
+@startuml
+!include ./Repositories/IFileStorage.puml
+!include ./Repositories/LocalFileStorage.puml
+@enduml

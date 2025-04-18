@@ -1,0 +1,8 @@
+@startuml
+class EncryptService {
+    + Encrypt_TripleDES(plainText:string, key:string) : string
+    + Decrypt_TripleDES(cipherText:string, key:string) : string
+    + Encrypt_AES(value:string, key:string) : string
+    + Decrypt_AES(cipherText:string, key:string) : string
+}
+@enduml
