@@ -1,0 +1,9 @@
+@startuml
+class DynamicServiceProvider {
+    + DynamicServiceProvider(pluginManager:DynamicPluginManager)
+    + GetService() : T?
+    + CreateScope() : IServiceScope
+    + GetService(serviceType:Type) : object?
+}
+IDynamicServiceProvider <|-- DynamicServiceProvider
+@enduml

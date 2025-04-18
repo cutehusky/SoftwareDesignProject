@@ -1,0 +1,13 @@
+@startuml
+class DynamicPluginManager {
+    + DynamicPluginManager(partManager:ApplicationPartManager, serviceProvider:IServiceProvider, env:IHostEnvironment, changeProvider:IActionDescriptorChangeProvider, logger:ILogger<DynamicPluginManager>)
+    + <<async>> LoadAllAssemblies() : Task
+    + CheckLoadedPlugin(uid:string) : bool
+    + GetServiceProvider() : IServiceProvider
+    + GetControllers(pluginId:string) : List<Type>
+    + GetValidControllers(pluginId:string, controllerName:string) : List<Type>
+    + <<async>> StartAsync(cancellationToken:CancellationToken) : Task
+    + StopAsync(cancellationToken:CancellationToken) : Task
+}
+IHostedService <|-- DynamicPluginManager
+@enduml

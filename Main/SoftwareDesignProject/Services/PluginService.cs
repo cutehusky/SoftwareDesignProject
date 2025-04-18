@@ -213,9 +213,9 @@ public class PluginService : IPluginService
             await _pluginManager.LoadAllAssemblies();
     }
 
-    public Task<PluginDTO?> GetPluginById(Guid id)
+    public async Task<PluginDTO?> GetPluginById(Guid id)
     {
-        return _pluginRepository.GetById(id);
+        return await _pluginRepository.GetById(id);
     }
 
     public async Task UpgradePlugin(Guid pluginId,
@@ -307,9 +307,9 @@ public class PluginService : IPluginService
         await _fileStorage.RemoveBackup(pluginId + ".dll", _serverUploadPath);
     }
 
-    public Task<List<Guid>> GetStarredPluginUserById(Guid id)
+    public async Task<List<Guid>> GetStarredPluginUserById(Guid id)
     {
-        return _pluginRepository.GetStarredPluginByUserId(id);
+        return await _pluginRepository.GetStarredPluginByUserId(id);
     }
 
     public async Task StarPlugin(Guid pluginId, Guid userId)

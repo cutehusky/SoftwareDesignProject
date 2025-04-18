@@ -9,6 +9,7 @@ public class AppDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Plugin> Plugins { get; set; }
     public DbSet<User_Plugin> UserPlugins { get; set; }
+    public DbSet<Config> Configs { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<User>()
@@ -17,6 +18,17 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Plugin>()
             .HasIndex(u => u.Name)
             .IsUnique();
+        modelBuilder.Entity<User>()
+            .HasOne(u => u.UserRoleRef)
+            .WithMany()
+            .HasForeignKey(u => u.UserRole)
+            .OnDelete(DeleteBehavior.Restrict);
+        var userRoles = Enum.GetValues(typeof(UserRoles))
+            .Cast<UserRoles>()
+            .Select(role => new UserRole { Role = role })
+            .ToArray();
+        modelBuilder.Entity<UserRole>().HasData(userRoles);
+        
         base.OnModelCreating(modelBuilder);
     }
 

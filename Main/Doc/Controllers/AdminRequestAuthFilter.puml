@@ -1,0 +1,7 @@
+@startuml
+class AdminRequestAuthFilter {
+    + AdminRequestAuthFilter(userService:IUserService)
+    + <<async>> OnActionExecutionAsync(context:ActionExecutingContext, next:ActionExecutionDelegate) : Task
+}
+IAsyncActionFilter <|-- AdminRequestAuthFilter
+@enduml

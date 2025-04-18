@@ -1,0 +1,9 @@
+@startuml
+class NavMenuLoader {
+    + NavMenuLoader(httpClient:HttpClient, navItemEndpoint:string, homeItemEndpoint:string, searchEndpoint:string)
+    + <<async>> GetNavItem() : Task<NavData?>
+    + GetHomeItem() : Task<HomeData?>
+    + <<async>> Search(queryValue:string) : Task<List<NavItem>?>
+}
+INavMenuLoader <|-- NavMenuLoader
+@enduml

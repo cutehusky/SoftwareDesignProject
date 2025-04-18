@@ -1,0 +1,10 @@
+@startuml
+interface IFormatChecker {
+    + IsValidEmail(email:string) : bool
+    + IsValidUsername(username:string) : bool
+    + IsValidPassword(password:string) : bool
+    + IsValidPluginName(name:string) : bool
+    + IsValidPluginCategory(category:string) : bool
+    + IsValidPluginDescription(description:string) : bool
+}
+@enduml

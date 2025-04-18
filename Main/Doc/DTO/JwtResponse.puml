@@ -1,0 +1,5 @@
+@startuml
+class JwtResponse {
+    + Token : string <<get>> <<init>>
+}
+@enduml

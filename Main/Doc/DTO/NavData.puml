@@ -1,0 +1,6 @@
+@startuml
+class NavData {
+    + NavItems : IEnumerable<NavItem> <<get>> <<init>>
+    + FavoriteItems : IEnumerable<Guid> <<get>> <<init>>
+}
+@enduml

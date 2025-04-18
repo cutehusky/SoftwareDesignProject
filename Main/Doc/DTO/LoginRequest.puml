@@ -1,0 +1,6 @@
+@startuml
+class LoginRequest {
+    + <<required>> Username : string <<get>> <<init>>
+    + <<required>> Password : string <<get>> <<init>>
+}
+@enduml

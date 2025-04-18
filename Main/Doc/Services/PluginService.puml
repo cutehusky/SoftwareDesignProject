@@ -1,0 +1,18 @@
+@startuml
+class PluginService {
+    + PluginService(pluginRepository:IPluginRepository, fileStorage:IFileStorage, pluginManager:DynamicPluginManager, logger:ILogger<PluginService>, formatChecker:IFormatChecker)
+    + <<async>> GetList(page:int, pageSize:int, sortBy:string, order:SortDirection, search:string) : Task<PaginationList<PluginDTO>>
+    + <<async>> GetActiveList(userRole:UserRoles?) : Task<List<PluginDTO>>
+    + <<async>> AddPlugin(name:string, description:string, category:string, isPremium:bool, clientDll:IFormFile, serverDll:IFormFile?) : Task
+    + <<async>> EditPlugin(dto:PluginDTO) : Task
+    + <<async>> RemovePlugin(id:Guid) : Task
+    + <<async>> GetPluginById(id:Guid) : Task<PluginDTO?>
+    + <<async>> UpgradePlugin(pluginId:Guid, clientDll:IFormFile?, serverDll:IFormFile?) : Task
+    + <<async>> GetStarredPluginUserById(id:Guid) : Task<List<Guid>>
+    + <<async>> StarPlugin(pluginId:Guid, userId:Guid) : Task
+    + <<async>> UnstarPlugin(pluginId:Guid, userId:Guid) : Task
+    + <<async>> GetClientPluginFile(fileName:string) : Task<FileStream>
+    + <<async>> SearchPlugin(queryValue:string, userRole:UserRoles ?) : Task<List<PluginDTO>>
+}
+IPluginService <|-- PluginService
+@enduml

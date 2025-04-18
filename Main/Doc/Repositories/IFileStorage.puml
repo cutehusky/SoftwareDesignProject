@@ -1,0 +1,10 @@
+@startuml
+interface IFileStorage {
+    + SaveFileAsync(file:IFormFile, fileName:string, path:string) : Task<bool>
+    + RemoveFile(fileName:string, path:string) : Task<bool>
+    + BackupFile(fileName:string, path:string) : Task<bool>
+    + RestoreFile(fileName:string, path:string) : Task<bool>
+    + RemoveBackup(fileName:string, path:string) : Task<bool>
+    + GetFile(fileName:string, path:string) : Task<FileStream?>
+}
+@enduml

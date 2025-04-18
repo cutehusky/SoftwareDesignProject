@@ -4,8 +4,8 @@ namespace SoftwareDesignProject.Services;
 
 public interface IAuthService
 {
-    Task<string?> AuthenticateAsync(string username, string password);
-    Task RegisterAsync(string username, string password, UserRoles role);
+    public Task<string?> AuthenticateAsync(string username, string password);
+    public Task RegisterAsync(string username, string password, UserRoles role);
 
-    Task<string?> RefreshToken(string oldToken);
+    public Task<string?> RefreshToken(string oldToken);
 }

@@ -1,0 +1,31 @@
+@startuml
+!include .\\Services\IPluginService.puml
+!include .\\Services\PluginService.puml
+
+class AddPluginDialog {
+    -IPluginService PluginService
+}
+
+class EditPluginDialog {
+    -IPluginService PluginService
+}
+
+class UpgradePluginDialog {
+    -IPluginService PluginService
+}
+
+class PluginManagementPage {
+    -IPluginService PluginService
+    -AuthenticationStateProvider AuthStateProvider
+}
+PluginManagementPage "1" -- "1" AddPluginDialog : "use"
+PluginManagementPage "1" -- "1" EditPluginDialog : "use"
+PluginManagementPage "1" -- "1" UpgradePluginDialog : "use"
+
+AddPluginDialog "1" -- "1" IPluginService : "use"
+EditPluginDialog "1" -- "1" IPluginService : "use"
+PluginManagementPage "1" -- "1" IPluginService : "use"
+UpgradePluginDialog "1" -- "1" IPluginService : "use"
+PluginManagementPage "1" -- "1" AuthenticationStateProvider : "use"
+class AuthenticationStateProvider
+@enduml

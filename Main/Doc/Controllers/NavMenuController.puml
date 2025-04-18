@@ -1,0 +1,9 @@
+@startuml
+class NavMenuController {
+    + NavMenuController(pluginService:IPluginService, logger:ILogger<NavMenuController>)
+    + <<async>> GetHomeList() : Task<IActionResult>
+    + <<async>> GetNavList() : Task<IActionResult>
+    + <<async>> Search(queryValue:string) : Task<IActionResult>
+}
+Controller <|-- NavMenuController
+@enduml

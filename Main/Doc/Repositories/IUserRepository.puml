@@ -1,0 +1,6 @@
+@startuml
+interface IUserRepository {
+    + GetUserByUsernameAsync(username:string) : Task<UserDTO?>
+}
+"IRepository`1" "<UserDTO>" <|-- IUserRepository
+@enduml

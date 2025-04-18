@@ -1,0 +1,14 @@
+@startuml
+class AppDbContext {
+    + Users : DbSet<User> <<get>> <<set>>
+    + Plugins : DbSet<Plugin> <<get>> <<set>>
+    + UserPlugins : DbSet<User_Plugin> <<get>> <<set>>
+    + Configs : DbSet<Config> <<get>> <<set>>
+}
+class TimestampInterceptor {
+    + <<override>> SavingChanges(eventData:DbContextEventData, result:InterceptionResult<int>) : InterceptionResult<int>
+    + <<override>> <<async>> SavingChangesAsync(eventData:DbContextEventData, result:InterceptionResult<int>, cancellationToken:CancellationToken) : ValueTask<InterceptionResult<int>>
+}
+DbContext <|-- AppDbContext
+SaveChangesInterceptor <|-- TimestampInterceptor
+@enduml

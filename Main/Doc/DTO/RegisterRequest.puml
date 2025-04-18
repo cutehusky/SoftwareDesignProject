@@ -1,0 +1,6 @@
+@startuml
+class RegisterRequest {
+    + <<required>> Username : string <<get>> <<init>>
+    + <<required>> Password : string <<get>> <<init>>
+}
+@enduml

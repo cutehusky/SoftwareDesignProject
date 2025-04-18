@@ -1,0 +1,16 @@
+@startuml
+class PluginRepository {
+    + PluginRepository(dbContext:AppDbContext)
+    + <<async>> GetAll(page:int, pageSize:int, sortBy:string, order:SortDirection, search:string) : Task<PaginationList<PluginDTO>>
+    + <<async>> GetActiveList() : Task<List<PluginDTO>>
+    + <<async>> GetStarredPluginByUserId(id:Guid) : Task<List<Guid>>
+    + <<async>> StarPlugin(pluginId:Guid, userId:Guid) : Task<bool>
+    + <<async>> UnstarPlugin(pluginId:Guid, userId:Guid) : Task<bool>
+    + <<async>> SearchPlugin(queryValue:string) : Task<List<PluginDTO>>
+    + <<async>> GetById(id:Guid) : Task<PluginDTO?>
+    + <<async>> Add(pluginDto:PluginDTO) : Task<bool>
+    + <<async>> Remove(id:Guid) : Task<bool>
+    + <<async>> Update(dto:PluginDTO) : Task<bool>
+}
+IPluginRepository <|-- PluginRepository
+@enduml

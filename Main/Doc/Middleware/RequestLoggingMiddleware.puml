@@ -1,0 +1,6 @@
+@startuml
+class RequestLoggingMiddleware {
+    + RequestLoggingMiddleware(next:RequestDelegate, logger:ILogger<RequestLoggingMiddleware>)
+    + <<async>> InvokeAsync(context:HttpContext) : Task
+}
+@enduml

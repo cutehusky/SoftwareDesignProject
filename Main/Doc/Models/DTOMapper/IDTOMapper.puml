@@ -1,0 +1,7 @@
+@startuml
+interface "IDTOMapper`2"<TEntityModel,TDTO> {
+    + ConvertTo(from:TEntityModel) : TDTO
+    + ConvertFrom(from:TDTO) : TEntityModel
+    + CopyToEntity(target:TEntityModel, source:TDTO) : void
+}
+@enduml

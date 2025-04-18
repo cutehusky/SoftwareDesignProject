@@ -1,0 +1,12 @@
+@startuml
+class LocalFileStorage {
+    + LocalFileStorage(hostEnvironment:IHostEnvironment, logger:ILogger<LocalFileStorage>)
+    + <<async>> SaveFileAsync(file:IFormFile, fileName:string, path:string) : Task<bool>
+    + <<async>> RemoveFile(fileName:string, path:string) : Task<bool>
+    + <<async>> BackupFile(fileName:string, path:string) : Task<bool>
+    + <<async>> RestoreFile(fileName:string, path:string) : Task<bool>
+    + <<async>> RemoveBackup(fileName:string, path:string) : Task<bool>
+    + <<async>> GetFile(fileName:string, path:string) : Task<FileStream?>
+}
+IFileStorage <|-- LocalFileStorage
+@enduml

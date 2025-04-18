@@ -1,0 +1,7 @@
+@startuml
+class ActionDescriptorChangeProvider {
+    + NotifyChanges() : void
+    + GetChangeToken() : IChangeToken
+}
+IActionDescriptorChangeProvider <|-- ActionDescriptorChangeProvider
+@enduml

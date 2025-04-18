@@ -1,0 +1,8 @@
+@startuml
+class DynamicRouteTransformer {
+    + DynamicRouteTransformer(pluginPluginManager:DynamicPluginManager, logger:ILogger<DynamicRouteTransformer>)
+    + <<override>> TransformAsync(httpContext:HttpContext, values:RouteValueDictionary) : ValueTask<RouteValueDictionary>
+    + <<override>> FilterAsync(httpContext:HttpContext, values:RouteValueDictionary, endpoints:IReadOnlyList<Endpoint>) : ValueTask<IReadOnlyList<Endpoint>>
+}
+DynamicRouteValueTransformer <|-- DynamicRouteTransformer
+@enduml

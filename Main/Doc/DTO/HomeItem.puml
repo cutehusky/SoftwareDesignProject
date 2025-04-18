@@ -1,0 +1,10 @@
+@startuml
+class HomeItem {
+    + <<required>> PluginId : Guid <<get>> <<init>>
+    + <<required>> Text : string <<get>> <<init>>
+    + <<required>> Description : string <<get>> <<init>>
+    + <<required>> Href : string <<get>> <<init>>
+    + <<required>> Icon : string <<get>> <<init>>
+    + IsPremium : bool <<get>> <<init>>
+}
+@enduml

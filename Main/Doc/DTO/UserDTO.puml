@@ -1,0 +1,13 @@
+@startuml
+class UserDTO {
+    + UserId : Guid <<get>> <<init>>
+    + Username : string? <<get>> <<init>>
+    + Password : string? <<get>> <<init>>
+    + UserRole : UserRoles? <<get>> <<init>>
+}
+enum UserRoles {
+    Normal,
+    Premium,
+    Admin,
+}
+@enduml

@@ -1,0 +1,8 @@
+@startuml
+class PluginDTOMapper {
+    + ConvertTo(from:Plugin) : PluginDTO
+    + ConvertFrom(from:PluginDTO) : Plugin
+    + CopyToEntity(target:Plugin, source:PluginDTO) : void
+}
+"IDTOMapper`2" "<Plugin,PluginDTO>" <|-- PluginDTOMapper
+@enduml

@@ -1,0 +1,7 @@
+@startuml
+class ComponentRefreshService {
+    +  <<event>> Refresh : IComponentRefreshService.OnRefresh? 
+    + NotifyStateChanged(sender:object, e:EventArgs?) : void
+}
+IComponentRefreshService <|-- ComponentRefreshService
+@enduml

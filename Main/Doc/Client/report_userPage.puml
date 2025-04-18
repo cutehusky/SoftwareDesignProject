@@ -1,0 +1,19 @@
+﻿`@startuml
+!include .\\Services\IUserService.puml
+!include .\\Services\UserService.puml
+
+class AddUserDialog {
+    -IUserService UserService
+}
+
+class UserManagementPage {
+    -IUserService UserService
+    -AuthenticationStateProvider AuthStateProvider
+}
+UserManagementPage "1" -- "1" AddUserDialog : "use"
+UserManagementPage "1" -- "1" IUserService : "use"
+AddUserDialog "1" -- "1" IUserService : "use"
+UserManagementPage "1" -- "1" AuthenticationStateProvider : "use"
+
+class AuthenticationStateProvider
+@enduml

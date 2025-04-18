@@ -1,0 +1,11 @@
+@startuml
+class User_Plugin {
+    + User : User? <<get>> <<set>> = null
+    + UserId : Guid <<get>> <<set>>
+    + Plugin : Plugin? <<get>> <<set>> = null
+    + PluginId : Guid <<get>> <<set>>
+    + CreatedAt : DateTime <<get>> <<set>>
+    + UpdatedAt : DateTime <<get>> <<set>>
+}
+ITimestampedEntity <|-- User_Plugin
+@enduml

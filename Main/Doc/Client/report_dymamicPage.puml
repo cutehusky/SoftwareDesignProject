@@ -1,0 +1,11 @@
+@startuml
+!include .\\Services\DynamicPageLoader.puml
+!include .\\Services\IDynamicPageLoader.puml
+!include .\\Models\DynamicPage.puml
+class DynamicDLLPage {
+    -IDynamicPageLoader DynamicPageLoader
+}
+DynamicDLLPage "1" -- "1" IDynamicPageLoader : "use"
+DynamicDLLPage "1" -- "1" DynamicPage : "use"
+IDynamicPageLoader "1" -- "1" DynamicPage : "load"
+@enduml

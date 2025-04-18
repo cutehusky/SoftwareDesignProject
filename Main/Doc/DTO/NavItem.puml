@@ -1,0 +1,11 @@
+@startuml
+class NavItem {
+    + PluginId : Guid? <<get>> <<init>>
+    + <<required>> Text : string <<get>> <<init>>
+    + <<required>> Href : string <<get>> <<init>>
+    + <<required>> Icon : string <<get>> <<init>>
+    + <<required>> Category : string <<get>> <<init>>
+    + IsPremium : bool <<get>> <<init>> = false
+    + <<override>> ToString() : string
+}
+@enduml

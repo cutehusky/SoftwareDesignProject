@@ -1,0 +1,9 @@
+@startuml
+class AuthController {
+    + AuthController(authService:IAuthService, logger:ILogger<AuthController>)
+    + <<async>> SignIn(request:LoginRequest) : Task<IActionResult>
+    + <<async>> SignUp(request:RegisterRequest) : Task<IActionResult>
+    + <<async>> RefreshToken(oldToken:string) : Task<IActionResult>
+}
+ControllerBase <|-- AuthController
+@enduml

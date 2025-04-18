@@ -1,0 +1,7 @@
+@startuml
+class DynamicPage {
+    + Plugin : PluginDTO <<get>> <<set>>
+    + PluginAssembly : Assembly? <<get>> <<set>>
+    + EntryPoint : Type? <<get>> <<set>>
+}
+@enduml

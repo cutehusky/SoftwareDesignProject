@@ -1,0 +1,10 @@
+@startuml
+class PluginDTO {
+    + PluginId : Guid <<get>> <<init>>
+    + Name : string? <<get>> <<set>>
+    + Description : string? <<get>> <<set>>
+    + Category : string? <<get>> <<set>>
+    + IsEnabled : bool? <<get>> <<set>> = true
+    + IsPremium : bool? <<get>> <<set>> = false
+}
+@enduml

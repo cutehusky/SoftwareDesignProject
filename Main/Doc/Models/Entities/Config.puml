@@ -1,0 +1,9 @@
+@startuml
+class Config {
+    + Key : string <<get>> <<set>>
+    + Value : string? <<get>> <<set>>
+    + CreatedAt : DateTime <<get>> <<set>>
+    + UpdatedAt : DateTime <<get>> <<set>>
+}
+ITimestampedEntity <|-- Config
+@enduml

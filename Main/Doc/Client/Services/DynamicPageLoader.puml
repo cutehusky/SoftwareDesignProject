@@ -1,0 +1,7 @@
+@startuml
+class DynamicPageLoader {
+    + DynamicPageLoader(httpClient:HttpClient, apiEndpoint:string, downloadEndpoint:string, getDetailEndpoint:string)
+    + <<async>> LoadDynamicAssembly(pluginId:string) : Task<DynamicPage?>
+}
+IDynamicPageLoader <|-- DynamicPageLoader
+@enduml

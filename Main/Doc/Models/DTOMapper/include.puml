@@ -1,0 +1,13 @@
+@startuml
+!include ./IDTOMapper.puml
+!include ./PluginDTOMapper.puml
+!include ./UserDTOMapper.puml
+!include ../../DTO/PluginDTO.puml
+!include ../../DTO/UserDTO.puml
+!include ../Entities/Plugin.puml
+!include ../Entities/User.puml
+PluginDTOMapper "1" -- "1" Plugin : "mapping"
+PluginDTOMapper "1" -- "1" PluginDTO : "mapping"
+UserDTOMapper "1" -- "1" User : "mapping"
+UserDTOMapper "1" -- "1" UserDTO : "mapping"
+@enduml
