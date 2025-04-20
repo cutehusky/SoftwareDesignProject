@@ -2,8 +2,8 @@
 @using System.Text.RegularExpressions
 <MudPaper Style="backdrop-filter: blur(5px); opacity: 0.75; " Class="pa-3 mb-4">
     <MudText Typo="Typo.h5" Style="margin: 20px">Whitespace Cleaner</MudText>
-    <MudStack AlignItems="AlignItems.Center">
-        <MudTextField Label="Enter text" @bind-Value="_inputText" Variant="Variant.Outlined" Multiline="true" Rows="4" />
+    <MudStack Width="100%">
+        <MudTextField Label="Enter text" @bind-Value="_inputText" Variant="Variant.Outlined" Multiline="true" Rows="4" Lines="10" Width="600px" />
 
         <MudButton OnClick="CleanWhitespace" Variant="Variant.Filled" Color="Color.Primary" Class="mt-2">
             Clean
@@ -12,7 +12,7 @@
         @if (!string.IsNullOrEmpty(_cleanedText))
         {
             <MudText Typo="Typo.body1" Class="mt-3"><strong>Output:</strong></MudText>
-            <MudText Typo="Typo.body1" Class="pa-2 border rounded">@_cleanedText</MudText>
+            <MudText Typo="Typo.body1" Multiline="true" Lines="10" Width="100%" Class="pa-2 border rounded">@_cleanedText</MudText>
         }
     </MudStack>
 
