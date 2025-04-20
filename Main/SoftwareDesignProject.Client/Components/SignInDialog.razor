@@ -1,10 +1,13 @@
 ﻿@using CommonDTO
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.Extensions.DependencyInjection
 @using SoftwareDesignProject.Client.Services
 
 @inject HttpClient HttpClient
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IServiceProvider ServiceProvider
+
 
 <MudDialog MaxWidth="MaxWidth.Small" FullWidth="true">
     <DialogContent>
@@ -60,6 +63,7 @@
 @code {
     [Inject]
     private IDialogService DialogService { get; set; } = null!;
+    private IAuthService _authService { get; set; } = null;
 
     private MudForm _form;
     private string _username = string.Empty;
@@ -67,13 +71,22 @@
     private string _errorMessage = string.Empty;
     private bool _isProcessing = false;
 
+    private IDialogService _dialogService = null!;
+    private NavigationManager _nav = null!;
+
+    protected override void OnInitialized()
+    {
+        _authService = ServiceProvider.GetService<IAuthService>()!;
+    }
+
+ 
+
     private async Task Login()
     {
         _errorMessage = string.Empty;
         _isProcessing = true;
 
         await _form.Validate();
-
         if (!_form.IsValid)
         {
             _isProcessing = false;
@@ -82,27 +95,18 @@
 
         try
         {
-            var response = await HttpClient.PostAsJsonAsync("api/auth/signin", new LoginRequest()
+            var request = new LoginRequest
                 {
                     Username = _username,
                     Password = _password
-                });
+                };
+            var jwtResponse = await _authService.LoginAsync(request);
+            var customProv = (CustomAuthStateProvider)AuthStateProvider;
+            await customProv.Login(jwtResponse.Token);
+            await DialogService.ShowMessageBox("Success", "Signed in successfully");
 
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<JwtResponse>();
-                var authStateProvider = (CustomAuthStateProvider)AuthStateProvider;
-                await authStateProvider.Login(result!.Token);
-                NavigationManager.NavigateTo("/", forceLoad: true);
-            }
-            else
-            {
-                _errorMessage = await response.Content.ReadAsStringAsync();
-                if (string.IsNullOrEmpty(_errorMessage))
-                {
-                    _errorMessage = $"Login failed: {response.StatusCode}";
-                }
-            }
+
+            NavigationManager.NavigateTo("/", forceLoad: true);
         }
         catch (Exception ex)
         {

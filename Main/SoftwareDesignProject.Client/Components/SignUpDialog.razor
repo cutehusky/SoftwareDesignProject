@@ -1,6 +1,9 @@
 ﻿@using CommonDTO
+@using SoftwareDesignProject.Client.Services
 @inject HttpClient HttpClient
 @inject NavigationManager NavigationManager
+@inject IServiceProvider ServiceProvider
+
 
 <MudDialog MaxWidth="MaxWidth.Small" FullWidth="true">
     <DialogContent>
@@ -70,6 +73,9 @@
 @code {
     [Inject]
     private IDialogService DialogService { get; set; } = null!;
+    private IAuthService _authService { get; set; } = null;
+
+
 
     private MudForm _form;
     private string _username = string.Empty;
@@ -77,6 +83,12 @@
     private string _confirmPassword = string.Empty;
     private string _errorMessage = string.Empty;
     private bool _isProcessing = false;
+
+    protected override void OnInitialized()
+    {
+        _authService = ServiceProvider.GetService<IAuthService>()!;
+    }
+
 
 
     private IEnumerable<string> ValidatePassword(string value)
@@ -95,11 +107,10 @@
 
     private async Task HandleSignUp()
     {
-        _errorMessage = string.Empty;
+        _errorMessage = "";
         _isProcessing = true;
 
         await _form.Validate();
-
         if (!_form.IsValid)
         {
             _isProcessing = false;
@@ -108,25 +119,14 @@
 
         try
         {
-            var response = await HttpClient.PostAsJsonAsync("api/auth/signup", new RegisterRequest()
+            var req = new RegisterRequest
                 {
                     Username = _username,
                     Password = _password
-                });
-
-            if (response.IsSuccessStatusCode)
-            {
-                await DialogService.ShowMessageBox("Success", "Account created successfully");
-                NavigationManager.NavigateTo("/", forceLoad: true);
-            }
-            else
-            {
-                _errorMessage = await response.Content.ReadAsStringAsync();
-                if (string.IsNullOrEmpty(_errorMessage))
-                {
-                    _errorMessage = $"Registration failed: {response.StatusCode}";
-                }
-            }
+                };
+            await _authService.RegisterAsync(req);
+            await DialogService.ShowMessageBox("Success", "Account created successfully");
+            NavigationManager.NavigateTo("/", forceLoad: true);
         }
         catch (Exception ex)
         {
