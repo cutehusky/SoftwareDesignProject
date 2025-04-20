@@ -1,0 +1,64 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container(blazor, "Single Page Web Application", "C#, Blazor WebAssembly", "User-facing application for users to use tool of system and for admin to manage system.")
+ContainerDb(db, "Database", "PostgreSQL", "Stores user and tool data.")
+
+Container_Boundary(asp_server, "API Server", "C#, ASP.NET Core 9 MVC") {
+    Component(authController, "AuthController", "MVC API Controller", "Handles login signup and refresh token")
+    Component(userController, "UserController", "MVC API Controller", "Handles user management requests from admin")
+    Component(pluginController, "PluginController", "MVC API Controller", "Handles tool management requests from admin")
+    Component(navMenuController, "NavMenuController", "MVC API Controller", "Handles get nav menu/home page tool list/ search tool requests")
+    Component(authService, "AuthService", "Service", "Service provides login/signup and refresh token")
+    Component(pluginService, "PluginService","Service", "Service provides tool management")
+    Component(passwordHash, "PasswordHash","Service", "Service provides password hashing")
+    Component(serverPluginService, "ServerPluginService","Service", "Service provides server side plugin loading")
+    Component(userService, "UserService","Service", "Service provides user management")
+    
+    Component(pluginRepo, "PluginRepository", "Repository", "Plugin Info Repository")
+    Component(userRepo, "UserRepository", "Repository", "User Info Repository")
+    Component(fileStorage, "FileStorage", "Repository", "File Storage")
+    Container_Boundary(toolPlugin, "Tool Plugin") {
+        Component(encryptAes, "EncryptAES", "Controller&Service", "AES Encryption")
+        Component(encryptRsa, "EncryptRSA", "Controller&Service", "RSA Encryption")
+        Component(encryptRsaKey, "EncryptRSAKey", "Controller&Service", "RSA Key Pair Generation")
+        Component(hashString, "HashString", "Controller&Service", "SHA / MD5 Hashing string")
+        Component(hashFile, "HashFile", "Controller&Service", "SHA / MD5 Hashing file")
+        Component(hashPassword, "HashPassword", "Controller&Service", "Bcrypt Hashing/ Verifying password")
+        Component(sourceDNS, "SourceDNS", "Controller&Service", "DNS")
+        Component(sourceQR, "SourceQR", "Controller&Service", "QR generator")
+    }
+ }
+
+Rel(blazor, authController, "Make API call to", "HTTP/REST")
+Rel(blazor, userController, "Make API call to", "HTTP/REST")
+Rel(blazor, pluginController, "Make API call to", "HTTP/REST")
+Rel(blazor, navMenuController, "Make API call to", "HTTP/REST")
+
+Rel(authController, authService, "Uses")
+Rel(userController, userService, "Uses")
+Rel(navMenuController, pluginService, "Uses")
+Rel(pluginController, pluginService, "Uses")
+Rel_Left(userService, passwordHash, "Uses")
+Rel_Right(authService, passwordHash, "Uses")
+Rel_Right(pluginService, serverPluginService, "Uses")
+Rel(serverPluginService, fileStorage, "Uses")
+Rel(pluginService, fileStorage, "Uses")
+Rel(pluginService, pluginRepo, "Uses")
+Rel(userService, userRepo, "Uses")
+
+Rel(encryptAes, serverPluginService, "Uses")
+Rel(encryptRsa, serverPluginService, "Uses")
+Rel(encryptRsaKey, serverPluginService, "Uses")
+Rel(hashString, serverPluginService, "Uses")
+Rel(hashFile, serverPluginService, "Uses")
+Rel(hashPassword, serverPluginService, "Uses")
+Rel(sourceDNS, serverPluginService, "Uses")
+Rel(sourceQR, serverPluginService, "Uses")
+
+Rel(pluginRepo, db, "Reads from and writes to", "Entity Framework")
+Rel(userRepo, db, "Reads from and writes to", "Entity Framework")
+
+@enduml

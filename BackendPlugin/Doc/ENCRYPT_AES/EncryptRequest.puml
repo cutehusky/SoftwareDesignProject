@@ -1,0 +1,7 @@
+@startuml
+class EncryptRequest {
+    + Type : string <<get>> <<set>>
+    + Key : string <<get>> <<set>>
+    + Data : string <<get>> <<set>>
+}
+@enduml

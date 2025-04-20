@@ -1,0 +1,15 @@
+@startuml
+!include .\\Services\INavMenuLoader.puml
+!include .\\Services\NavMenuLoader.puml
+!include ..\\DTO\HomeItem.puml
+!include ..\\DTO\HomeData.puml
+!include ..\\DTO\NavItem.puml
+!include ..\\DTO\NavData.puml
+
+HomeData "1" *-- "1..*" HomeItem : "contains"
+NavData "1" *-- "1..*" NavItem : "contains"
+
+INavMenuLoader "1" -- "1..*" HomeData : "load"
+
+INavMenuLoader "1" -- "1" NavData : "load"
+@enduml

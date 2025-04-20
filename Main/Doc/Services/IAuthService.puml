@@ -1,0 +1,7 @@
+@startuml
+interface IAuthService {
+    + AuthenticateAsync(username:string, password:string) : Task<string?>
+    + RegisterAsync(username:string, password:string, role:UserRoles) : Task
+    + RefreshToken(oldToken:string) : Task<string?>
+}
+@enduml

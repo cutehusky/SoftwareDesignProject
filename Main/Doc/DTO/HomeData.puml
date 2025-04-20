@@ -1,0 +1,6 @@
+@startuml
+class HomeData {
+    + PluginItems : IEnumerable<HomeItem> <<get>> <<init>>
+    + FavoriteItems : HashSet<Guid> <<get>> <<init>>
+}
+@enduml

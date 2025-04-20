@@ -1,0 +1,5 @@
+@startuml
+class "ActionResponse`1"<T> {
+    + <<required>> Result : T <<get>> <<init>>
+}
+@enduml

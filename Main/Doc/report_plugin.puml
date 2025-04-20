@@ -1,0 +1,9 @@
+@startuml
+!include ./Repositories/IRepository.puml
+!include ./Repositories/IPluginRepository.puml
+!include ./Repositories/PluginRepository.puml
+!include ./Models/Entities/Plugin.puml
+!include ./DTO/PluginDTO.puml
+IPluginRepository "1" -- "1..*" PluginDTO: "use" 
+PluginRepository "1" -- "1..*" Plugin: "CRUD"
+@enduml

@@ -1,0 +1,11 @@
+@startuml
+!include ./Services/IPluginService.puml
+!include ./Controllers/PluginsController.puml
+!include ./DTO/PluginDTO.puml
+!include ./Controllers/AdminRequestAuthFilter.puml
+
+PluginsController "1" -- "1" IPluginService : "use"
+PluginsController "1" -- "1..*" PluginDTO: "use"
+IPluginService "1" -- "1..*" PluginDTO: "use" 
+PluginsController -- AdminRequestAuthFilter: "use"
+@enduml

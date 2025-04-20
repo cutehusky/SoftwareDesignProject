@@ -1,0 +1,40 @@
+@startuml
+!include .\\Services\INavMenuLoader.puml
+!include ..\\DTO\HomeItem.puml
+!include ..\\DTO\HomeData.puml
+!include ..\\DTO\NavItem.puml
+!include ..\\DTO\NavData.puml
+
+HomeData "1" *-- "1..*" HomeItem : "contains"
+NavData "1" *-- "1..*" NavItem : "contains"
+
+class HomePage {
+    -IEnumerable<HomeItem> Plugins
+    -IEnumerable<HomeItem> FavoritePlugins
+    -HashSet<string> FavoritePluginIds
+    -INavMenuLoader NavMenuLoader
+}
+
+HomePage "1" -- "1" HomeData : "use"
+
+HomePage "1" -- "1" INavMenuLoader : "use"
+INavMenuLoader "1" -- "1..*" HomeData : "load"
+
+
+class NavMenu {
+    -IEnumerable<DynamicPage> Pages
+    -INavMenuLoader NavMenuLoader
+}
+
+NavMenu "1" -- "1" NavData : "use"
+NavMenu "1" -- "1" INavMenuLoader : "use"
+INavMenuLoader "1" -- "1" NavData : "load"
+
+
+class SearchBar {
+    -IEnumerable<NavItem> Plugins
+    -INavMenuLoader NavMenuLoader
+}
+SearchBar "1" -- "1" NavData : "use"
+SearchBar "1" -- "1" INavMenuLoader : "use"
+@enduml

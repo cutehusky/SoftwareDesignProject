@@ -1,0 +1,18 @@
+@startuml
+
+
+interface IAuthService {
+    +SignIn(username: string, password: string): Task<bool>
+    +SignUp(username: string, password: string): Task<bool>
+    +Upgrade(): Task<bool>
+}
+
+class AuthService {
+    + <<async>> SignIn(username: string, password: string): Task<bool>
+    + <<async>> SignUp(username: string, password: string): Task<bool>
+    + <<async>> Upgrade(): Task<bool>
+}
+
+IAuthService <|-- AuthService
+
+@enduml

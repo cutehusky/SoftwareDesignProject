@@ -1,0 +1,10 @@
+@startuml
+interface IPluginRepository {
+    + GetActiveList() : Task<List<PluginDTO>>
+    + GetStarredPluginByUserId(id:Guid) : Task<List<Guid>>
+    + StarPlugin(pluginId:Guid, userId:Guid) : Task<bool>
+    + UnstarPlugin(pluginId:Guid, userId:Guid) : Task<bool>
+    + SearchPlugin(queryValue:string) : Task<List<PluginDTO>>
+}
+"IRepository`1" "<PluginDTO>" <|-- IPluginRepository
+@enduml

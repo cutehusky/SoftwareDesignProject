@@ -1,0 +1,17 @@
+@startuml
+class HashService {
+    + <<async>> ConvertToMD5(stream:Stream, converter:Func<byte[], string>) : Task<string>
+    + <<async>> ConvertToSha3_256(stream:Stream, converter:Func<byte[], string>) : Task<string>
+    + <<async>> ConvertToSha3_384(stream:Stream, converter:Func<byte[], string>) : Task<string>
+    + <<async>> ConvertToSha3_512(stream:Stream, converter:Func<byte[], string>) : Task<string>
+    + <<async>> ConvertToSha2_256(stream:Stream, converter:Func<byte[], string>) : Task<string>
+    + <<async>> ConvertToSha2_384(stream:Stream, converter:Func<byte[], string>) : Task<string>
+    + <<async>> ConvertToSha2_512(stream:Stream, converter:Func<byte[], string>) : Task<string>
+    + <<async>> ConvertToSha1(stream:Stream, converter:Func<byte[], string>) : Task<string>
+    + <<async>> HashFile(hash:HashAlgorithm, stream:Stream, converter:Func<byte[], string>) : Task<string>
+    + {static} BytesToBinString(byteArray:byte[]) : string
+    + {static} BytesToBase64URL(byteArray:byte[]) : string
+    + {static} BytesToBase64(byteArray:byte[]) : string
+    + {static} BytesToHexString(byteArray:byte[]) : string
+}
+@enduml

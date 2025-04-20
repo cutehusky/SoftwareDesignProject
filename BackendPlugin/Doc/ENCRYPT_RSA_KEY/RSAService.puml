@@ -1,0 +1,6 @@
+@startuml
+class RSAService {
+    + GenerateRSAKeyXML(requestKeySize:int) : Tuple<string, string>
+    + GenerateRSAKeyPEM(requestKeySize:int) : Tuple<string, string>
+}
+@enduml

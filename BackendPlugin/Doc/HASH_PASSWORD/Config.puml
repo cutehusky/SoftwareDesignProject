@@ -1,0 +1,8 @@
+@startuml
+class Config {
+    + RegisterService(sc:IServiceCollection) : void
+    + ID : string <<get>>
+    + ExportedControllers : List<Type> <<get>>
+}
+IConfig <|-- Config
+@enduml

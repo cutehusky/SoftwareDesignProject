@@ -1,0 +1,8 @@
+@startuml
+!include Config.puml
+!include HashController.puml
+!include HashResponse.puml
+!include HashService.puml
+HashController "1" -- "1" HashService : "use"
+HashController  --  HashResponse : "use"
+@enduml

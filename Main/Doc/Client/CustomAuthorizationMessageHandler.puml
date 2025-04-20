@@ -1,0 +1,6 @@
+@startuml
+class CustomAuthorizationMessageHandler {
+    + CustomAuthorizationMessageHandler(jsRuntime:IJSRuntime)
+}
+DelegatingHandler <|-- CustomAuthorizationMessageHandler
+@enduml

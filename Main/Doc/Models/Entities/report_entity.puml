@@ -1,0 +1,8 @@
+@startuml
+!include ./ITimestampedEntity.puml
+!include ./Plugin.puml
+!include ./User.puml
+!include ./User_Plugin.puml
+Plugin "1" -- "0..*" User_Plugin : "has"
+User "1" -- "0..*" User_Plugin : "has"
+@enduml

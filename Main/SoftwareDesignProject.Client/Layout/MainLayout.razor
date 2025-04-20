@@ -25,13 +25,14 @@
         
         @if (_authState?.User?.Identity?.IsAuthenticated == true)
         {
+            <MudText Class="mr-2">Hello, @_authState.User.Identity.Name!</MudText>
+            
             // If user is normal role, have upgrade button here
 		    @if (_authState.User.IsInRole("Normal"))
 		    {
 			    <MudButton OnClick="Upgrade">Upgrade</MudButton>
 		    }
 
-            <MudText Class="mr-2">Hello, @_authState.User.Identity.Name!</MudText>
             <MudButton OnClick="Logout">Logout</MudButton>
         }
         else
@@ -59,8 +60,6 @@
 </div>
 
 @code {
-    private string _searchText = string.Empty;
-    
     private CustomAuthStateProvider CustomAuthStateProvider => (CustomAuthStateProvider)AuthProvider;
     private AuthenticationState _authState;
     [CascadingParameter]

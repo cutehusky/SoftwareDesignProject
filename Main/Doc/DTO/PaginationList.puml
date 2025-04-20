@@ -1,0 +1,6 @@
+@startuml
+class "PaginationList`1"<T> {
+    + Items : List<T> <<get>> <<set>>
+    + TotalCount : int <<get>> <<set>>
+}
+@enduml

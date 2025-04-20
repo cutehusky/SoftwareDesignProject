@@ -1,0 +1,11 @@
+@startuml
+!include ./Services/IUserService.puml
+!include ./Controllers/UsersController.puml
+!include ./DTO/UserDTO.puml
+!include ./Controllers/AdminRequestAuthFilter.puml
+
+UsersController "1" -- "1" IUserService : "use"
+UsersController "1" -- "1..*" UserDTO: "use"
+IUserService "1" -- "1..*" UserDTO: "use" 
+UsersController -- AdminRequestAuthFilter: "use"
+@enduml

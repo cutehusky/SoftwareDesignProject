@@ -1,0 +1,5 @@
+@startuml
+class EncryptResponse {
+    + Result : string <<get>> <<set>>
+}
+@enduml

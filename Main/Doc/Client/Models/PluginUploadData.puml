@@ -1,0 +1,10 @@
+@startuml
+class PluginUploadData {
+    + <<required>> Name : string <<get>> <<set>>
+    + <<required>> Description : string <<get>> <<set>>
+    + IsPremium : bool <<get>> <<set>>
+    + ClientDLL : IBrowserFile <<get>> <<set>>
+    + ServerDLL : IBrowserFile? <<get>> <<set>>
+    + <<required>> Category : string <<get>> <<set>>
+}
+@enduml

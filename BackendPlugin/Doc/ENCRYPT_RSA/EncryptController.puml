@@ -1,0 +1,8 @@
+@startuml
+class EncryptController {
+    + EncryptController(sp:IDynamicServiceProvider)
+    + Encrypt(request:EncryptRequest) : IActionResult
+    + Decrypt(request:EncryptRequest) : IActionResult
+}
+ControllerBase <|-- EncryptController
+@enduml

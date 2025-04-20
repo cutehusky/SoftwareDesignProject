@@ -1,0 +1,16 @@
+@startuml
+!include ./Services/ServerPluginManagement/ActionDescriptorChangeProvider.puml
+!include ./Services/ServerPluginManagement/DynamicPluginManager.puml
+!include ./Services/ServerPluginManagement/DynamicRouterTransformer.puml
+!include ./Services/ServerPluginManagement/DynamicServiceProvider.puml
+
+DynamicRouteTransformer "1" -- "1" DynamicPluginManager: "use"
+DynamicPluginManager "1" -- "1" ActionDescriptorChangeProvider: "use"
+DynamicServiceProvider "1" -- "1"  DynamicPluginManager: "use" 
+
+interface IConfig {
+    + ID <<get>>: string
+    + ExportedControllers <<get>> : List<Type>
+    + RegisterService(IServiceCollection sc) : void
+}
+@enduml

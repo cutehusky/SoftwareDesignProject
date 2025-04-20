@@ -1,0 +1,10 @@
+@startuml
+class UploadPluginRequest {
+    + <<required>> ClientDLL : IFormFile <<get>> <<set>>
+    + ServerDLL : IFormFile? <<get>> <<set>> = null
+    + <<required>> Name : string <<get>> <<set>>
+    + <<required>> Description : string <<get>> <<set>>
+    + IsPremium : bool <<get>> <<set>>
+    + <<required>> Category : string <<get>> <<set>>
+}
+@enduml

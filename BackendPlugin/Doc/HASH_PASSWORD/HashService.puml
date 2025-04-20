@@ -1,0 +1,6 @@
+@startuml
+class HashService {
+    + HashPassword(password:string, workFactor:int) : string
+    + VerifyPassword(password:string, hashedPassword:string) : bool
+}
+@enduml

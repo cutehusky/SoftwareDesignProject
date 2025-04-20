@@ -1,0 +1,8 @@
+@startuml
+class UserDTOMapper {
+    + ConvertTo(from:User) : UserDTO
+    + ConvertFrom(from:UserDTO) : User
+    + CopyToEntity(target:User, source:UserDTO) : void
+}
+"IDTOMapper`2" "<User,UserDTO>" <|-- UserDTOMapper
+@enduml

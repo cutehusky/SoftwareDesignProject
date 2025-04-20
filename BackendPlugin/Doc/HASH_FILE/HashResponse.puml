@@ -1,0 +1,12 @@
+@startuml
+class HashResponse {
+    + hashMD5 : string <<get>> <<set>>
+    + hashSHA1 : string <<get>> <<set>>
+    + hashSHA256 : string <<get>> <<set>>
+    + hashSHA384 : string <<get>> <<set>>
+    + hashSHA512 : string <<get>> <<set>>
+    + hashSHA3_256 : string <<get>> <<set>>
+    + hashSHA3_384 : string <<get>> <<set>>
+    + hashSHA3_512 : string <<get>> <<set>>
+}
+@enduml

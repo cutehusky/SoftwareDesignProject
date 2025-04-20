@@ -1,0 +1,9 @@
+@startuml
+class AuthService {
+    + AuthService(config:IConfiguration, userRepository:IUserRepository, logger:ILogger<AuthService>, passwordHasher:IPasswordHasher, formatChecker:IFormatChecker)
+    + <<async>> AuthenticateAsync(username:string, password:string) : Task<string?>
+    + <<async>> RegisterAsync(username:string, password:string, role:UserRoles) : Task
+    + <<async>> RefreshToken(oldToken:string) : Task<string?>
+}
+IAuthService <|-- AuthService
+@enduml

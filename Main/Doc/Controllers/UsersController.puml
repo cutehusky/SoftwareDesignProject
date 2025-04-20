@@ -1,0 +1,12 @@
+@startuml
+class UsersController {
+    + UsersController(userService:IUserService, logger:ILogger<UsersController>)
+    + <<async>> GetList(page:int, pageSize:int, sortBy:string, order:string, search:string) : Task<IActionResult>
+    + <<async>> UpdateRole(dto:UserDTO) : Task<IActionResult>
+    + <<async>> Delete(id:Guid) : Task<IActionResult>
+    + <<async>> Create(user:UserDTO) : Task<IActionResult>
+    + <<async>> GetById(id:Guid) : Task<IActionResult>
+    + <<async>> Upgrade(id:Guid) : Task<IActionResult>
+}
+ControllerBase <|-- UsersController
+@enduml

@@ -1,0 +1,7 @@
+@startuml
+class UpgradePluginRequest {
+    + <<required>> PluginId : Guid <<get>> <<set>>
+    + <<required>> ClientDLL : IFormFile? <<get>> <<set>>
+    + ServerDLL : IFormFile? <<get>> <<set>> = null
+}
+@enduml

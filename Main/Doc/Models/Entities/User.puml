@@ -1,0 +1,12 @@
+@startuml
+class User {
+    + UserId : Guid <<get>> <<set>>
+    + Username : string <<get>> <<set>>
+    + HashedPassword : string <<get>> <<set>>
+    + UserRole : UserRoles <<get>> <<set>>
+    + UserRoleRef : UserRole? <<get>> <<set>>
+    + CreatedAt : DateTime <<get>> <<set>>
+    + UpdatedAt : DateTime <<get>> <<set>>
+}
+ITimestampedEntity <|-- User
+@enduml

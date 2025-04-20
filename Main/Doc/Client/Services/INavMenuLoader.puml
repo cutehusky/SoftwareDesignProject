@@ -1,0 +1,7 @@
+@startuml
+interface INavMenuLoader {
+    + GetNavItem() : Task<NavData?>
+    + GetHomeItem() : Task<HomeData?>
+    + Search(queryValue:string) : Task<List<NavItem>?>
+}
+@enduml

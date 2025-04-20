@@ -1,0 +1,7 @@
+@startuml
+class SourceQrController {
+    + SourceQrController(sp:IDynamicServiceProvider)
+    + GenerateQr(request:Request) : IActionResult
+}
+ControllerBase <|-- SourceQrController
+@enduml

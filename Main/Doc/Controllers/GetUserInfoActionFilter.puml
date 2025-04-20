@@ -1,0 +1,7 @@
+@startuml
+class GetUserInfoActionFilter {
+    + GetUserInfoActionFilter(userService:IUserService)
+    + <<async>> OnActionExecutionAsync(context:ActionExecutingContext, next:ActionExecutionDelegate) : Task
+}
+IAsyncActionFilter <|-- GetUserInfoActionFilter
+@enduml

@@ -1,0 +1,10 @@
+@startuml
+class CustomAuthStateProvider {
+    + CustomAuthStateProvider(jsRuntime:IJSRuntime)
+    + <<override>> <<async>> GetAuthenticationStateAsync() : Task<AuthenticationState>
+    + <<async>> GetToken() : Task<string>
+    + <<async>> Login(token:string) : Task
+    + <<async>> Logout() : Task
+}
+AuthenticationStateProvider <|-- CustomAuthStateProvider
+@enduml

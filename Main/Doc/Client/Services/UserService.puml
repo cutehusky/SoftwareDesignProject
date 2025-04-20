@@ -1,0 +1,13 @@
+@startuml
+class UserService {
+    + UserService(httpClient:HttpClient, getListEndpoint:string, updateRoleEndpoint:string, deleteEndpoint:string, addEndpoint:string, upgradeEndpoint:string, refreshTokenEndpoint:string)
+    + <<async>> GetList(page:int, pageSize:int, sortBy:string, order:SortDirection, search:string, cancellationToken:CancellationToken) : Task<PaginationList<UserDTO>>
+    + <<async>> UpdateUserRole(dto:UserDTO) : Task
+    + <<async>> Delete(id:Guid) : Task
+    + <<async>> Add(user:UserDTO) : Task
+    + <<async>> GetById(id:Guid) : Task<UserDTO?>
+    + <<async>> Upgrade(id:Guid) : Task
+    + <<async>> RefreshToken(oldToken:string) : Task<string>
+}
+IUserService <|-- UserService
+@enduml

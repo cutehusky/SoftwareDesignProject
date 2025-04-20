@@ -1,0 +1,7 @@
+@startuml
+class HashController {
+    + HashController(sp:IDynamicServiceProvider)
+    + Hash(request:HashRequest) : IActionResult
+}
+ControllerBase <|-- HashController
+@enduml

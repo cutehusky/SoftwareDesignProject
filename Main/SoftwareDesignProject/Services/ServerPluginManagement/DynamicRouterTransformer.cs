@@ -28,7 +28,6 @@ public class DynamicRouteTransformer : DynamicRouteValueTransformer
             || string.IsNullOrEmpty(id))
             return new ValueTask<RouteValueDictionary>(); 
 
-        // TODO: check if plugin is premium
         // Check if the controller exists in the loaded assemblies
         var controller = _pluginPluginManager.GetValidControllers(id, controllerName);
         

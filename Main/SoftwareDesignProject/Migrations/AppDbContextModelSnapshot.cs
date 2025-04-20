@@ -22,6 +22,25 @@ namespace SoftwareDesignProject.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("SoftwareDesignProject.Models.Entities.Config", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("text");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("Configs");
+                });
+
             modelBuilder.Entity("SoftwareDesignProject.Models.Entities.Plugin", b =>
                 {
                     b.Property<Guid>("PluginId")
@@ -85,10 +104,36 @@ namespace SoftwareDesignProject.Migrations
 
                     b.HasKey("UserId");
 
+                    b.HasIndex("UserRole");
+
                     b.HasIndex("Username")
                         .IsUnique();
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("SoftwareDesignProject.Models.Entities.UserRole", b =>
+                {
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Role");
+
+                    b.ToTable("UserRole");
+
+                    b.HasData(
+                        new
+                        {
+                            Role = 0
+                        },
+                        new
+                        {
+                            Role = 1
+                        },
+                        new
+                        {
+                            Role = 2
+                        });
                 });
 
             modelBuilder.Entity("SoftwareDesignProject.Models.Entities.User_Plugin", b =>
@@ -110,6 +155,17 @@ namespace SoftwareDesignProject.Migrations
                     b.HasIndex("PluginId");
 
                     b.ToTable("UserPlugins");
+                });
+
+            modelBuilder.Entity("SoftwareDesignProject.Models.Entities.User", b =>
+                {
+                    b.HasOne("SoftwareDesignProject.Models.Entities.UserRole", "UserRoleRef")
+                        .WithMany()
+                        .HasForeignKey("UserRole")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("UserRoleRef");
                 });
 
             modelBuilder.Entity("SoftwareDesignProject.Models.Entities.User_Plugin", b =>

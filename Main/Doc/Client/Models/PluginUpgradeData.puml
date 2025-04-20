@@ -1,0 +1,7 @@
+@startuml
+class PluginUpgradeData {
+    + PluginId : Guid <<get>> <<set>>
+    + ClientDLL : IBrowserFile? <<get>> <<set>>
+    + ServerDLL : IBrowserFile? <<get>> <<set>>
+}
+@enduml

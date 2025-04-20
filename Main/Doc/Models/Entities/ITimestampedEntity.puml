@@ -1,0 +1,6 @@
+@startuml
+interface ITimestampedEntity {
+    + CreatedAt : DateTime <<get>> <<set>>
+    + UpdatedAt : DateTime <<get>> <<set>>
+}
+@enduml

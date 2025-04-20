@@ -1,0 +1,5 @@
+@startuml
+interface IDynamicPageLoader {
+    + LoadDynamicAssembly(pluginId:string) : Task<DynamicPage?>
+}
+@enduml

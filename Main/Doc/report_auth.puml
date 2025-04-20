@@ -1,0 +1,19 @@
+@startuml
+!include ./Repositories/IRepository.puml
+!include ./Repositories/IUserRepository.puml
+!include ./Repositories/UserRepository.puml
+!include ./Models/Entities/User.puml
+!include ./DTO/UserDTO.puml
+!include ./Controllers/AuthController.puml
+!include ./Services/AuthService.puml
+!include ./Services/IAuthService.puml
+!include ./Services/IPasswordHasher.puml
+!include ./Services/BcryptPasswordHasher.puml
+AuthController "1" -- "1" IAuthService : "use"
+AuthController "1" -- "1..*" UserDTO: "use"
+AuthService "1" -- "1" IUserRepository : "use"
+IAuthService "1" -- "1..*" UserDTO: "use"
+AuthService "1" -- "1..*" IPasswordHasher: "use"
+IUserRepository "1" -- "1..*" UserDTO: "use" 
+UserRepository "1" -- "1..*" User: "CRUD"
+@enduml

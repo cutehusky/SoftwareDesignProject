@@ -17,6 +17,13 @@ public class User: ITimestampedEntity
     public string Username { get; set; } = string.Empty;
     public string HashedPassword { get; set; } = string.Empty;
     public UserRoles UserRole { get; set; } = UserRoles.Normal;
+    public UserRole? UserRoleRef { get; set; } 
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+}
+
+public class UserRole
+{
+    [Key]
+    public UserRoles Role { get; set; }
 }
