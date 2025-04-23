@@ -6,5 +6,6 @@ class PluginDTO {
     + Category : string? <<get>> <<set>>
     + IsEnabled : bool? <<get>> <<set>> = true
     + IsPremium : bool? <<get>> <<set>> = false
+    + Icon : string? <<get>> <<set>>
 }
 @enduml

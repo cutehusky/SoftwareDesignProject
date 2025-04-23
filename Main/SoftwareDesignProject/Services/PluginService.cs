@@ -38,14 +38,9 @@ public class PluginService : IPluginService
         return query;
     }
 
-    public async Task<List<PluginDTO>> GetActiveList(UserRoles? userRole)
+    public async Task<List<PluginDTO>> GetActiveList()
     {
         var query = await _pluginRepository.GetActiveList();
-
-        if (userRole is null or < UserRoles.Premium)
-        {
-            query = query.Where(p => p.IsPremium == false).ToList();
-        }
         return query;
     }
 
@@ -73,6 +68,7 @@ public class PluginService : IPluginService
         string description,
         string category,
         bool isPremium,
+        string? icon,
         IFormFile clientDll,
         IFormFile? serverDll)
     {
@@ -118,7 +114,8 @@ public class PluginService : IPluginService
             Name = name,
             Description = description,
             IsPremium = isPremium,
-            Category = category
+            Category = category,
+            Icon = icon,
         });
 
         if (!res)
@@ -340,13 +337,9 @@ public class PluginService : IPluginService
         return res;
     }
 
-    public async Task<List<PluginDTO>> SearchPlugin(string queryValue, UserRoles ? userRole)
+    public async Task<List<PluginDTO>> SearchPlugin(string queryValue)
     {
         var plugins =  await _pluginRepository.SearchPlugin(queryValue);
-        if (userRole is null or < UserRoles.Premium)
-        {
-            plugins = plugins.Where(p => p.IsPremium == false).ToList();
-        }
         return plugins;
     }
 

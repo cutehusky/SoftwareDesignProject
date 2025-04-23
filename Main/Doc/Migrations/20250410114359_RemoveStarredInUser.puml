@@ -1,0 +1,5 @@
+@startuml
+class RemoveStarredInUser <<partial>> {
+}
+Migration <|-- RemoveStarredInUser
+@enduml

@@ -1,8 +1,8 @@
 ﻿@using CommonDTO
 <MudCard Width="24%" Style="min-width: 250px; backdrop-filter: blur(5px); opacity: 0.75;">
     <MudCardHeader style="width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">
-        <MudIcon Icon="@Plugin.Icon" Class="me-3"/>
-        <MudLink Href="@Plugin.Href" Underline="Underline.None" Typo="Typo.h6" Style="width: 100%; text-overflow: ellipsis; overflow: hidden;">@Plugin.Text</MudLink>
+        <MudIcon Color="IsPremium" Icon="@Plugin.Icon" Class="me-3"/>
+        <MudLink Href="@Plugin.Href" Color="IsPremium" Underline="Underline.None" Typo="Typo.h6" Style="width: 100%; text-overflow: ellipsis; overflow: hidden;">@Plugin.Text</MudLink>
         @if (IsAuthorized)
         {
             <MudIconButton Style="padding: 3px" OnClick="() => Select(Plugin.PluginId)" Icon="@GetSelectedFavoriteIcon(Plugin.PluginId)" Color="Color.Secondary" aria-label="add to favorite"/>
@@ -22,4 +22,5 @@
     [Parameter] public Action<Guid> Select { get; set; } = null!;
     [Parameter] public Func<Guid, string> GetSelectedFavoriteIcon { get; set; } = null!;
     [Parameter] public bool IsAuthorized { get; set; }
+    private Color IsPremium => Plugin.IsPremium ? Color.Warning : Color.Inherit;
 }

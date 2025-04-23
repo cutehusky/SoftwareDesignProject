@@ -22,6 +22,10 @@
             <div class="d-flex align-center">
                 <MudIcon Icon="@context.Icon" Class="me-3"/>
                 @context.Text
+                @if (context.IsPremium)
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.WorkspacePremium" Class="ms-3" Color="@Color.Warning"/>
+                }
             </div>
         </MudListItem>
     </ItemTemplate>

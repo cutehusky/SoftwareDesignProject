@@ -1,0 +1,5 @@
+@startuml
+class Update <<partial>> {
+}
+Migration <|-- Update
+@enduml

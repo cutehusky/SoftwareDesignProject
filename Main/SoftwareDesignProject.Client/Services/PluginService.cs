@@ -115,6 +115,18 @@ public class PluginService: IPluginService
         }
     }
 
+    public async Task<bool> IsPluginStarred(string pluginId)
+    {
+        try
+        {
+            var res = await _httpClient.GetFromJsonAsync<bool>($"{_starEndpoint}/{pluginId}");
+            return res;
+        } catch (HttpRequestException e)
+        {
+            return false;
+        }
+    }
+
     public async Task Add(PluginUploadData data)
     {
         var multipartContent = new MultipartFormDataContent();
@@ -125,6 +137,8 @@ public class PluginService: IPluginService
         multipartContent.Add(new StringContent(data.Description), "Description");
         multipartContent.Add(new StringContent(data.IsPremium.ToString()), "IsPremium");
         multipartContent.Add(new StringContent(data.Category), "Category");
+        if (data.Icon != null)
+            multipartContent.Add(new StringContent(data.Icon), "Icon");
         
         var response = await _httpClient.PostAsync(_addEndpoint, multipartContent);
         if (!response.IsSuccessStatusCode)

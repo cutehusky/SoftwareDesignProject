@@ -16,4 +16,5 @@ public interface IPluginService
     
     public Task StarPlugin(Guid pluginId);
     public Task UnstarPlugin(Guid pluginId);
+    public Task<bool> IsPluginStarred(string pluginId);
 }

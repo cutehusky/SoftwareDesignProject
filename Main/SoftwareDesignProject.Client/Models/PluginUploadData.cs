@@ -10,4 +10,5 @@ public class PluginUploadData
     public IBrowserFile ClientDLL { get; set; } = null!;
     public IBrowserFile? ServerDLL { get; set; }
     public required string Category { get; set; }
+    public string? Icon { get; set; }
 }

@@ -1,9 +1,20 @@
 @startuml
+!include ./Services/IPluginService.puml
+!include ./Services/PluginService.puml
 !include ./Repositories/IRepository.puml
 !include ./Repositories/IPluginRepository.puml
 !include ./Repositories/PluginRepository.puml
+!include ./Controllers/PluginsController.puml
 !include ./Models/Entities/Plugin.puml
 !include ./DTO/PluginDTO.puml
-IPluginRepository "1" -- "1..*" PluginDTO: "use" 
+!include ./Repositories/IFileStorage.puml
+!include ./Repositories/LocalFileStorage.puml
+PluginsController "1" -- "1" IPluginService : "use"
+PluginsController "1" -- "1..*" PluginDTO: "use"
+PluginService "1" -- "1" IPluginRepository : "use"
+PluginService "1" -- "1..*" DynamicPluginManager: "use"
+PluginService "1" -- "1..*" IFileStorage: "use"
+IPluginService "1" -- "1..*" PluginDTO: "use" 
+IPluginRepository "1" -- "1..*" PluginDTO: "use"
 PluginRepository "1" -- "1..*" Plugin: "CRUD"
 @enduml

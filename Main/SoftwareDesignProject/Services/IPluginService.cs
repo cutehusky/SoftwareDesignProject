@@ -8,10 +8,10 @@ public interface IPluginService
     public Task<PaginationList<PluginDTO>> GetList(int page, int pageSize,
         string sortBy, SortDirection order, string search);
 
-    public Task<List<PluginDTO>> GetActiveList(UserRoles? userRole);
+    public Task<List<PluginDTO>> GetActiveList();
 
     public Task AddPlugin(string name, string description,
-        string category, bool isPremium,
+        string category, bool isPremium, string? icon,
         IFormFile clientDll, IFormFile? serverDll);
 
     public Task EditPlugin(PluginDTO dto);
@@ -29,5 +29,5 @@ public interface IPluginService
     
     public Task<FileStream> GetClientPluginFile(string fileName);
     
-    public Task<List<PluginDTO>> SearchPlugin(string queryValue, UserRoles? userRole);
+    public Task<List<PluginDTO>> SearchPlugin(string queryValue);
 }

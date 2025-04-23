@@ -1,0 +1,20 @@
+@startuml
+!include .\\CustomAuthorizationMessageHandler.puml
+!include .\\Program.puml
+!include .\\Models\DynamicPage.puml
+!include .\\Models\PluginUpgradeData.puml
+!include .\\Models\PluginUploadData.puml
+!include .\\Services\AuthService.puml
+!include .\\Services\ComponentRefreshService.puml
+!include .\\Services\CustomAuthStateProvider.puml
+!include .\\Services\DynamicPageLoader.puml
+!include .\\Services\IAuthService.puml
+!include .\\Services\IComponentRefreshService.puml
+!include .\\Services\IDynamicPageLoader.puml
+!include .\\Services\INavMenuLoader.puml
+!include .\\Services\IPluginService.puml
+!include .\\Services\IUserService.puml
+!include .\\Services\NavMenuLoader.puml
+!include .\\Services\PluginService.puml
+!include .\\Services\UserService.puml
+@enduml

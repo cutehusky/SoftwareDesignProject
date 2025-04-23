@@ -1,4 +1,7 @@
 @startuml
+!include ./Services/IAuthService.puml
+!include ./Services/IUserService.puml
+
 class SignInDialog {
     -IAuthService AuthService   
 }
@@ -11,13 +14,7 @@ class UpgradeDialog {
     -IAuthService AuthService
 }
 
-interface IAuthService {
-    +SignIn(username: string, password: string): Task<bool>
-    +SignUp(username: string, password: string): Task<bool>
-    +Upgrade(): Task<bool>
-}
-
 SignInDialog "1" -- "1" IAuthService : "use"
 SignUpDialog "1" -- "1" IAuthService : "use"
-UpgradeDialog "1" -- "1" IAuthService : "use"
+UpgradeDialog "1" -- "1" IUserService : "use"
 @enduml
