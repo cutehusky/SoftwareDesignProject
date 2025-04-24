@@ -22,7 +22,7 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> SignIn([FromBody] LoginRequest request)
     {
         _logger.LogInformation("Sign in request received for user: {Username}", request.Username);
-        
+
         var token = await _authService.AuthenticateAsync(request.Username, request.Password);
 
         if (token == null)

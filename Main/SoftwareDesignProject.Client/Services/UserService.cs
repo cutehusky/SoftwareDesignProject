@@ -114,11 +114,9 @@ public class UserService : IUserService
             var errorMessage = await response.Content.ReadAsStringAsync();
             throw new HttpRequestException($"Error refreshing token: {errorMessage}");
         }
-        else
-        {
-            var token = await response.Content.ReadAsStringAsync();
-            return token;
-        }
 
+        // Deserialize the JSON response properly
+        var jwtResponse = await response.Content.ReadFromJsonAsync<JwtResponse>();
+        return jwtResponse?.Token ?? string.Empty;
     }
 }

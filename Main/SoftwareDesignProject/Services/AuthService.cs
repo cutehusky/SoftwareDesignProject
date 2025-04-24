@@ -70,9 +70,9 @@ public class AuthService : IAuthService
     public async Task<string?> RefreshToken(string oldToken)
     {
         var user = await GetUserByToken(oldToken);
-        
         _logger.LogDebug("User  {Username} from token: {token}", user?.Username, oldToken);
         if (user == null) return null;
+
         var newToken = GenerateJwtToken(user);
         _logger.LogDebug("New token {newToken} generated for user: {Username} ", newToken, user.Username);
         return newToken;

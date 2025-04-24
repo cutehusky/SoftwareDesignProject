@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 
@@ -50,6 +51,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
 
     public async Task Login(string token)
     {
+        await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "token");
         await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "token", token);
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }
@@ -62,22 +64,51 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
 
     private IEnumerable<Claim> ParseJwtClaims(string token)
     {
-        var payload = token.Split('.')[1];
-        // Add padding if needed
-        payload = payload.PadRight(payload.Length + (4 - payload.Length % 4) % 4, '=');
-        var jsonBytes = Convert.FromBase64String(payload);
-        var claimsDict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes);
+        if (string.IsNullOrWhiteSpace(token))
+            return Enumerable.Empty<Claim>();
 
-        // Handle role claim specifically
-        if (claimsDict.TryGetValue("role", out var roleValue))
+        // Basic JWT structure validation
+        var tokenParts = token.Split('.');
+        if (tokenParts.Length != 3) // JWS has 3 parts
         {
-            yield return new Claim(ClaimTypes.Role, roleValue.ToString());
+            Console.WriteLine($"Invalid JWT structure. Parts: {tokenParts.Length}");
+            return Enumerable.Empty<Claim>();
         }
 
-        // Handle other claims
-        foreach (var kvp in claimsDict.Where(c => c.Key != "role"))
+        try
         {
-            yield return new Claim(kvp.Key, kvp.Value.ToString());
+            var handler = new JwtSecurityTokenHandler();
+
+            // First validate if we can read the token
+            if (!handler.CanReadToken(token))
+            {
+                Console.WriteLine("JWT cannot be read by token handler");
+                return Enumerable.Empty<Claim>();
+            }
+
+            var jwtToken = handler.ReadJwtToken(token);
+            return ProcessClaims(jwtToken.Claims);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Token parsing failed: {ex.Message}");
+            return Enumerable.Empty<Claim>();
+        }
+    }
+
+    private IEnumerable<Claim> ProcessClaims(IEnumerable<Claim> claims)
+    {
+        foreach (var claim in claims)
+        {
+            // Normalize role claims
+            if (claim.Type is "role" or ClaimTypes.Role)
+            {
+                yield return new Claim(ClaimTypes.Role, claim.Value);
+            }
+            else
+            {
+                yield return claim;
+            }
         }
     }
 }
