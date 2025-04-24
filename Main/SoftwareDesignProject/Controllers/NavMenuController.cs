@@ -57,15 +57,7 @@ public class NavMenuController : Controller
         var plugins = await _pluginService.GetActiveList();
         var isAdmin = userRole == UserRoles.Admin;
 
-        List<NavItem> navItems = new()
-        {
-            new () {
-                Text = "Home",
-                Href = "home",
-                Icon = Icons.Material.Filled.Home,
-                Category = ""
-            }
-        };
+        List<NavItem> navItems = [];
         
         if (isAdmin)
         {

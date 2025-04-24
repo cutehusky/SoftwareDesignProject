@@ -1,8 +1,9 @@
 ﻿@page "/403"
 
-<MudContainer Class="text-center">
-    <MudAlert Severity="Severity.Error">
-        <h2>403 - Forbidden</h2>
-        <p>You don't not have the necessary permissions for this page</p>
-    </MudAlert>
-</MudContainer>
+<MudPaper Elevation="3" Class="mx-auto my-8 pa-6 rounded-lg" Style="max-width: 600px;opacity: 0.85; backdrop-filter: blur(10px); border: 1px solid rgba(0, 0, 0, 0.1);">
+    <MudStack Spacing="4" AlignItems="AlignItems.Center">
+        <MudIcon Icon="@Icons.Material.Filled.Block" Color="Color.Error" Size="Size.Large" Class="mb-4" />
+        <MudText Typo="Typo.h4" Color="Color.Error">403 - Forbidden</MudText>
+        <MudText Typo="Typo.body1" Align="Align.Center" Class="mb-4">  You do not have the necessary permissions to access this page.</MudText>
+    </MudStack>
+</MudPaper>

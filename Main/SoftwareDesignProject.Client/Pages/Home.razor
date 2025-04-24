@@ -15,6 +15,21 @@
 }
 else
 {
+    <MudPaper Elevation="3" Class="mt-8 py-10 px-10 mb-8" Style="min-width: 250px; backdrop-filter: blur(8px); opacity: 0.85;">
+        <MudGrid>
+            <MudItem xs="12" md="7">
+                <MudText Typo="Typo.h3" Color="Color.Surface" Class="mb-4">Welcome to Tools Hub</MudText>
+                <MudText Typo="Typo.body1" Color="Color.Surface" Class="mb-6">
+                    Discover powerful tools to enhance your workflow. Browse through our curated collection or search for specific tools.
+                </MudText>
+                <SearchBar/>
+            </MudItem>
+            <MudItem xs="12" md="5" Class="d-flex justify-center align-center">
+                <MudIcon Icon="@Icons.Custom.Brands.MicrosoftVisualStudio" Size="Size.Large" Color="Color.Surface" Style="width: 200px; height: 200px;" />
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+    
     @if (FavoritePlugins.Count > 0)
     {
         <MudText Typo="Typo.h6" Style="margin: 10px"> Favorite Tools</MudText>
@@ -44,19 +59,20 @@ else
 }
 
 @code {
+
     private string GetSelectedFavoriteIcon(Guid pluginId)
     {
         return FavoritePluginIds.Contains(pluginId) ? Icons.Material.Filled.Favorite : Icons.Material.Filled.FavoriteBorder;
     }
-    
+
     private bool _isLoading = true;
-    private IComponentRefreshService ComponentRefreshService {get; set;} = null!;
+    private IComponentRefreshService ComponentRefreshService { get; set; } = null!;
     private IEnumerable<HomeItem> Plugins { get; set; } = [];
 
     private List<HomeItem> FavoritePlugins { get; set; } = [];
 
     private HashSet<Guid> FavoritePluginIds { get; set; } = [];
-    
+
     private bool _isAuthorized;
 
     protected override async Task OnInitializedAsync()
@@ -67,7 +83,7 @@ else
             _isAuthorized = authState.User.Identity?.IsAuthenticated == true;
             var navLoader = ServiceProvider.GetService<INavMenuLoader>()!;
             ComponentRefreshService = ServiceProvider.GetService<IComponentRefreshService>()!;
-            
+
             var data = await navLoader.GetHomeItem();
             Plugins = data?.PluginItems ?? [];
             FavoritePluginIds = data?.FavoriteItems ?? [];
@@ -84,18 +100,21 @@ else
             try
             {
                 pluginService.UnstarPlugin(pluginId);
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Console.WriteLine(e);
                 return;
             }
+
             FavoritePluginIds.Remove(pluginId);
             var plugin = Plugins.FirstOrDefault(p => p.PluginId == pluginId);
             if (plugin != null)
                 FavoritePlugins.Remove(plugin);
             ComponentRefreshService.NotifyStateChanged(this,
-                new NavMenu.PluginEventArgs {
-                    PluginId = pluginId, 
+                new NavMenu.PluginEventArgs
+                {
+                    PluginId = pluginId,
                     Action = CollectionChangeAction.Remove
                 });
         }
@@ -116,8 +135,9 @@ else
             if (plugin != null)
                 FavoritePlugins.Insert(0, plugin);
             ComponentRefreshService.NotifyStateChanged(this,
-                new NavMenu.PluginEventArgs {
-                    PluginId = pluginId, 
+                new NavMenu.PluginEventArgs
+                {
+                    PluginId = pluginId,
                     Action = CollectionChangeAction.Add
                 });
         }

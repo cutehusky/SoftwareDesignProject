@@ -6,46 +6,100 @@
 @inject AuthenticationStateProvider AuthProvider
 @inject NavigationManager NavigationManager
 
-
-<MudThemeProvider Theme="@_theme"  IsDarkMode="_isDarkMode"/>
+<MudThemeProvider Theme="@_theme" IsDarkMode="@_isDarkMode"/>
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
-<div style="opacity: 0.75; position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: -2;">
-    <img src="@BackgroundImage" style="width: 100%; height: 100%; object-fit: cover;" alt=""/>
+
+<div class="app-background">
+    <img src="@BackgroundImage" alt=""/>
 </div>
 
 <MudLayout>
     <MudAppBar Elevation="0" Style="backdrop-filter: blur(2px);">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        <MudText Typo="Typo.h5" Class="ml-3">IT TOOLS</MudText>
-        <MudSpacer />
-        
-        <SearchBar/>
+        <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
+            <MudLink Href="/" Underline="Underline.None" Color="Color.Inherit" Typo="Typo.h5" Class="ml-3">IT TOOLS</MudLink>
+            <MudSpacer />
+        </MudHidden>
+        <SearchBar />
         
         @if (_authState?.User?.Identity?.IsAuthenticated == true)
         {
-            <MudText Class="mr-2">Hello, @_authState.User.Identity.Name!</MudText>
-            
-            // If user is normal role, have upgrade button here
-		    @if (_authState.User.IsInRole("Normal"))
-		    {
-			    <MudButton OnClick="Upgrade">Upgrade</MudButton>
-		    }
-
-            <MudButton OnClick="Logout">Logout</MudButton>
+            @if (_authState.User.IsInRole("Normal"))
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.Diamond" OnClick="Upgrade"/>
+            }
+            <MudMenu
+                Dense="true"
+                AnchorOrigin="Origin.BottomRight">
+                <ActivatorContent>
+                    <MudAvatar Size="Size.Medium" Class="ma-2" Color="Color.Primary">
+                        @_authState.User.Identity.Name?.Substring(0, 1).ToUpper()
+                    </MudAvatar>
+                </ActivatorContent>
+                <ChildContent>
+                    <MudText Typo="Typo.subtitle2" Class="px-4 py-2">@_authState.User.Identity.Name</MudText>
+                    <MudDivider/>
+                    <MudMenuItem Icon="@Icons.Material.Filled.Person">Profile</MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.Settings">Settings</MudMenuItem>
+                    <MudDivider/>
+                    <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="Logout">Logout</MudMenuItem>
+                </ChildContent>
+            </MudMenu>
         }
         else
         {
-            <MudButton OnClick="OpenSignInDialogAsync">Sign In</MudButton>
-            <MudButton OnClick="OpenSignUpDialogAsync">Sign Up</MudButton>
+            <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert="true">
+                <MudButton OnClick="OpenSignInDialogAsync">Sign In</MudButton>
+                <MudButton OnClick="OpenSignUpDialogAsync">Sign Up</MudButton>
+            </MudHidden>
+            
+            <MudHidden Breakpoint="Breakpoint.SmAndUp">
+                <MudTooltip Text="Log in">
+                    <MudIconButton Icon="@Icons.Material.Filled.Login" OnClick="OpenSignInDialogAsync"/>
+                </MudTooltip>
+                <MudTooltip Text="Sign up">
+                    <MudIconButton Icon="@Icons.Material.Filled.PersonAdd" OnClick="OpenSignUpDialogAsync"/>
+                </MudTooltip>
+            </MudHidden>
         }
-
-        <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
+    
+        <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert="true">
+            <MudTooltip Text="@(_isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode")">
+                <MudIconButton 
+                    Icon="@DarkLightModeButtonIcon" 
+                    Color="Color.Inherit" 
+                    OnClick="DarkModeToggle" />
+            </MudTooltip>
+        </MudHidden>
     </MudAppBar>
 
-    <MudDrawer Style="backdrop-filter: blur(2px);" id="nav-drawer" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
-        <NavMenu />
+    <MudDrawer
+        @bind-Open="_drawerOpen"
+        ClipMode="DrawerClipMode.Always"
+        Elevation="2"
+        Variant="@DrawerVariant.Responsive"
+        Style="backdrop-filter: blur(10px);">
+        
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudDrawerHeader>
+                <a href="/">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                        <MudText Typo="Typo.h6" Style="margin-top: 2px; margin-right: 25px" Color="Color.Primary" Class="ml-2">IT TOOLS</MudText>
+                        <MudHidden Breakpoint="Breakpoint.SmAndUp">
+                            <MudTooltip Text="@(_isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode")">
+                                <MudIconButton
+                                    Icon="@DarkLightModeButtonIcon"
+                                    Color="Color.Inherit"
+                                    OnClick="DarkModeToggle" />
+                            </MudTooltip>
+                        </MudHidden>
+                    </MudStack>
+                </a>
+            </MudDrawerHeader>
+        </MudHidden>
+        <NavMenu/>
     </MudDrawer>
     <MudMainContent Class="mt-16 pa-4">
         @Body
@@ -73,7 +127,7 @@
     private string BackgroundImage  => _isDarkMode ? "img/BackgroundDark.png" : "img/NewBackgroundLight.jpg";
     private bool _drawerOpen = true;
     private bool _isDarkMode = true;
-    private MudTheme? _theme = null;
+    private MudTheme? _theme;
 
     protected override void OnInitialized()
     {
@@ -84,21 +138,23 @@
             PaletteLight = _lightPalette,
             PaletteDark = _darkPalette,
             LayoutProperties = new LayoutProperties()
+            {
+                DefaultBorderRadius = "8px"
+            }
         };
     }
 
-	private async Task Upgrade()
+	private Task Upgrade()
 	{
 		var options = new DialogOptions { CloseOnEscapeKey = true };
-		await DialogService.ShowAsync<UpgradePremiumDialog>("Upgrade", options);
+		return DialogService.ShowAsync<UpgradePremiumDialog>("Upgrade", options);
 	}
 
     private async Task Logout()
     {
         await CustomAuthStateProvider.Logout();
-        NavigationManager.NavigateTo("/", forceLoad: true); // or StateHasChanged if you prefer
+        NavigationManager.NavigateTo("/", forceLoad: true);
     }
-
 
     private void DrawerToggle()
     {
@@ -110,16 +166,24 @@
         _isDarkMode = !_isDarkMode;
     }
 
-	private Task OpenSignInDialogAsync()
-	{
-        var options = new DialogOptions { CloseOnEscapeKey = true };
-        return DialogService.ShowAsync<SignInDialog>("Sign In", options);
-	}
+    private Task OpenSignInDialogAsync()
+    {
+        var options = new DialogOptions { 
+            CloseOnEscapeKey = true,
+            FullWidth = true,
+            MaxWidth = MaxWidth.Small 
+        };
+        return DialogService.ShowAsync<SignInDialog>("", options);
+    }
 
     private Task OpenSignUpDialogAsync()
     {
-        var options = new DialogOptions { CloseOnEscapeKey = true };
-        return DialogService.ShowAsync<SignUpDialog>("Sign Up", options);
+        var options = new DialogOptions { 
+            CloseOnEscapeKey = true,
+            FullWidth = true,
+            MaxWidth = MaxWidth.Small 
+        };
+        return DialogService.ShowAsync<SignUpDialog>("", options);
     }
 
     private readonly PaletteLight _lightPalette = new()
@@ -165,9 +229,26 @@
 
     public string DarkLightModeButtonIcon => _isDarkMode switch
     {
-        true => Icons.Material.Rounded.AutoMode,
-        false => Icons.Material.Outlined.DarkMode,
+        true => Icons.Material.Rounded.LightMode,
+        false => Icons.Material.Rounded.DarkMode,
     };
 }
 
-
+<style>
+    .app-background {
+        opacity: 0.75; 
+        position: fixed; 
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%; 
+        overflow: hidden; 
+        z-index: -2;
+    }
+    
+    .app-background img {
+        width: 100%; 
+        height: 100%; 
+        object-fit: cover;
+    }
+</style>

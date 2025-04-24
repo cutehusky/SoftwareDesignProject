@@ -17,6 +17,7 @@
                 <MudIconButton Style="padding: 3px; width: 10%" OnClick="Select" Icon="@GetSelectedFavoriteIcon()" Color="Color.Secondary" aria-label="add to favorite"/>
             }
         </div>
+        <MudDivider/>
         <MudText Typo="Typo.body1" Style="margin: 20px">@Plugin.Description</MudText>
     </MudPaper>
 }
@@ -66,7 +67,6 @@
             var componentType = dynamicPage?.EntryPoint;
             if (componentType != null)
             {
-                _currentPluginId = PluginId;
                 if (_isAuthorized) 
                     _isPluginStarred = await PluginService.IsPluginStarred(PluginId);
                 Plugin = dynamicPage!.Plugin;
@@ -87,6 +87,8 @@
             Plugin = null;
             ShowComponent(typeof(Page404));
         }
+        
+        _currentPluginId = PluginId;
     }
 
     private void ShowComponent(Type componentType)
