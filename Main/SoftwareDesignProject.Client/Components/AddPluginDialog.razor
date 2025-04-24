@@ -24,6 +24,15 @@
                 Lines="1"/>
         </div>
 
+        <MudTextField
+            @bind-Value="_icon"
+            Class="mx-3"
+            Label="Icon"
+            Immediate="true"
+            Variant="Variant.Outlined"
+            Placeholder="CSS Class-Based Font Icons or Text-Based Font Icons or SVG"
+            Lines="1" />
+        
         <MudTextField 
             class="mx-3" 
             Required="true"
@@ -101,6 +110,7 @@
     protected IComponentRefreshService ComponentRefreshService { get; set; } = null!;
     
     private string _name = "";
+    private string _icon = "";
     private string _description = "";
     private bool _isPremium;
     private string _errorMessage = "";
@@ -143,7 +153,8 @@
                 IsPremium = _isPremium,
                 ClientDLL = _clientDll,
                 ServerDLL = _serverDll,
-                Category = _category
+                Category = _category,
+                Icon = _icon
             });
             
             MudDialog.Close(DialogResult.Ok(true));

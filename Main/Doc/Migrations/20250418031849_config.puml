@@ -1,0 +1,5 @@
+@startuml
+class config <<partial>> {
+}
+Migration <|-- config
+@enduml

@@ -1,4 +1,9 @@
 @startuml
+enum UserRoles {
+    Normal,
+    Premium,
+    Admin,
+}
 class User {
     + UserId : Guid <<get>> <<set>>
     + Username : string <<get>> <<set>>
@@ -8,5 +13,9 @@ class User {
     + CreatedAt : DateTime <<get>> <<set>>
     + UpdatedAt : DateTime <<get>> <<set>>
 }
+class UserRole {
+    + Role : UserRoles <<get>> <<set>>
+}
+User "0..*" -- "1" UserRole: "use"
 ITimestampedEntity <|-- User
 @enduml

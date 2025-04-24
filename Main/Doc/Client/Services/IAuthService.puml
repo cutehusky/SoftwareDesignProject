@@ -1,0 +1,6 @@
+@startuml
+interface IAuthService {
+    + RegisterAsync(request:RegisterRequest, cancellationToken:CancellationToken) : Task
+    + LoginAsync(request:LoginRequest, cancellationToken:CancellationToken) : Task<JwtResponse>
+}
+@enduml

@@ -1,0 +1,15 @@
+@startuml
+!include .\\ActionResponse.puml
+!include .\\FormatChecker.puml
+!include .\\HomeData.puml
+!include .\\HomeItem.puml
+!include .\\IFormatChecker.puml
+!include .\\JwtResponse.puml
+!include .\\LoginRequest.puml
+!include .\\NavData.puml
+!include .\\NavItem.puml
+!include .\\PaginationList.puml
+!include .\\PluginDTO.puml
+!include .\\RegisterRequest.puml
+!include .\\UserDTO.puml
+@enduml

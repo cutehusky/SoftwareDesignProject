@@ -6,7 +6,7 @@ namespace SoftwareDesignProject.Client.Services
 {
     public interface IAuthService
     {
-        Task RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default);
-        Task<JwtResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default);
+        public Task RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default);
+        public Task<JwtResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default);
     }
 }

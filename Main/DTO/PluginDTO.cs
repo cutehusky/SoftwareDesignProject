@@ -13,4 +13,6 @@ public class PluginDTO
     public bool? IsEnabled { get; set; } = true;
 
     public bool? IsPremium { get; set; } = false;
+    
+    public string? Icon { get; set; } = string.Empty;
 }

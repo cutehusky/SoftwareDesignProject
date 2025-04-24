@@ -2,6 +2,7 @@
 class PluginsController {
     + PluginsController(logger:ILogger<PluginsController>, manager:DynamicPluginManager, pluginService:IPluginService)
     + <<async>> Load() : Task<IActionResult>
+    + <<async>> IsStarred(pluginId:Guid) : Task<IActionResult>
     + <<async>> GetPlugin(id:Guid) : Task<IActionResult>
     + <<async>> UpgradePlugin(request:UpgradePluginRequest) : Task<IActionResult>
     + <<async>> EditPlugin(dto:PluginDTO) : Task<IActionResult>

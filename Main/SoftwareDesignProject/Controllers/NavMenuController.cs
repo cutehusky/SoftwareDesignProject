@@ -23,8 +23,7 @@ public class NavMenuController : Controller
     [HttpGet("home")]
     public async Task<IActionResult> GetHomeList()
     {
-        var userRole = HttpContext.Items["UserRole"] as UserRoles?;
-        var plugins = await _pluginService.GetActiveList(userRole);
+        var plugins = await _pluginService.GetActiveList();
 
         var pluginItems = plugins.Select(dto => new HomeItem()
         {
@@ -32,7 +31,7 @@ public class NavMenuController : Controller
             Text = dto.Name!,
             Description = dto.Description!,
             Href = $"dynamicDLL/{dto.PluginId}",
-            Icon = Icons.Material.Filled.List,
+            Icon = string.IsNullOrEmpty(dto.Icon) ? Icons.Material.Filled.List: dto.Icon,
             IsPremium = dto.IsPremium ?? false
         });
 
@@ -55,7 +54,7 @@ public class NavMenuController : Controller
     public async Task<IActionResult> GetNavList()
     {
         var userRole = HttpContext.Items["UserRole"] as UserRoles?;
-        var plugins = await _pluginService.GetActiveList(userRole);
+        var plugins = await _pluginService.GetActiveList();
         var isAdmin = userRole == UserRoles.Admin;
 
         List<NavItem> navItems = new()
@@ -95,7 +94,7 @@ public class NavMenuController : Controller
             Text = plugin.Name!,
             Category = plugin.Category!,
             Href = $"dynamicDLL/{plugin.PluginId}",
-            Icon = Icons.Material.Filled.List,
+            Icon = string.IsNullOrEmpty(plugin.Icon) ? Icons.Material.Filled.List: plugin.Icon,
             IsPremium = plugin.IsPremium ?? false
         }));
 
@@ -116,8 +115,7 @@ public class NavMenuController : Controller
     [HttpGet("search")]
     public async Task<IActionResult> Search([FromQuery] string queryValue)
     {
-        var userRole = HttpContext.Items["UserRole"] as UserRoles?;
-        var plugins = await _pluginService.SearchPlugin(queryValue, userRole);
+        var plugins = await _pluginService.SearchPlugin(queryValue);
 
         List<NavItem> navItems = [];
         navItems.AddRange(plugins.Select(plugin => new NavItem()
@@ -126,7 +124,7 @@ public class NavMenuController : Controller
             Text = plugin.Name!,
             Category = plugin.Category!,
             Href = $"dynamicDLL/{plugin.PluginId}",
-            Icon = Icons.Material.Filled.List,
+            Icon = string.IsNullOrEmpty(plugin.Icon) ? Icons.Material.Filled.List: plugin.Icon,
             IsPremium = plugin.IsPremium ?? false
         }));
 

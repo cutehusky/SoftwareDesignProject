@@ -6,5 +6,6 @@ class UploadPluginRequest {
     + <<required>> Description : string <<get>> <<set>>
     + IsPremium : bool <<get>> <<set>>
     + <<required>> Category : string <<get>> <<set>>
+    + Icon : string? <<get>> <<set>>
 }
 @enduml

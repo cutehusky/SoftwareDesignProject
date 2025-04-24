@@ -55,6 +55,24 @@ public class PluginsController : ControllerBase
             PluginSemaphore.Release();
         }
     }
+    
+    [HttpGet("favorite/{pluginId}")]
+    public async Task<IActionResult> IsStarred(Guid pluginId)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == null)
+            return Unauthorized();
+        try
+        {
+            var starredPlugins = await _pluginService.GetStarredPluginUserById(userId.Value);
+            return Ok(starredPlugins.Contains(pluginId));
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to check starred plugin: {Message}", e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+        }
+    }
 
     [ServiceFilter(typeof(GetUserInfoActionFilter))]
     [HttpGet("{id}")]
@@ -237,7 +255,7 @@ public class PluginsController : ControllerBase
         {
             _logger.LogInformation($"Installing plugin with name: {request.Name}");
             await _pluginService.AddPlugin(request.Name, request.Description,
-                request.Category, request.IsPremium, request.ClientDLL, request.ServerDLL);
+                request.Category, request.IsPremium, request.Icon, request.ClientDLL, request.ServerDLL);
             _logger.LogInformation($"Plugin {request.Name} installed successfully");
             return Ok();
         }

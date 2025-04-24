@@ -15,6 +15,10 @@
                 {
                     <MudNavLink Href="@item.Href" Match="NavLinkMatch.Prefix" Icon="@item.Icon">
                         @item.Text
+                        @if (item.IsPremium)
+                        {
+                            <MudIcon Size="Size.Small" Style="transform: translate(0, 5px); margin-top: -4px" Icon="@Icons.Material.Filled.WorkspacePremium" Class="ms-3" Color="@Color.Warning"/>
+                        }
                     </MudNavLink>
                 }
             </MudNavGroup>
@@ -86,7 +90,7 @@
     {
         if (sender is UserManagement) 
             return;
-        if (sender is Home)
+        if (sender is Home or DynamicDLL)
         {
             if (e is not PluginEventArgs pluginIdEventArgs)
                 return;

@@ -1,0 +1,8 @@
+@startuml
+class AuthService {
+    + AuthService(httpClient:HttpClient, navManager:NavigationManager)
+    + <<async>> RegisterAsync(request:RegisterRequest, cancellationToken:CancellationToken) : Task
+    + <<async>> LoginAsync(request:LoginRequest, cancellationToken:CancellationToken) : Task<JwtResponse>
+}
+IAuthService <|-- AuthService
+@enduml

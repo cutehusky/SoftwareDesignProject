@@ -7,5 +7,6 @@ interface IPluginService {
     + Remove(id:Guid) : Task
     + StarPlugin(pluginId:Guid) : Task
     + UnstarPlugin(pluginId:Guid) : Task
+    + IsPluginStarred(pluginId:string) : Task<bool>
 }
 @enduml

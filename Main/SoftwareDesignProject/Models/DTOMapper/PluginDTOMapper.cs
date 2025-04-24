@@ -13,6 +13,7 @@ public class PluginDTOMapper: IDTOMapper<Plugin, PluginDTO>
             Name = from.Name,
             Description = from.Description,
             Category = from.Category,
+            Icon = from.Icon,
             IsEnabled = from.IsEnabled,
             IsPremium = from.IsPremium
         };
@@ -27,7 +28,8 @@ public class PluginDTOMapper: IDTOMapper<Plugin, PluginDTO>
             Description = from.Description ?? "",
             Category = from.Category ?? Plugin.DefaultCategory,
             IsEnabled = from.IsEnabled ?? true,
-            IsPremium = from.IsPremium ?? false
+            IsPremium = from.IsPremium ?? false,
+            Icon = from.Icon
         };
     }
 
@@ -43,5 +45,7 @@ public class PluginDTOMapper: IDTOMapper<Plugin, PluginDTO>
             target.Description = source.Description;
         if (source.IsEnabled != null)
             target.IsEnabled = (bool)source.IsEnabled;
+        if (source.Icon != null)
+            target.Icon = source.Icon;
     }
 }

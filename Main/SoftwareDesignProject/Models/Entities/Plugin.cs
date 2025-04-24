@@ -16,4 +16,5 @@ public class Plugin: ITimestampedEntity
     public bool IsPremium { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public string? Icon { get; set; }
 }

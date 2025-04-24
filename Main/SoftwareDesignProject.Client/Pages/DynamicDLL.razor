@@ -1,36 +1,65 @@
 ﻿@page "/dynamicDLL/{PluginId}"
+@using System.ComponentModel
 @using System.Net
+@using CommonDTO
+@using Microsoft.AspNetCore.Components.Authorization
+@using SoftwareDesignProject.Client.Layout
 @using SoftwareDesignProject.Client.Services
+@inject AuthenticationStateProvider AuthStateProvider
 @inject IServiceProvider ServiceProvider
 
-<MudText Typo="Typo.h5"></MudText>
+@if (Plugin != null) {
+    <MudPaper Style="backdrop-filter: blur(5px); opacity: 0.75;" Class="pa-3 mb-4">
+        <div class="d-flex justify-md-space-between">
+            <MudText Typo="Typo.h5" Style="margin: 20px; width: 90%;">@Plugin.Name</MudText>
+            @if (_isAuthorized)
+            {
+                <MudIconButton Style="padding: 3px; width: 10%" OnClick="Select" Icon="@GetSelectedFavoriteIcon()" Color="Color.Secondary" aria-label="add to favorite"/>
+            }
+        </div>
+        <MudText Typo="Typo.body1" Style="margin: 20px">@Plugin.Description</MudText>
+    </MudPaper>
+}
+
 @_content
 
 @code {
-    [Parameter]
-    public string PluginId { get; set; } = null!;
+    [Parameter] public string PluginId { get; set; } = null!;
     private RenderFragment? _content;
     private string _currentPluginId = "";
-
-    private IDynamicPageLoader? PageLoader { get; set; }
+    private PluginDTO? Plugin { get; set; }
+    private IComponentRefreshService ComponentRefreshService {get; set;} = null!;
+    private bool _isAuthorized;
+    private bool _isPluginStarred;
+    private IDynamicPageLoader PageLoader { get; set; } = null!;
+    private IPluginService PluginService { get; set; } = null!;
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
         if (OperatingSystem.IsBrowser())
         {
-            PageLoader = ServiceProvider.GetService<IDynamicPageLoader>();
+            PageLoader = ServiceProvider.GetService<IDynamicPageLoader>()!;
+            ComponentRefreshService = ServiceProvider.GetService<IComponentRefreshService>()!;
+            PluginService = ServiceProvider.GetService<IPluginService>()!;
         }
+    }
+
+    private string GetSelectedFavoriteIcon()
+    {
+        return _isPluginStarred ? Icons.Material.Filled.Favorite : Icons.Material.Filled.FavoriteBorder;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (!OperatingSystem.IsBrowser())
+            return;
         if (_currentPluginId == PluginId)
             return;
         
-        if (PageLoader == null)
-            return;
-        
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        _isAuthorized = authState.User.Identity?.IsAuthenticated == true;
+
         try
         {
             var dynamicPage = await PageLoader.LoadDynamicAssembly(PluginId);
@@ -38,6 +67,9 @@
             if (componentType != null)
             {
                 _currentPluginId = PluginId;
+                if (_isAuthorized) 
+                    _isPluginStarred = await PluginService.IsPluginStarred(PluginId);
+                Plugin = dynamicPage!.Plugin;
                 ShowComponent(componentType);
             }
         }
@@ -45,16 +77,18 @@
         {
             // Console.WriteLine(e.Message);
             //NavigationManager.NavigateTo("/403");
-            ShowComponent(typeof(Page403));
-        } 
+            Plugin = null;
+            ShowComponent(typeof(PremiumRequired));
+        }
         catch (Exception e)
         {
             // Console.WriteLine(e.Message);
             //NavigationManager.NavigateTo("/404");
+            Plugin = null;
             ShowComponent(typeof(Page404));
         }
     }
-    
+
     private void ShowComponent(Type componentType)
     {
         _content = builder =>
@@ -63,6 +97,49 @@
             builder.AddAttribute(0, "Type", componentType);
             builder.CloseComponent();
         };
+        StateHasChanged();
+    }
+
+    private void Select()
+    {
+        if (Plugin == null)
+            return;
+        var pluginService = ServiceProvider.GetService<IPluginService>()!;
+        if (_isPluginStarred)
+        {
+            try
+            {
+                pluginService.UnstarPlugin(Plugin!.PluginId);
+                _isPluginStarred = false;
+            } catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return;
+            }
+            ComponentRefreshService.NotifyStateChanged(this,
+                new NavMenu.PluginEventArgs {
+                    PluginId = Plugin!.PluginId, 
+                    Action = CollectionChangeAction.Remove
+                });
+        }
+        else
+        {
+            try
+            {
+                pluginService.StarPlugin(Plugin!.PluginId);
+                _isPluginStarred = true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return;
+            }
+            ComponentRefreshService.NotifyStateChanged(this,
+                new NavMenu.PluginEventArgs {
+                    PluginId = Plugin!.PluginId, 
+                    Action = CollectionChangeAction.Add
+                });
+        }
         StateHasChanged();
     }
 }

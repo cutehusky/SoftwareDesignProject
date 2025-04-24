@@ -9,6 +9,7 @@ class Plugin {
     + IsPremium : bool <<get>> <<set>>
     + CreatedAt : DateTime <<get>> <<set>>
     + UpdatedAt : DateTime <<get>> <<set>>
+    + Icon : string? <<get>> <<set>>
 }
 ITimestampedEntity <|-- Plugin
 @enduml

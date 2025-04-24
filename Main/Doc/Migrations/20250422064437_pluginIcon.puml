@@ -1,0 +1,5 @@
+@startuml
+class pluginIcon <<partial>> {
+}
+Migration <|-- pluginIcon
+@enduml

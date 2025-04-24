@@ -1,0 +1,4 @@
+@startuml
+class Timestamp <<partial>> {
+}
+@enduml

@@ -7,6 +7,7 @@ class PluginService {
     + <<async>> Remove(id:Guid) : Task
     + <<async>> StarPlugin(pluginId:Guid) : Task
     + <<async>> UnstarPlugin(pluginId:Guid) : Task
+    + <<async>> IsPluginStarred(pluginId:string) : Task<bool>
     + <<async>> Add(data:PluginUploadData) : Task
 }
 IPluginService <|-- PluginService
