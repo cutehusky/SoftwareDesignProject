@@ -1,0 +1,4 @@
+Authentication: 
+- https://chatgpt.com/share/680c6496-49f8-8013-bf4f-4edbdb5306c9
+- https://chatgpt.com/share/680c6506-ef64-8013-998a-45da12235712
+Database export: https://chatgpt.com/share/680c64c2-8fa0-8013-941d-26faca24ea07
